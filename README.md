@@ -1,6 +1,6 @@
 # 🎓 GRADU
 
-졸업 요건에 맞춰 과목과 학점을 쉽고 직관적으로 관리할 수 있는 학기별 수업 설계 도구를 만들고자 합니다.
+졸업에 필요한 과목과 학점을 한눈에 보고 체계적으로 설계할 수 있는 서비스를 준비 중입니다.
 
 <br/>
 
@@ -26,10 +26,14 @@
 ## 🔧 Stacks
 
 Frontend: <img src="https://img.shields.io/badge/flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white">  
-Backend: <img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
-Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white"> 
-- **Flutter**: 빠른 프로토타이핑, 크로스플랫폼 지원(안드로이드/iOS/웹)  
+Backend: <img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white">    
+Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"> 
+- **Flutter**: 빠른 프로토타이핑, 크로스플랫폼 지원(안드로이드/iOS)  
 - **Spring**: 안정적인 서버 운영에 적합하며, REST API 설계와 확장성 확보에 용이
+- **MySQL**: 주요 데이터를 안정적으로 저장할 RDBMS, Spring Data JPA를 통한 ORM 지원으로 생산성 및 유지보수성 향상
+- **Redis**: 세션 관리 또는 캐싱 용도, 자주 변경되지 않는 데이터나 사용자 세션을 메모리에 저장해 빠른 응답 속도 제공
+
+\+ 학생을 대상으로 하다보니 모바일 애플리케이션으로 플랫폼을 선택하였고 추후 웹으로 확장할 예정 (일렉트론도 염두)
 
 <br/>
 
