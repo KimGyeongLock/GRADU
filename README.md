@@ -5,6 +5,7 @@
 <br/>
 
 ## 💡 IDEA
+<img src="https://github.com/user-attachments/assets/91aad9fe-c6e8-463c-97f1-1c259675f7c6" width="50%" />
 
 ### 선정한 이유
 - 졸업 직전에 필수 과목이나 전공 이수를 놓쳐서 곤란해지는 상황이 잦음  
