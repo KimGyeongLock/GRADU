@@ -27,10 +27,14 @@
 <br/>
 
 ## 🔧 Stacks
-
-Frontend: <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black">   
-Backend: <img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white">    
-Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"> 
+| **division**       | **stack**                                                                                                                                               |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Front-end          | ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)  |
+| Back-end           | ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=spring&logoColor=white) <!--![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)--> |
+| Code Management    | ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) |
+| CI/CD              | <!--![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white) ![Amazon EC2](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white) ![Amazon RDS](https://img.shields.io/badge/Amazon%20RDS-527FFF?style=for-the-badge&logo=amazonrds&logoColor=white) ![Amazon S3](https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white) --> |
+| Database                 | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white">  |
+  
 - **React**: 재사용 가능한 컴포넌트 구조와 빠른 렌더링 성능, 풍부한 생태계를 기반으로 개발 생산성과 유지보수 효율이 높음
 - **Spring**: 안정적인 서버 운영에 적합하며, REST API 설계와 확장성 확보에 용이
 - **MySQL**: 주요 데이터를 안정적으로 저장할 RDBMS, Spring Data JPA를 통한 ORM 지원으로 생산성 및 유지보수성 향상
@@ -71,4 +75,6 @@ Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badg
    - 서버에 백업하여 안전하게 보관하고 필요 시 다시 불러오기
 
 ---
+
+<!-- 주요 기능, 아키텍처, 디자인 패턴, 화면 구성, ERD -->
 
