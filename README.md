@@ -1,4 +1,5 @@
-# 🎓 GRADU
+# 🎓 GRADU (졸업심사 요건 충족기)
+> 개인 프로젝트
 
 졸업에 필요한 과목과 학점을 한눈에 보고 체계적으로 설계할 수 있는 서비스를 준비 중입니다.
 
@@ -26,15 +27,16 @@
 
 ## 🔧 Stacks
 
-Frontend: <img src="https://img.shields.io/badge/flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white">  
+Frontend: <img src="https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black">   
 Backend: <img src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white">    
 Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=Redis&logoColor=white"> 
-- **Flutter**: 빠른 프로토타이핑, 크로스플랫폼 지원(안드로이드/iOS)  
+- **React**: 재사용 가능한 컴포넌트 구조와 빠른 렌더링 성능, 풍부한 생태계를 기반으로 개발 생산성과 유지보수 효율이 높음
 - **Spring**: 안정적인 서버 운영에 적합하며, REST API 설계와 확장성 확보에 용이
 - **MySQL**: 주요 데이터를 안정적으로 저장할 RDBMS, Spring Data JPA를 통한 ORM 지원으로 생산성 및 유지보수성 향상
 - **Redis**: 세션 관리 또는 캐싱 용도, 자주 변경되지 않는 데이터나 사용자 세션을 메모리에 저장해 빠른 응답 속도 제공
 
-\+ 학생을 대상으로 하다보니 모바일 애플리케이션으로 플랫폼을 선택하였고 추후 웹으로 확장할 예정 (일렉트론도 염두)
+> 본 서비스는 컴퓨터와 모바일 환경에서 동시에 접근이 가능한 **웹 플랫폼**으로 우선 출시되며, 이후 모바일 환경에 특화된 **앱 출시**와 서버 비용 절감을 고려한 **데스크탑 앱(Electron)** 전환도 계획하고 있습니다.
+
 
 <br/>
 
@@ -42,7 +44,7 @@ Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badg
 
 - **제한적인 접근**: 기존 학교 시스템은 졸업심사 중에는 접근 자체가 불가한 경우도 있어 유동적으로 계획하기 어려움  
 - **수정 불가능**: 미리 다음 학기를 시뮬레이션하기 어려워, 실제 수강 계획과 괴리가 발생  
-- **낮은 편의성**: 모바일 등 다양한 기기를 통한 접근성이 떨어져, 수시 확인이 쉽지 않음
+- **낮은 편의성**: 여러 단계의 페이지를 거쳐야 하므로 사용자가 원하는 정보에 빠르게 도달하기 어렵다 판단
 
 <br/>
 
