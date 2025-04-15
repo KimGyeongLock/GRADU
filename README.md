@@ -48,6 +48,11 @@ Database: <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badg
 
 ## 🧩 Prototype
 
+<img src="https://github.com/user-attachments/assets/30d7c34d-3b1a-4ce7-9fe7-396a1e8ca7a1" width="33%" />
+<img src="https://github.com/user-attachments/assets/94667aff-622d-4b66-a8bf-f6246e4b9f7b" width="33%" />
+<img src="https://github.com/user-attachments/assets/60ac3f5e-a3c6-4cc1-b0f3-151f9a8b2139" width="33%" />
+
+
 ### 사용 흐름
 1. **분류 선택**  
    - (전공필수, 전공선택, 교양, 자유선택 등)
