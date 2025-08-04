@@ -1,3 +1,7 @@
 spring:
   config:
     import: optional:application-secret.yml
+
+app:
+  email:
+    domain: "@handong.ac.kr"

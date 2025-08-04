@@ -18,25 +18,27 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {
+    public static final String REFRESH_TOKEN = "refreshToken";
     private final StudentService studentService;
     private final JwtProperties jwtProperties;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@Valid @RequestBody StudentAuthRequestDto request) {
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
         studentService.register(request.getStudentId(), request.getPassword());
-        return ResponseEntity.ok("회원가입 성공");
+        return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AccessTokenResponseDto> login(@Valid @RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
         LoginResponseDto tokens = studentService.login(request.getStudentId(), request.getPassword());
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN, tokens.getRefreshToken())
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -61,19 +63,19 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String bearerToken, HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        if (!bearerToken.startsWith("Bearer ")) {
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         String accessToken = bearerToken.substring(JwtAuthenticationFilter.TOKEN_PREFIX.length());
         studentService.logout(accessToken, refreshToken);
 
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+        ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN, "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -90,7 +92,7 @@ public class AuthController {
         if (request.getCookies() == null) return null;
 
         return Arrays.stream(request.getCookies())
-                .filter(cookie -> "refreshToken".equals(cookie.getName()))
+                .filter(cookie -> REFRESH_TOKEN.equals(cookie.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);

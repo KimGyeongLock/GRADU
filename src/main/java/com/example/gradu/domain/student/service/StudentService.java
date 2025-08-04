@@ -3,6 +3,7 @@ package com.example.gradu.domain.student.service;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
+import com.example.gradu.global.config.EmailProperties;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
 import com.example.gradu.global.exception.student.StudentException;
@@ -20,6 +21,11 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenStore refreshTokenStore;
+    private final EmailProperties emailProperties;
+
+    private String createEmail(String studentId) {
+        return studentId + emailProperties.getDomain();
+    }
 
     @Transactional
     public void register(String studentId, String password) {
@@ -27,7 +33,7 @@ public class StudentService {
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
         String encodedPassword = passwordEncoder.encode(password);
-        String email = studentId + "@handong.ac.kr";
+        String email = createEmail(studentId);
         Student student = Student.builder()
                 .studentId(studentId)
                 .password(encodedPassword)
