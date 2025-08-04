@@ -123,7 +123,7 @@ com.gradu/
 ## 12. Documentation & Comments
 - 공개 API(Service, Util 등)는 **Javadoc** 작성.
 - 주석은 “무엇”이 아닌 “왜”를 설명. (자명한 코드에 주석 금지)
-- `TODO:` 주석은 반드시 사유/이슈 번호 포함: `TODO(GR-123): 하드코딩 제거`
+- `TODO:` 주석은 반드시 사유/이슈 번호 포함: `TODO(#123): 하드코딩 제거`
 
 ---
 
