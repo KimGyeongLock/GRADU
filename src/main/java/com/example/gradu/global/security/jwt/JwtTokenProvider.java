@@ -31,7 +31,7 @@ public class JwtTokenProvider {
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessExpiration()))
                 .signWith(signingKey)
                 .compact();
-        log.debug("Access 토큰 생성 완료 - 학번: {}", studentId);
+        log.debug("Access 토큰 생성 완료");
         return token;
     }
 

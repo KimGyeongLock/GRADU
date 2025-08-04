@@ -4,8 +4,7 @@ import com.example.gradu.domain.student.dto.AccessTokenResponseDto;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.dto.StudentAuthRequestDto;
 import com.example.gradu.domain.student.service.StudentService;
-import com.example.gradu.global.exception.ErrorCode;
-import com.example.gradu.global.exception.auth.AuthException;
+import com.example.gradu.global.security.jwt.JwtAuthenticationFilter;
 import com.example.gradu.global.security.jwt.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,14 +50,14 @@ public class AuthController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<AccessTokenResponseDto> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String newAccessToken = studentService.reissue(refreshToken);
-        return ResponseEntity.ok(newAccessToken);
+        return ResponseEntity.ok(new AccessTokenResponseDto(newAccessToken));
     }
 
     @PostMapping("/logout")
@@ -71,7 +70,7 @@ public class AuthController {
         if (!bearerToken.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        String accessToken = bearerToken.substring(7);
+        String accessToken = bearerToken.substring(JwtAuthenticationFilter.TOKEN_PREFIX.length());
         studentService.logout(accessToken, refreshToken);
 
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
