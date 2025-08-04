@@ -1,8 +1,11 @@
 package com.example.gradu.domain.student.controller;
 
+import com.example.gradu.domain.student.dto.AccessTokenResponseDto;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.dto.StudentAuthRequestDto;
 import com.example.gradu.domain.student.service.StudentService;
+import com.example.gradu.global.exception.ErrorCode;
+import com.example.gradu.global.exception.auth.AuthException;
 import com.example.gradu.global.security.jwt.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.util.Arrays;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
+    public ResponseEntity<AccessTokenResponseDto> login(@Valid @RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
         LoginResponseDto tokens = studentService.login(request.getStudentId(), request.getPassword());
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
@@ -43,18 +47,17 @@ public class AuthController {
 
         response.addHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(new LoginResponseDto(tokens.getAccessToken(), null));
+        return ResponseEntity.ok(new AccessTokenResponseDto(tokens.getAccessToken()));
     }
 
     @PostMapping("/reissue")
     public ResponseEntity<String> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh Token 없음");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String newAccessToken = studentService.reissue(refreshToken);
-
         return ResponseEntity.ok(newAccessToken);
     }
 
@@ -87,9 +90,10 @@ public class AuthController {
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
 
-        for (Cookie cookie : request.getCookies()) {
-            if ("refreshToken".equals(cookie.getName())) return cookie.getValue();
-        }
-        return null;
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> "refreshToken".equals(cookie.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
     }
 }

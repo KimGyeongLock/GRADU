@@ -10,9 +10,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,12 +30,4 @@ public class Student {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    public static Student of(String studentId, String password, String email) {
-        Student student = new Student();
-        student.setStudentId(studentId);
-        student.setPassword(password);
-        student.setEmail(email);
-        return student;
-    }
 }

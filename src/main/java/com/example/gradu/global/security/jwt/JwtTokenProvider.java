@@ -29,7 +29,7 @@ public class JwtTokenProvider {
                 .setSubject(studentId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessExpiration()))
-                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .signWith(signingKey)
                 .compact();
         log.debug("Access 토큰 생성 완료 - 학번: {}", studentId);
         return token;
@@ -40,7 +40,7 @@ public class JwtTokenProvider {
                 .setSubject(studentId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpiration()))
-                .signWith(signingKey, SignatureAlgorithm.HS256)
+                .signWith(signingKey)
                 .compact();
     }
 

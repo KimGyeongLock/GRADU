@@ -8,7 +8,7 @@ import com.example.gradu.global.exception.auth.AuthException;
 import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,10 +28,16 @@ public class StudentService {
 
         String encodedPassword = passwordEncoder.encode(password);
         String email = studentId + "@handong.ac.kr";
-        Student student = Student.of(studentId, encodedPassword, email);
+        Student student = Student.builder()
+                .studentId(studentId)
+                .password(encodedPassword)
+                .email(email)
+                .build();
+
         studentRepository.save(student);
     }
 
+    @Transactional(readOnly = true)
     public LoginResponseDto login(String studentId, String rawPassword) {
         Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
