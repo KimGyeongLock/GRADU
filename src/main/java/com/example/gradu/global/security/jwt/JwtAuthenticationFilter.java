@@ -18,13 +18,13 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-
+    public static final String TOKEN_PREFIX = "Bearer ";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String bearer = request.getHeader("Authorization");
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            String token = bearer.substring(7);
+        if (bearer != null && bearer.startsWith(TOKEN_PREFIX)) {
+            String token = bearer.substring(TOKEN_PREFIX.length());
             if (jwtTokenProvider.isTokenValid(token)) {
                 String studentId = jwtTokenProvider.getStudentIdFromToken(token);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(studentId, null, List.of());

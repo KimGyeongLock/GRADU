@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RefreshTokenStore {
-    //TODO: redis 저장
+    //TODO(#5): redis 저장으로 변경
     public void save(String studentId, String refreshToken) {
 
     }

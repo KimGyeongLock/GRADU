@@ -7,6 +7,7 @@ import com.example.gradu.global.security.jwt.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -23,13 +24,13 @@ public class AuthController {
     private final JwtProperties jwtProperties;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody StudentAuthRequestDto request) {
+    public ResponseEntity<String> register(@Valid @RequestBody StudentAuthRequestDto request) {
         studentService.register(request.getStudentId(), request.getPassword());
         return ResponseEntity.ok("회원가입 성공");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
         LoginResponseDto tokens = studentService.login(request.getStudentId(), request.getPassword());
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())

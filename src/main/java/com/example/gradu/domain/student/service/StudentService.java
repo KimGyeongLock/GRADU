@@ -3,8 +3,12 @@ package com.example.gradu.domain.student.service;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
+import com.example.gradu.global.exception.ErrorCode;
+import com.example.gradu.global.exception.auth.AuthException;
+import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,9 +21,10 @@ public class StudentService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenStore refreshTokenStore;
 
+    @Transactional
     public void register(String studentId, String password) {
         if (studentRepository.findByStudentId(studentId).isPresent())
-            throw new IllegalArgumentException("이미 존재하는 학번입니다.");
+            throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
         String encodedPassword = passwordEncoder.encode(password);
         String email = studentId + "@handong.ac.kr";
@@ -29,10 +34,10 @@ public class StudentService {
 
     public LoginResponseDto login(String studentId, String rawPassword) {
         Student student = studentRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("학번이 존재하지 않습니다."));
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
         if (!passwordEncoder.matches(rawPassword, student.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 틀립니다.");
+            throw new AuthException(ErrorCode.PASSWORD_MISMATCH);
 
         String accessToken = jwtTokenProvider.generateAccessToken(studentId);
         String refreshToken = jwtTokenProvider.generateRefreshToken(studentId);
@@ -43,22 +48,22 @@ public class StudentService {
 
     public String reissue(String refreshToken){
         if (!jwtTokenProvider.isTokenValid(refreshToken)){
-            throw new RuntimeException("Refresh Token이 유효하지 않음");
+            throw new AuthException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
 
         String studentId = jwtTokenProvider.getStudentIdFromToken(refreshToken);
 
         if (!refreshTokenStore.validate(studentId, refreshToken)){
-            throw new RuntimeException("Refresh Token 불일치");
+            throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
         return jwtTokenProvider.generateAccessToken(studentId);
     }
 
     public void logout(String accessToken, String refreshToken) {
-        String studentId = jwtTokenProvider.getStudentIdFromToken(accessToken);
+        String studentId = jwtTokenProvider.extractStudentIdIgnoringExpiration(accessToken);
 
         if (!refreshTokenStore.validate(studentId, refreshToken)) {
-            throw new RuntimeException("유효하지 않은 Refresh Token");
+            throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
 
         refreshTokenStore.remove(studentId);
