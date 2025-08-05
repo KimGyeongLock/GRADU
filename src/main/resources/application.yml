@@ -1,0 +1,19 @@
+spring:
+  config:
+    import: optional:application-secret.yml
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+app:
+  email:
+    domain: "@handong.ac.kr"
