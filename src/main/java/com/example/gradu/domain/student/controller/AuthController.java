@@ -1,0 +1,100 @@
+package com.example.gradu.domain.student.controller;
+
+import com.example.gradu.domain.student.dto.AccessTokenResponseDto;
+import com.example.gradu.domain.student.dto.LoginResponseDto;
+import com.example.gradu.domain.student.dto.StudentAuthRequestDto;
+import com.example.gradu.domain.student.service.StudentService;
+import com.example.gradu.global.security.jwt.JwtAuthenticationFilter;
+import com.example.gradu.global.security.jwt.JwtProperties;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Map;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/auth")
+public class AuthController {
+    public static final String REFRESH_TOKEN = "refreshToken";
+    private final StudentService studentService;
+    private final JwtProperties jwtProperties;
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
+        studentService.register(request.getStudentId(), request.getPassword());
+        return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AccessTokenResponseDto> login(@Valid @RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
+        LoginResponseDto tokens = studentService.login(request.getStudentId(), request.getPassword());
+
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN, tokens.getRefreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofMillis(jwtProperties.getRefreshExpiration()))
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader("Set-Cookie", cookie.toString());
+
+        return ResponseEntity.ok(new AccessTokenResponseDto(tokens.getAccessToken()));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<AccessTokenResponseDto> reissue(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = extractRefreshTokenFromCookie(request);
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String newAccessToken = studentService.reissue(refreshToken);
+        return ResponseEntity.ok(new AccessTokenResponseDto(newAccessToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String bearerToken, HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = extractRefreshTokenFromCookie(request);
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        String accessToken = bearerToken.substring(JwtAuthenticationFilter.TOKEN_PREFIX.length());
+        studentService.logout(accessToken, refreshToken);
+
+        ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN, "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(0) // 삭제
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader("Set-Cookie", deleteCookie.toString());
+
+        return ResponseEntity.ok().build();
+    }
+
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> REFRESH_TOKEN.equals(cookie.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
+    }
+}

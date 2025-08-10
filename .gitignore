@@ -1,3 +1,6 @@
+# Ignore secret config
+application-secret.yml
+
 # ========================
 # 빌드 관련 (Gradle & Maven)
 # ========================
