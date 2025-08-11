@@ -12,7 +12,8 @@ public enum Category {
     ICT_INTRO(2),             // ICT융합기초
     FREE_ELECTIVE_BASIC(9),   // 자유선택(교양)
     FREE_ELECTIVE_MJR(0),     // 자유선택(교양또는비교양)
-    MAJOR(60);                // 전공주제
+    MAJOR(60),                // 전공주제
+    MAJOR_DESIGNED(12);       // 설계
 
     private final int requiredCredits;
     Category(int requiredCredits) {

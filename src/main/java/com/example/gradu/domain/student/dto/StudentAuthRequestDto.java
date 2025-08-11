@@ -2,11 +2,13 @@ package com.example.gradu.domain.student.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
+@AllArgsConstructor
 public class StudentAuthRequestDto {
     @NotBlank(message = "학번은 필수 입력값입니다")
     @Pattern(regexp = "^[0-9]{8}$", message = "학번은 8자리 숫자여야 합니다")
