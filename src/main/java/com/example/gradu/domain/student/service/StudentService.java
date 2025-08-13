@@ -1,5 +1,6 @@
 package com.example.gradu.domain.student.service;
 
+import com.example.gradu.domain.curriculum.service.CurriculumService;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
@@ -22,6 +23,7 @@ public class StudentService {
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenStore refreshTokenStore;
     private final EmailProperties emailProperties;
+    private final CurriculumService curriculumService;
 
     private String createEmail(String studentId) {
         return studentId + emailProperties.getDomain();
@@ -41,6 +43,7 @@ public class StudentService {
                 .build();
 
         studentRepository.save(student);
+        curriculumService.initializeForStudent(studentId);
     }
 
     @Transactional(readOnly = true)
