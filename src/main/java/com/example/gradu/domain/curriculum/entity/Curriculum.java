@@ -36,7 +36,7 @@ public class Curriculum {
                 ? Status.PASS : Status.FAIL;
     }
 
-    public void updateEarnedCredits(Integer credits) {
+    public void addEarnedCredits(Integer credits) {
         this.earnedCredits += credits;
         recalcStatus();
     }

@@ -21,6 +21,7 @@ public class CurriculumService {
     private final CurriculumRepository curriculumRepository;
     private final StudentRepository studentRepository;
 
+    @Transactional
     public void initializeForStudent(String studentId) {
         Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
@@ -31,7 +32,6 @@ public class CurriculumService {
                     .student(student)
                     .category(c)
                     .earnedCredits(0)
-                    .status(Curriculum.Status.FAIL)
                     .build();
             cur.recalcStatus();
             newCurriculums.add(cur);

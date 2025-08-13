@@ -31,7 +31,7 @@ public class Course {
     private int credit;
 
     @Column
-    private int designedCredits;
+    private int designedCredit;
 
     @Column(length = 5)
     private String grade;

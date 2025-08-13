@@ -21,8 +21,8 @@ public class CurriculumController {
 
     @GetMapping
     public ResponseEntity<List<CurriculumResponseDto>> getCurriculums(@PathVariable String studentId){
-        List<Curriculum> rows = curriculumService.getCurriculumsByStudentId(studentId);
-        List<CurriculumResponseDto> body = rows.stream()
+        List<Curriculum> curriculums = curriculumService.getCurriculumsByStudentId(studentId);
+        List<CurriculumResponseDto> body = curriculums.stream()
                 .map(CurriculumResponseDto::from)
                 .toList();
         return ResponseEntity.ok(body);

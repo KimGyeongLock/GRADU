@@ -20,7 +20,7 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final StudentRepository studentRepository;
-    private final CurriculumRepository currRepository;
+    private final CurriculumRepository curriculumRepository;
 
     @Transactional
     public void addCourse(String studentId, CourseRequestDto request) {
@@ -32,13 +32,13 @@ public class CourseService {
                 .name(request.name())
                 .category(request.category())
                 .credit(request.credit())
-                .designedCredits(request.designedCredit())
+                .designedCredit(request.designedCredit())
                 .grade(request.grade())
                 .build();
         courseRepository.save(course);
 
-        Curriculum cur = currRepository.findByStudentStudentIdAndCategory(studentId, request.category())
+        Curriculum cur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, request.category())
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-        cur.updateEarnedCredits(cur.getEarnedCredits() + request.credit());
+        cur.addEarnedCredits(request.credit());
     }
 }
