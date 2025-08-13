@@ -1,6 +1,6 @@
 package com.example.gradu.flow;
 
-import com.example.gradu.domain.course.dto.CourseRequest;
+import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.domain.student.dto.StudentAuthRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +29,7 @@ public class StudentCurriculumFlowTest {
         return om.writeValueAsString(new StudentAuthRequestDto(studentId, password));
     }
     private String courseJson(String name, int credit, Category category, Integer design, String grade) throws Exception {
-        return om.writeValueAsString(new CourseRequest(name, credit, category, design, grade));
+        return om.writeValueAsString(new CourseRequestDto(name, credit, category, design, grade));
     }
 
     @Test

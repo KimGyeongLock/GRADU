@@ -2,13 +2,13 @@ package com.example.gradu.domain.curriculum.dto;
 
 import com.example.gradu.domain.curriculum.entity.Curriculum;
 
-public record CurriculumResponse(
+public record CurriculumResponseDto(
         String category,
         int earnedCredits,
         String status
 ) {
-    public static CurriculumResponse from(Curriculum c){
-        return new CurriculumResponse(
+    public static CurriculumResponseDto from(Curriculum c){
+        return new CurriculumResponseDto(
                 c.getCategory().name(),
                 c.getEarnedCredits(),
                 c.getStatus().name()

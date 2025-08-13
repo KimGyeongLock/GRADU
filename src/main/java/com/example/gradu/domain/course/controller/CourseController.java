@@ -1,6 +1,6 @@
 package com.example.gradu.domain.course.controller;
 
-import com.example.gradu.domain.course.dto.CourseRequest;
+import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ public class CourseController {
     private final CourseService courseService;
 
     @PostMapping
-    public ResponseEntity<Void> addCourse(@PathVariable String studentId, @RequestBody CourseRequest request) {
+    public ResponseEntity<Void> addCourse(@PathVariable String studentId, @RequestBody CourseRequestDto request) {
         courseService.addCourse(studentId, request);
         return ResponseEntity.ok().build();
     }

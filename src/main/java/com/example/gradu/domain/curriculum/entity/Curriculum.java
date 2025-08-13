@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter @Setter
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,7 +23,7 @@ public class Curriculum {
 
     @Column(nullable = false)
     @Builder.Default
-    private Integer earnedCredits = 0;
+    private int earnedCredits = 0;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
@@ -32,7 +32,12 @@ public class Curriculum {
     public enum Status { PASS, FAIL }
 
     public void recalcStatus() {
-        this.status = (earnedCredits != null && earnedCredits >= category.getRequiredCredits())
+        this.status = (earnedCredits >= category.getRequiredCredits())
                 ? Status.PASS : Status.FAIL;
+    }
+
+    public void updateEarnedCredits(Integer credits) {
+        this.earnedCredits += credits;
+        recalcStatus();
     }
 }

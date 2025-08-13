@@ -1,6 +1,6 @@
 package com.example.gradu.domain.curriculum.controller;
 
-import com.example.gradu.domain.curriculum.dto.CurriculumResponse;
+import com.example.gradu.domain.curriculum.dto.CurriculumResponseDto;
 import com.example.gradu.domain.curriculum.entity.Curriculum;
 import com.example.gradu.domain.curriculum.service.CurriculumService;
 import lombok.RequiredArgsConstructor;
@@ -20,10 +20,10 @@ public class CurriculumController {
     private final CurriculumService curriculumService;
 
     @GetMapping
-    public ResponseEntity<List<CurriculumResponse>> getCurriculums(@PathVariable String studentId){
-        List<Curriculum> rows = curriculumService.findBoard(studentId);
-        List<CurriculumResponse> body = rows.stream()
-                .map(CurriculumResponse::from)
+    public ResponseEntity<List<CurriculumResponseDto>> getCurriculums(@PathVariable String studentId){
+        List<Curriculum> rows = curriculumService.getCurriculumsByStudentId(studentId);
+        List<CurriculumResponseDto> body = rows.stream()
+                .map(CurriculumResponseDto::from)
                 .toList();
         return ResponseEntity.ok(body);
 

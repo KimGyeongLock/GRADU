@@ -1,6 +1,6 @@
 package com.example.gradu.domain.course.controller;
 
-import com.example.gradu.domain.course.dto.CourseRequest;
+import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,9 +27,9 @@ class CourseControllerTest {
     @MockitoBean CourseService courseService;
 
     @Test
-    void addCourse_success() throws Exception {
+    void addCourse_withValidRequest_returnsOk() throws Exception {
         String studentId = "21900064";
-        CourseRequest req = new CourseRequest(
+        CourseRequestDto req = new CourseRequestDto(
                 "컴퓨터그래픽스", 3, Category.MAJOR, 1, "A+"
         );
 
@@ -38,6 +38,6 @@ class CourseControllerTest {
                 .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk());
 
-        verify(courseService).addCourse(ArgumentMatchers.eq(studentId), ArgumentMatchers.any(CourseRequest.class));
+        verify(courseService).addCourse(ArgumentMatchers.eq(studentId), ArgumentMatchers.any(CourseRequestDto.class));
     }
 }

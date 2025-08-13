@@ -9,7 +9,9 @@ import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.student.StudentException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +25,7 @@ public class CurriculumService {
         Student student = studentRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
+        List<Curriculum> newCurriculums = new ArrayList<>();
         for (Category c : Category.values()) {
             Curriculum cur = Curriculum.builder()
                     .student(student)
@@ -31,11 +34,13 @@ public class CurriculumService {
                     .status(Curriculum.Status.FAIL)
                     .build();
             cur.recalcStatus();
-            curriculumRepository.save(cur);
+            newCurriculums.add(cur);
         }
+        curriculumRepository.saveAll(newCurriculums);
     }
 
-    public List<Curriculum> findBoard(String studentId) {
+    @Transactional(readOnly = true)
+    public List<Curriculum> getCurriculumsByStudentId(String studentId) {
         return curriculumRepository.findByStudentStudentId(studentId);
     }
 }
