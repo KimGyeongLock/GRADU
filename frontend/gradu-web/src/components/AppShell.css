@@ -1,0 +1,95 @@
+/* Root */
+.appShell {
+  min-height: 100vh;
+  width: 100%;
+  background: #f3f4f6;   /* gray-100 */
+  color: #111827;        /* gray-900 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.appHeader {
+  width: 100%;
+  /* background: #ffffff; */
+}
+
+.appHeaderInner {
+  max-width: 1200px;
+  height: 48px;                 /* h-12 */
+  margin: 0 auto;               /* 가운데 정렬 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.appTitle {
+  font-size: 22px;              /* text-2xl */
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin-block: 10px;
+}
+
+/* Account / Dropdown */
+.account { position: relative; }
+
+.accountBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 14px;
+  color: #374151;               /* gray-700 */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.accountBtn:hover { background: #f9fafb; }
+
+.accountIcon { font-size: 16px; line-height: 1; }
+.accountName { white-space: nowrap; line-height: 1; }
+
+.accountMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 160px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0,0,0,0.05);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.accountMenuItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.accountMenuItem:hover { background: #f9fafb; }
+
+/* Full-bleed divider under header */
+.appRule {
+  height: 1px;
+  background: rgba(0,0,0,0.4);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  border: 0;
+}
+
+/* Main & content container */
+.appMain { flex: 1; width: 100%; }
+
+.appContent {
+  max-width: 1200px;
+  width: 100%;
+  padding: 32px 24px;   /* py-8 px-6 */
+  margin: 0 auto;       /* 가운데 정렬 */
+}

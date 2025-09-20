@@ -1,0 +1,11 @@
+/* src/styles/reset.css  — 무조건 마지막에 임포트 */
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0 !important;   /* UA 8px 덮어쓰기 */
+}
