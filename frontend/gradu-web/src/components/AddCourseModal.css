@@ -1,0 +1,61 @@
+/* 반응형 그리드 (학점/설계학점 2열) */
+.addcourse-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px; /* JS에서 inline gap과 동일하게 사용 */
+}
+@media (min-width: 640px) {
+  .addcourse-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* 포커스/hover 상태는 CSS에서 관리 */
+.addcourse-select,
+.addcourse-row input,
+.addcourse-row select {
+  /* 기본 포커스는 inline으로 지정했지만, 추가 보강 */
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.addcourse-select:focus,
+.addcourse-row input:focus,
+.addcourse-row select:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb !important;
+}
+
+/* 버튼 상태 */
+.addcourse-btn {
+  transition: background-color .2s ease, opacity .2s ease;
+}
+.addcourse-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.addcourse-btn--primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+}
+.addcourse-btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+.addcourse-btn--ghost {
+  background: #fff;
+  color: #111;
+  border: 1px solid #d1d5db;
+}
+.addcourse-btn--ghost:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+/* (선택) number input 스피너 제거 - 디자인 일관용 */
+.addcourse-row input[type="number"]::-webkit-outer-spin-button,
+.addcourse-row input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.addcourse-row input[type="number"] {
+  -moz-appearance: textfield;
+}

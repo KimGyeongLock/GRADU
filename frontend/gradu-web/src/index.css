@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---- Base 확장 (Tailwind Preflight 위에 얹기) ---- */
+@layer base {
+  :root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light;          /* 라이트 고정 */
+  }
+
+  /* 화면 끝까지 내려가도록 높이 체인 */
+  html, body, #root { height: 100%; }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+
+    /* 모바일 주소창 변동까지 커버 (순서 중요: 폴백 → 최신) */
+    min-height: 100vh;   /* fallback */
+    min-height: 100svh;  /* safe viewport */
+    min-height: 100dvh;  /* dynamic viewport */
+
+    background-color: #f3f4f6;
+  }
+
+  /* 루트를 컬럼 레이아웃으로: header 고정 + main 확장 */
+  #root {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 기본 제목 마진 제거 (헤더 높이 줄이기 용이) */
+  h1, h2, h3, h4, h5, h6 { margin: 0; }
+}
+
+/* ---- 유틸리티 헬퍼 ---- */
+
+/* 전체 가로(뷰포트 끝)로 '쭉' 뻗는 요소 */
+.full-bleed {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+/* 헤더 아래 구분선(전체 가로) */
+.hr-bleed {
+  height: 1px;
+  background: rgba(0,0,0,.08); /* 진하기만 조절하면 됨 */
+  border: 0;
+}
