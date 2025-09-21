@@ -23,6 +23,7 @@ public class Student {
     private String studentId;
     private String password;
     private String email;
+    private String name;
 
     @CreatedDate
     @Column(updatable = false)

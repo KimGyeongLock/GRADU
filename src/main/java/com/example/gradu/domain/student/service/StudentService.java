@@ -30,7 +30,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void register(String studentId, String password) {
+    public void register(String studentId, String password, String name) {
         if (studentRepository.findByStudentId(studentId).isPresent())
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
@@ -39,6 +39,7 @@ public class StudentService {
         Student student = Student.builder()
                 .studentId(studentId)
                 .password(encodedPassword)
+                .name(name)
                 .email(email)
                 .build();
 
@@ -54,7 +55,7 @@ public class StudentService {
         if (!passwordEncoder.matches(rawPassword, student.getPassword()))
             throw new AuthException(ErrorCode.PASSWORD_MISMATCH);
 
-        String accessToken = jwtTokenProvider.generateAccessToken(studentId);
+        String accessToken = jwtTokenProvider.generateAccessToken(studentId, student.getName());
         String refreshToken = jwtTokenProvider.generateRefreshToken(studentId);
 
         refreshTokenStore.save(studentId, refreshToken);
@@ -71,7 +72,9 @@ public class StudentService {
         if (!refreshTokenStore.validate(studentId, refreshToken)){
             throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
-        return jwtTokenProvider.generateAccessToken(studentId);
+        Student student = studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+        return jwtTokenProvider.generateAccessToken(studentId, student.getName());
     }
 
     public void logout(String accessToken, String refreshToken) {

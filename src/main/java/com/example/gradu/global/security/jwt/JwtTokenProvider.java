@@ -24,9 +24,10 @@ public class JwtTokenProvider {
         this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(UTF_8));
     }
 
-    public String generateAccessToken(String studentId) {
+    public String generateAccessToken(String studentId, String name) {
         String token =  Jwts.builder()
                 .setSubject(studentId)
+                .claim("name", name)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessExpiration()))
                 .signWith(signingKey)
