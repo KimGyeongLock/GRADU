@@ -18,7 +18,8 @@ public enum ErrorCode {
     PASSWORD_MISMATCH("A004", HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 
 
-    CURRICULUM_NOT_FOUND("C001", HttpStatus.NOT_FOUND, "구분을 찾을 수 없습니다.");
+    CURRICULUM_NOT_FOUND("C001", HttpStatus.NOT_FOUND, "구분을 찾을 수 없습니다."),
+    COURSE_NOT_FOUND("C002", HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다.");
 
 
 

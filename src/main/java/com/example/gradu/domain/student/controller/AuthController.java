@@ -30,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
-        studentService.register(request.getStudentId(), request.getPassword());
+        studentService.register(request.getStudentId(), request.getPassword(), request.getName());
         return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 
