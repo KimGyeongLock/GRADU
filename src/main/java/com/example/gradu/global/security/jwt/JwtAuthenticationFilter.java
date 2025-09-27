@@ -8,11 +8,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.stream.Stream;
+
+import static com.example.gradu.global.security.SecurityConfig.PUBLIC_WHITELIST;
+import static com.example.gradu.global.security.SecurityConfig.SWAGGER_WHITELIST;
 
 @Component
 @RequiredArgsConstructor
@@ -20,14 +25,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     public static final String TOKEN_PREFIX = "Bearer ";
+    private static final AntPathMatcher PATH_MATCH = new AntPathMatcher();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String u = request.getRequestURI();
-        return u.startsWith("/api/v1/auth/") ||
-                u.startsWith("/v3/api-docs") ||
-                u.startsWith("/swagger-ui") ||
-                u.startsWith("/actuator");
+        return isWhitelisted(u);
+    }
+
+    private boolean isWhitelisted(String uri) {
+        return Stream.concat(
+                Arrays.stream(PUBLIC_WHITELIST),
+                Arrays.stream(SWAGGER_WHITELIST)
+        )
+                .anyMatch(pattern -> PATH_MATCH.match(pattern, uri));
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.example.gradu.domain.course.controller;
 
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseResponseDto;
+import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
 import com.example.gradu.domain.course.entity.Course;
 import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.entity.Category;
@@ -31,7 +32,7 @@ public class CourseController {
     }
 
     @PatchMapping("/{courseId}")
-    public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable String studentId, @PathVariable Long courseId, @RequestBody CourseRequestDto requestDto) {
+    public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable String studentId, @PathVariable Long courseId, @RequestBody CourseUpdateRequestDto requestDto) {
         Course updated = courseService.updateCourse(studentId, courseId, requestDto);
         return ResponseEntity.ok(CourseResponseDto.from(updated));
     }

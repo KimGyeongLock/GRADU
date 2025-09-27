@@ -1,7 +1,7 @@
 package com.example.gradu.domain.course.service;
 
 import com.example.gradu.domain.course.dto.CourseRequestDto;
-import com.example.gradu.domain.course.dto.CourseResponseDto;
+import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
 import com.example.gradu.domain.course.entity.Course;
 import com.example.gradu.domain.course.repository.CourseRepository;
 import com.example.gradu.domain.curriculum.entity.Category;
@@ -50,95 +50,98 @@ public class CourseService {
         designedCur.addEarnedCredits(request.designedCredit());
     }
 
+    @Transactional(readOnly = true)
     public List<Course> getCoursesByCategory(String studentId, Category category) {
         return courseRepository.findByStudent_StudentIdAndCategoryOrderByCreatedAtDesc(studentId, category);
     }
 
     @Transactional
-    public Course updateCourse(String studentId, Long courseId, CourseRequestDto request) {
-        Course course = courseRepository.findByIdAndStudent_StudentId(courseId, studentId)
-                .orElseThrow(() -> new CurriculumException(ErrorCode.COURSE_NOT_FOUND));
+    public Course updateCourse(String studentId, Long courseId, CourseUpdateRequestDto request) {
+        Course course = loadCourse(studentId, courseId);
 
-        // --- 기존 값 백업 ---
-        Category oldCat = course.getCategory();
-        int oldCredit = course.getCredit();
-        int oldDesigned = Optional.ofNullable(course.getDesignedCredit()).orElse(0);
+        UpdateContext ctx = computedNewValues(course, request);
 
-        // --- 신규 값 계산(요청값 없으면 기존 유지) ---
-        Category newCat = (request.category() != null) ? request.category() : oldCat;
-
-        // credit이 null 이 아닐 것 같지만(요청 DTO가 primitive면) 방어적으로 처리
-        int newCredit = (request.credit() != 0) ? request.credit() : oldCredit;
-
-        // 설계학점: 전공에서만 의미. 요청이 null이면 기존값 유지.
-        int reqDesigned = Optional.ofNullable(request.designedCredit()).orElse(oldDesigned);
-        int newDesigned = (newCat == Category.MAJOR) ? reqDesigned : 0; // 비전공이면 0으로 간주
-
-        boolean categoryChanged = (newCat != oldCat);
-        int deltaCredit = newCredit - oldCredit;
-        int deltaDesigned = 0;
-
-        // --- 카테고리별 학점 반영 ---
-        if (categoryChanged) {
-            // 1) 이전 카테고리에서 전량 차감
-            Curriculum prevCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, oldCat)
-                    .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-            prevCur.addEarnedCredits(-oldCredit);
-
-            // 2) 새 카테고리에 전량 가산
-            Curriculum newCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, newCat)
-                    .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-            newCur.addEarnedCredits(newCredit);
-
-            // 3) 전공 설계 누계 반영
-            Curriculum majorDesignedCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
-                    .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-
-            if (oldCat == Category.MAJOR) {
-                // 전공 → 타 카테고리: 기존 설계학점 전량 차감
-                majorDesignedCur.addEarnedCredits(-oldDesigned);
-            }
-            if (newCat == Category.MAJOR) {
-                // 타 카테고리 → 전공: 새 설계학점 전량 가산
-                majorDesignedCur.addEarnedCredits(newDesigned);
-            }
+        if (ctx.categoryChanged) {
+            applyCategoryChange(studentId, ctx);
         } else {
-            // 카테고리 동일: 학점/설계학점의 차액만 반영
-            if (deltaCredit != 0) {
-                Curriculum cur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, oldCat)
-                        .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-                cur.addEarnedCredits(deltaCredit);
-            }
-
-            if (oldCat == Category.MAJOR) {
-                // 전공일 때만 설계학점 차액 반영
-                deltaDesigned = newDesigned - oldDesigned;
-                if (deltaDesigned != 0) {
-                    Curriculum majorDesignedCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
-                            .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-                    majorDesignedCur.addEarnedCredits(deltaDesigned);
-                }
-            }
+            applySameCategoryAdjustments(studentId, ctx);
         }
-
-        // --- 엔티티 필드 최종 변경 (변경감지) ---
-        if (request.name() != null) course.rename(request.name());
-        if (request.grade() != null) course.changeGrade(request.grade());
-
-        // 카테고리/학점/설계학점 적용
-        if (categoryChanged) course.changeCategory(newCat);
-        if (deltaCredit != 0) course.changeCredit(newCredit);
-        // 비전공이면 설계학점은 0(또는 null)로 정규화
-        course.changeDesignedCredit((newCat == Category.MAJOR) ? newDesigned : 0);
+        applyEntityFieldUpdates(course, request, ctx);
 
         return course;
     }
 
+    private Course loadCourse(String studentId, Long courseId) {
+        return courseRepository.findByIdAndStudent_StudentId(courseId, studentId)
+                .orElseThrow(() -> new CurriculumException(ErrorCode.COURSE_NOT_FOUND));
+    }
+
+    private UpdateContext computedNewValues(Course course, CourseUpdateRequestDto request) {
+        UpdateContext ctx = new UpdateContext();
+
+        ctx.oldCat = course.getCategory();
+        ctx.oldCredit = course.getCredit();
+        ctx.oldDesigned = Optional.ofNullable(course.getDesignedCredit()).orElse(0);
+
+        ctx.newCat = (request.getCategory() != null) ? request.getCategory() : ctx.oldCat;
+
+        ctx.newCredit = (request.getCredit() != 0) ? request.getCredit() : ctx.oldCredit;
+
+        int regDesigned = Optional.ofNullable(request.getDesignedCredit()).orElse(ctx.oldDesigned);
+        ctx.newDesigned = (ctx.newCat == Category.MAJOR) ? regDesigned : 0;
+
+        ctx.categoryChanged = (ctx.newCat != ctx.oldCat);
+        ctx.deltaCredit = ctx.newCredit - ctx.oldCredit;
+        ctx.deltaDesigned = (ctx.oldCat == Category.MAJOR) ? (ctx.newDesigned - ctx.oldDesigned) : 0;
+        return ctx;
+    }
+
+    private void applyCategoryChange(String studentId, UpdateContext ctx) {
+        Curriculum prevCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, ctx.oldCat)
+                .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+        Curriculum newCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, ctx.newCat)
+                .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+
+        Curriculum majorDesignedCur = getCurriculum(studentId, Category.MAJOR_DESIGNED);
+
+        if (ctx.oldCat == Category.MAJOR) {
+            majorDesignedCur.addEarnedCredits(-ctx.oldDesigned);
+        }
+        if (ctx.newCat == Category.MAJOR) {
+            majorDesignedCur.addEarnedCredits(ctx.newDesigned);
+        }
+    }
+
+    private void applySameCategoryAdjustments(String studentId, UpdateContext ctx) {
+        if (ctx.deltaCredit != 0) {
+            Curriculum cur = getCurriculum(studentId, ctx.oldCat);
+            cur.addEarnedCredits(ctx.deltaCredit);
+        }
+
+        if (ctx.oldCat == Category.MAJOR && ctx.deltaDesigned != 0) {
+            Curriculum majorDesignedCur = getCurriculum(studentId, Category.MAJOR_DESIGNED);
+            majorDesignedCur.addEarnedCredits(ctx.deltaDesigned);
+        }
+    }
+
+    private void applyEntityFieldUpdates(Course course, CourseUpdateRequestDto request, UpdateContext ctx) {
+        if (request.getName() != null) course.rename(request.getName());
+        if (request.getGrade() != null) course.changeGrade(request.getGrade());
+
+        if (ctx.categoryChanged) course.changeCategory(ctx.newCat);
+        if (ctx.deltaCredit != 0) course.changeCredit(ctx.newCredit);
+
+        course.changeDesignedCredit((ctx.newCat == Category.MAJOR) ? ctx.newDesigned : 0);
+    }
+
+    private Curriculum getCurriculum(String studentId, Category category) {
+        return curriculumRepository.findByStudentStudentIdAndCategory(studentId, category)
+                .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+    }
 
     @Transactional
     public void deleteCourse(String studentId, Long courseId) {
-        Course course = courseRepository.findByIdAndStudent_StudentId(courseId, studentId)
-                .orElseThrow(() -> new CurriculumException(ErrorCode.COURSE_NOT_FOUND));
+        Course course = loadCourse(studentId, courseId);
 
         Curriculum cur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, course.getCategory())
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
@@ -152,4 +155,19 @@ public class CourseService {
 
         courseRepository.delete(course);
     }
+
+    private static class UpdateContext {
+        Category oldCat;
+        int oldCredit;
+        int oldDesigned;
+
+        Category newCat;
+        int newCredit;
+        int newDesigned;
+
+        boolean categoryChanged;
+        int deltaCredit;
+        int deltaDesigned;
+    }
 }
+

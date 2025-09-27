@@ -27,13 +27,13 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     // Springdoc(OpenAPI v3) & Swagger UI 경로
-    private static final String[] SWAGGER_WHITELIST = {
+    public static final String[] SWAGGER_WHITELIST = {
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
     };
 
-    private static final String[] PUBLIC_WHITELIST = {
+    public static final String[] PUBLIC_WHITELIST = {
             "/api/v1/auth/**",
     };
 
