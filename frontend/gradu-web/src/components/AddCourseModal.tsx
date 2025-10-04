@@ -26,24 +26,22 @@ const KOR_LABELS = {
 
 const ORDER = Object.keys(KOR_LABELS) as Array<keyof typeof KOR_LABELS>;
 
-/** 화면 입력 상태: 숫자도 문자열로 관리 */
 type CourseInput = {
   name: string;
-  credit: string;          // "3" 처럼 문자열
-  designedCredit: string;  // 전공(MAJOR)일 때만 사용
+  credit: string;          // 소수 허용 문자열 e.g. "3.5"
+  designedCredit: string;  // 전공만 사용, 정수만
   category: keyof typeof KOR_LABELS;
-  grade: string;           // "A+", "P" 등
-  isEnglish: boolean;      // ✅ 영어강의 여부
+  grade: string;
+  isEnglish: boolean;
 };
 
-/** 서버 전송 payload */
 type CourseRequest = {
   name: string;
-  credit: number;
-  designedCredit: number | null;  // 전공 아니면 null
+  credit: number;                // 0.5 단위 허용
+  designedCredit: number | null; // 정수, 전공이 아니면 null
   category: keyof typeof KOR_LABELS;
   grade: string | null;
-  isEnglish: boolean;             // ✅ 서버로 전송
+  isEnglish: boolean;
 };
 
 export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
@@ -59,7 +57,6 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
 
   const isMajor = form.category === "MAJOR";
 
-  /** 모달 열릴 때마다 폼 초기화 */
   useEffect(() => {
     if (open) {
       setErrMsg("");
@@ -74,13 +71,22 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
     }
   }, [open]);
 
-  /** 입력 변경 */
   const onChange = <K extends keyof CourseInput>(k: K, v: CourseInput[K]) => {
-    // 숫자 필드 정제
-    if (k === "credit" || k === "designedCredit") {
-      if (typeof v === "string") v = (v as string).replace(/\D/g, "") as any;
+    if (k === "credit" && typeof v === "string") {
+      // 숫자/점 1개만 허용 + 소수 1자리까지
+      const cleaned = v
+        .replace(/[^\d.]/g, "")
+        .replace(/(\..*)\./g, "$1")
+        .replace(/^(\d+)\.(\d?).*$/, "$1.$2");
+      setForm((f) => ({ ...f, credit: cleaned }));
+      return;
     }
-    // 카테고리 바꾸면 전공이 아닌 경우 설계학점 클리어
+    if (k === "designedCredit" && typeof v === "string") {
+      // 정수만
+      const cleaned = v.replace(/\D/g, "");
+      setForm((f) => ({ ...f, designedCredit: cleaned }));
+      return;
+    }
     if (k === "category") {
       const nextCat = v as CourseInput["category"];
       setForm((f) => ({
@@ -96,10 +102,7 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
   const addCourse = useMutation({
     mutationFn: async (input: CourseRequest) => {
       const url = `/api/v1/students/${encodeURIComponent(sid)}/courses`;
-      const { data } = await axiosInstance.post(url, input, {
-        headers: { "Content-Type": "application/json" },
-      });
-      return data;
+      await axiosInstance.post(url, input, { headers: { "Content-Type": "application/json" } });
     },
     onSuccess: () => {
       setErrMsg("");
@@ -116,35 +119,32 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.name.trim()) {
-      setErrMsg("과목명을 입력하세요.");
-      return;
-    }
-    if (form.credit === "") {
-      setErrMsg("학점을 입력하세요.");
-      return;
-    }
-    setErrMsg("");
+    if (!form.name.trim()) return setErrMsg("과목명을 입력하세요.");
+    if (form.credit === "") return setErrMsg("학점을 입력하세요.");
 
-    // 문자열 → 숫자 변환
+    // 소수 검증: 0.5 단위만 허용
     const creditNum = Number(form.credit);
+    if (Number.isNaN(creditNum)) return setErrMsg("학점이 올바르지 않습니다.");
+    if (Math.round(creditNum * 2) !== creditNum * 2) {
+      return setErrMsg("학점은 0.5 단위로 입력하세요.");
+    }
+
     const designedNum =
       isMajor && form.designedCredit !== "" ? Number(form.designedCredit) : null;
 
     const payload: CourseRequest = {
       name: form.name.trim(),
-      credit: Number.isNaN(creditNum) ? 0 : creditNum,
+      credit: creditNum,
       designedCredit: designedNum,
       category: form.category,
       grade: form.grade.trim() === "" ? null : form.grade.trim(),
-      isEnglish: !!form.isEnglish, // ✅ 영어강의 여부
+      isEnglish: !!form.isEnglish,
     };
 
     await addCourse.mutateAsync(payload);
   }
 
-  // ---- inline style tokens ----
-  const s = {
+  const ui = {
     form: { fontSize: 14, display: "block" } as const,
     field: { marginBottom: 16 } as const,
     label: { display: "block", marginBottom: 6, color: "#111827", fontWeight: 600 } as const,
@@ -186,7 +186,7 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
           <button
             type="button"
             className="addcourse-btn addcourse-btn--ghost"
-            style={s.footerBtnBase}
+            style={ui.footerBtnBase}
             disabled={addCourse.isPending}
             onClick={onClose}
           >
@@ -196,7 +196,7 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
             form="add-course-form"
             type="submit"
             className="addcourse-btn addcourse-btn--primary"
-            style={s.footerBtnBase}
+            style={ui.footerBtnBase}
             disabled={addCourse.isPending || !form.name || form.credit === ""}
           >
             {addCourse.isPending ? "저장 중..." : "저장"}
@@ -204,45 +204,46 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
         </>
       }
     >
-      <form id="add-course-form" onSubmit={onSubmit} style={s.form}>
-        {errMsg && <div style={s.error}>{errMsg}</div>}
+      <form id="add-course-form" onSubmit={onSubmit} style={ui.form}>
+        {errMsg && <div style={ui.error}>{errMsg}</div>}
 
         {/* 과목명 */}
-        <div style={s.field}>
-          <label style={s.label}>과목명</label>
+        <div style={ui.field}>
+          <label style={ui.label}>과목명</label>
           <input
-            style={s.input}
+            style={ui.input}
             value={form.name}
             onChange={(e) => onChange("name", e.target.value)}
             placeholder="예: 객체지향 설계패턴"
           />
         </div>
 
-        {/* 학점 / (전공일 때만) 설계학점 */}
-        <div className="addcourse-row" style={s.row}>
+        {/* 학점 / 설계학점(전공만) */}
+        <div style={ui.row}>
           <div>
-            <label style={s.label}>학점</label>
+            <label style={ui.label}>학점</label>
             <input
-              type="text"                 // 문자열로 관리
-              inputMode="numeric"         // 모바일 숫자 키패드
-              pattern="[0-9]*"            // 숫자만
-              style={s.input}
+              type="number"
+              step="0.5"
+              min="0"
+              inputMode="decimal"
+              style={ui.input}
               value={form.credit}
               onChange={(e) => onChange("credit", e.target.value)}
-              placeholder="0"
+              placeholder="0 / 0.5 / 1.0 / 1.5 ..."
             />
           </div>
 
           {isMajor ? (
             <div>
-              <label style={s.label}>
-                설계학점 <span style={s.hint}>(전공만 해당)</span>
+              <label style={ui.label}>
+                설계학점 <span style={ui.hint}>(정수, 전공만)</span>
               </label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                style={s.input}
+                style={ui.input}
                 value={form.designedCredit}
                 onChange={(e) => onChange("designedCredit", e.target.value)}
                 placeholder="0"
@@ -250,14 +251,14 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
             </div>
           ) : (
             <div>
-              <label style={s.label}>
-                설계학점 <span style={s.hint}>(전공만 입력 가능)</span>
+              <label style={ui.label}>
+                설계학점 <span style={ui.hint}>(전공만 입력 가능)</span>
               </label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
-                style={{ ...s.input, background: "#f3f4f6" }}
+                style={{ ...ui.input, background: "#f3f4f6" }}
                 value=""
                 disabled
                 placeholder="-"
@@ -267,11 +268,11 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
         </div>
 
         {/* 카테고리 */}
-        <div style={s.field}>
-          <label style={s.label}>카테고리</label>
+        <div style={ui.field}>
+          <label style={ui.label}>카테고리</label>
           <select
             className="addcourse-select"
-            style={s.input}
+            style={ui.input}
             value={form.category}
             onChange={(e) => onChange("category", e.target.value as CourseInput["category"])}
           >
@@ -284,12 +285,12 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
         </div>
 
         {/* 성적 */}
-        <div style={s.field}>
-          <label style={s.label}>
-            성적 <span style={s.hint}>(예: A+, A0, B+, P 등)</span>
+        <div style={ui.field}>
+          <label style={ui.label}>
+            성적 <span style={ui.hint}>(예: A+, A0, B+, P 등)</span>
           </label>
           <input
-            style={s.input}
+            style={ui.input}
             placeholder="예: A+, B0, P"
             value={form.grade}
             onChange={(e) => onChange("grade", e.target.value)}
@@ -297,9 +298,9 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
         </div>
 
         {/* 영어강의 여부 */}
-        <div style={s.field}>
-          <label style={s.label}>영어강의 여부</label>
-          <div style={s.toggleWrap}>
+        <div style={ui.field}>
+          <label style={ui.label}>영어강의 여부</label>
+          <div style={ui.toggleWrap}>
             <label className="acm-toggle">
               <input
                 type="checkbox"
