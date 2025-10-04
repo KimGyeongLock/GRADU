@@ -1,6 +1,7 @@
 package com.example.gradu.domain.student.service;
 
 import com.example.gradu.domain.curriculum.service.CurriculumService;
+import com.example.gradu.domain.email.service.EmailVerificationService;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
@@ -86,5 +87,4 @@ public class StudentService {
 
         refreshTokenStore.remove(studentId);
     }
-
 }

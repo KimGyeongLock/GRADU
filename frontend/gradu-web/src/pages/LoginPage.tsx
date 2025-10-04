@@ -3,9 +3,10 @@ import { useNavigate, Link } from "react-router-dom";
 import {
   axiosInstance,
   setAccessToken,
-  setProfileName,   // ★ 추가
-  setStudentId,     // ★ 추가 (토큰에 sid가 없을 때 대비)
+  setProfileName,
+  setStudentId,
 } from "../lib/axios";
+import "../styles/auth.css";
 
 export default function LoginPage() {
   const [studentId, setStudentIdInput] = useState("");
@@ -19,7 +20,6 @@ export default function LoginPage() {
       setErr("학번과 비밀번호를 입력하세요.");
       return;
     }
-
     setErr("");
     setLoading(true);
     try {
@@ -29,22 +29,16 @@ export default function LoginPage() {
         { withCredentials: true }
       );
 
-      // 토큰은 바디 또는 Authorization 헤더로 올 수 있음
       const headerAuth =
-        headers?.authorization ||
-        headers?.Authorization ||
-        headers?.AUTHORIZATION;
+        (headers as any)?.authorization ||
+        (headers as any)?.Authorization ||
+        (headers as any)?.AUTHORIZATION;
       const tokenFromHeader =
-        typeof headerAuth === "string"
-          ? headerAuth.replace(/^Bearer\s+/i, "")
-          : "";
+        typeof headerAuth === "string" ? headerAuth.replace(/^Bearer\s+/i, "") : "";
       const token = data?.accessToken || data?.token || tokenFromHeader;
       if (!token) throw new Error("accessToken 없음");
 
-      // ★ 토큰 저장(내부에서 name/sid 클레임도 파싱해서 저장 시도)
       setAccessToken(token);
-
-      // ★ 응답 바디에 name / studentId 가 있으면 함께 저장(안오면 무시)
       if (data?.name) setProfileName(String(data.name));
       if (data?.studentId) setStudentId(String(data.studentId));
 
@@ -57,39 +51,50 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="mx-auto max-w-sm p-6 space-y-3">
-      <h1 className="text-2xl font-semibold">로그인</h1>
+    <main className="auth">
+      <section className="auth__card" aria-label="로그인">
+        <h1 className="auth__title">Sign In</h1>
+        <p className="auth__subtitle">한동대학교 컴공심화 졸업 요건 진단 서비스</p>
 
-      <input
-        className="border p-2 w-full bg-white text-gray-900"
-        placeholder="학번 (studentId)"
-        value={studentId}
-        onChange={(e) => setStudentIdInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onLogin()}
-      />
+        <div className="auth__field">
+          <i className="bx bx-id-card auth__icon" aria-hidden />
+          <input
+            className="auth__input"
+            placeholder="학번 (Student ID)"
+            value={studentId}
+            onChange={(e) => setStudentIdInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onLogin()}
+            autoComplete="username"
+            autoFocus
+          />
+        </div>
 
-      <input
-        className="border p-2 w-full bg-white text-gray-900"
-        type="password"
-        placeholder="비밀번호"
-        value={pw}
-        onChange={(e) => setPw(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && onLogin()}
-      />
+        <div className="auth__field">
+          <i className="bx bx-lock-alt auth__icon" aria-hidden />
+          <input
+            className="auth__input"
+            type="password"
+            placeholder="비밀번호"
+            value={pw}
+            onChange={(e) => setPw(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && onLogin()}
+            autoComplete="current-password"
+          />
+        </div>
 
-      <button
-        className="border px-4 py-2 bg-blue-600 text-white disabled:opacity-60"
-        onClick={onLogin}
-        disabled={loading || !studentId || !pw}
-      >
-        {loading ? "로그인 중..." : "로그인"}
-      </button>
+        {err && <div className="auth__error">{err}</div>}
 
-      {err && <p className="text-red-600 text-sm">{err}</p>}
+        <button className="auth__button" onClick={onLogin} disabled={loading}>
+          {loading ? "로그인 중..." : "로그인"}
+        </button>
 
-      <p className="text-sm">
-        계정이 없나요? <Link className="underline" to="/register">회원가입</Link>
-      </p>
+        <div className="auth__footer auth__muted">
+          계정이 없나요?{" "}
+          <Link className="auth__link" to="/register">
+            회원가입
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }
