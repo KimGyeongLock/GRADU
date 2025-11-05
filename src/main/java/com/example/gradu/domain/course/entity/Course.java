@@ -7,6 +7,7 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,7 +22,6 @@ public class Course {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 소유자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
@@ -33,45 +33,57 @@ public class Course {
     @Column(nullable = false, length = 40)
     private Category category;
 
-    @Column(nullable = false)
-    private int credit;
+    // ✅ 0.5 단위 허용
+    @Column(nullable = false, precision = 4, scale = 1)
+    private BigDecimal credit;
 
+    // ✅ 설계학점은 정수 유지
     @Column
-    private Integer designedCredit; // null 가능성이 있으면 Integer가 안전
+    private Integer designedCredit;
 
     @Column(length = 5)
     private String grade;
+
+    @Builder.Default
+    @Column(name = "is_english", nullable = false)
+    private Boolean isEnglish = false;
 
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    /** 의도 기반 변경 메서드들 */
+    // ===== 도메인 변경 메서드 =====
     public void rename(String newName) {
         if (newName != null && !newName.isBlank()) this.name = newName;
     }
 
-    /** 학점 변경 시 차액을 반환해 Curriclum 누적에 반영하게 함 */
-    public int changeCredit(Integer newCredit) {
-        if (newCredit == null) return 0;
-        int old = this.credit;
+    public BigDecimal changeCredit(BigDecimal newCredit) {
+        if (newCredit == null) return BigDecimal.ZERO;
+        BigDecimal old = this.credit;
         this.credit = newCredit;
-        return newCredit - old; // 차액
+        return newCredit.subtract(old);
     }
 
     public void changeDesignedCredit(Integer newDesignedCredit) {
-        if (newDesignedCredit != null) this.designedCredit = newDesignedCredit;
+        this.designedCredit = newDesignedCredit;
     }
 
     public void changeGrade(String newGrade) {
         if (newGrade != null) this.grade = newGrade;
     }
 
-    /** 카테고리 변경 시, 외부에서 커리큘럼 이동 처리 필요 */
     public Category changeCategory(Category newCategory) {
         if (newCategory == null || newCategory == this.category) return this.category;
         Category old = this.category;
         this.category = newCategory;
-        return old; // 이전 카테고리 반환
+        return old;
+    }
+
+    public void changeEnglish(Boolean english) {
+        this.isEnglish = (english != null && english);
+    }
+
+    public Boolean getIsEnglish() {
+        return isEnglish != null ? isEnglish : false;
     }
 }
