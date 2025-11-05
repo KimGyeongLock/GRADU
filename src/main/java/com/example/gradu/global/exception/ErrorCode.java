@@ -23,6 +23,9 @@ public enum ErrorCode {
 
     SUMMARY_JSON_PROCESSING_ERROR("E001", HttpStatus.BAD_REQUEST, "JSON 직렬화 실패");
 
+    EMAIL_NOT_VERIFIED("EM001", HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
+    EMAIL_SEND_FAILED("EM002", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),
+    EMAIL_HASH_ERROR("EM003", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 코드 해시 생성에 실패했습니다.");
 
     private final String code;
     private final HttpStatus httpStatus;

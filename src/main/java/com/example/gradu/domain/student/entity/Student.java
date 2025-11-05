@@ -24,6 +24,7 @@ public class Student {
     private String password;
     private String email;
     private String name;
+    private boolean emailVerified;
 
     @CreatedDate
     @Column(updatable = false)

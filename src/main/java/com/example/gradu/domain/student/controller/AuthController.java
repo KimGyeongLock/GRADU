@@ -30,7 +30,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
-        studentService.register(request.getStudentId(), request.getPassword(), request.getName());
+        studentService.register(request.getStudentId(), request.getPassword(), request.getName(), request.getCode());
         return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 
@@ -97,4 +97,5 @@ public class AuthController {
                 .map(Cookie::getValue)
                 .orElse(null);
     }
+
 }
