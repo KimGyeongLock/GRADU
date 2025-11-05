@@ -24,7 +24,6 @@ public class Student {
     private String password;
     private String email;
     private String name;
-    @Setter
     private boolean emailVerified;
 
     @CreatedDate

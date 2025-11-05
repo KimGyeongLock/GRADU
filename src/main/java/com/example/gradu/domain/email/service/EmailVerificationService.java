@@ -7,6 +7,7 @@ import com.example.gradu.global.exception.email.EmailException;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,6 +23,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
@@ -62,20 +64,7 @@ public class EmailVerificationService {
     public boolean verifyCode(String email, String rawCode) {
         Optional<EmailVerificationToken> tokenOpt = repo.findTopByEmailOrderByIdDesc(email)
                 .filter(o -> !o.isExpired() && !o.isUsed())
-                .filter(o -> {
-                    // stored hash는 Base64 URL-safe로 저장되어 있다고 가정
-                    byte[] stored;
-                    try {
-                        stored = Base64.getUrlDecoder().decode(o.getCodeHash());
-                    } catch (IllegalArgumentException ex) {
-                        // DB에 이상한 값이 있으면 비교 실패 처리
-                        return false;
-                    }
-
-                    byte[] inputDigest = sha256Bytes(rawCode);
-                    // MessageDigest.isEqual은 타이밍 공격에 강한 비교 함수입니다.
-                    return MessageDigest.isEqual(stored, inputDigest);
-                });
+                .filter(token -> isCodeValid(token, rawCode));
 
         tokenOpt.ifPresent(token -> {
             token.markUsed();
@@ -85,12 +74,26 @@ public class EmailVerificationService {
         return tokenOpt.isPresent();
     }
 
+    private boolean isCodeValid(EmailVerificationToken token, String rawCode) {
+        byte[] storedHash;
+        try {
+            storedHash = Base64.getUrlDecoder().decode(token.getCodeHash());
+        } catch (IllegalArgumentException ex) {
+            // DB에 저장된 해시가 유효하지 않은 Base64 형식이면 검증 실패
+            log.warn("Failed to decode Base64 code hash for email:", ex);
+            return false;
+        }
+
+        byte[] inputDigest = sha256Bytes(rawCode);
+        // 타이밍 공격에 안전한 비교
+        return MessageDigest.isEqual(storedHash, inputDigest);
+    }
+
     private static byte[] sha256Bytes(String s) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             return md.digest(s.getBytes(StandardCharsets.UTF_8));
         } catch (NoSuchAlgorithmException e) {
-            // 프로젝트 예외로 래핑 (AuthException 예시)
             throw new EmailException(ErrorCode.EMAIL_HASH_ERROR);
         }
     }
@@ -102,7 +105,7 @@ public class EmailVerificationService {
             return Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(md.digest(s.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 algorithm not found", e);
+            throw new EmailException(ErrorCode.EMAIL_HASH_ERROR);
         }
     }
 

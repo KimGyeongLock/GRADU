@@ -20,13 +20,13 @@ public class EmailController {
 
     @PostMapping("/send")
     public ResponseEntity<Void> send(@Valid @RequestBody EmailRequestDto req) {
-        service.sendCode(req.getEmail());
+        service.sendCode(req.email());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/verify")
     public ResponseEntity<VerificationResponseDto> verify(@Valid @RequestBody VerifyRequestDto req) {
-        boolean ok = service.verifyCode(req.getEmail(), req.getCode());
+        boolean ok = service.verifyCode(req.email(), req.code());
         return ResponseEntity.ok(new VerificationResponseDto(ok));
     }
 }
