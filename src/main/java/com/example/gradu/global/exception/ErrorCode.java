@@ -19,8 +19,9 @@ public enum ErrorCode {
 
 
     CURRICULUM_NOT_FOUND("C001", HttpStatus.NOT_FOUND, "구분을 찾을 수 없습니다."),
-    COURSE_NOT_FOUND("C002", HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다.");
+    COURSE_NOT_FOUND("C002", HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다."),
 
+    SUMMARY_JSON_PROCESSING_ERROR("E001", HttpStatus.BAD_REQUEST, "JSON 직렬화 실패");
 
 
     private final String code;

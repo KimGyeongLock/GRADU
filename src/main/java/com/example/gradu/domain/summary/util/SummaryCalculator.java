@@ -13,10 +13,10 @@ public class SummaryCalculator {
     private SummaryCalculator(){}
 
     private static final Map<String, Double> GPA = Map.ofEntries(
-            Map.entry("A+", 4.5), Map.entry("A0", 4.0), Map.entry("A", 4.0),
-            Map.entry("B+", 3.5), Map.entry("B0", 3.0), Map.entry("B", 3.0),
-            Map.entry("C+", 2.5), Map.entry("C0", 2.0), Map.entry("C", 2.0),
-            Map.entry("D+", 1.5), Map.entry("D0", 1.0), Map.entry("D", 1.0),
+            Map.entry("A+", 4.5), Map.entry("A0", 4.0),
+            Map.entry("B+", 3.5), Map.entry("B0", 3.0),
+            Map.entry("C+", 2.5), Map.entry("C0", 2.0),
+            Map.entry("D+", 1.5), Map.entry("D0", 1.0),
             Map.entry("F", 0.0)
     );
     private static final Set<String> PF = Set.of("P","PD","PASS");

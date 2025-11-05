@@ -10,6 +10,8 @@ import com.example.gradu.domain.summary.policy.SummaryPolicy;
 import com.example.gradu.domain.summary.policy.SummaryPolicyService;
 import com.example.gradu.domain.summary.repository.SummaryRepository;
 import com.example.gradu.domain.summary.util.SummaryCalculator;
+import com.example.gradu.global.exception.ErrorCode;
+import com.example.gradu.global.exception.json.SummaryJsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -54,7 +56,7 @@ public class SummaryService {
         try {
             rowsJson = om.writeValueAsString(calc.getRows());
         } catch (Exception e) {
-            throw new RuntimeException("rows serialize failed", e);
+            throw new SummaryJsonProcessingException(ErrorCode.SUMMARY_JSON_PROCESSING_ERROR);
         }
 
         // ✅ 도메인 메서드 한 번으로 반영

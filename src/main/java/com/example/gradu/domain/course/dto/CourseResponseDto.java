@@ -6,16 +6,16 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter @AllArgsConstructor @Builder
 public class CourseResponseDto {
-    private Long id;
-    private String name;
-    private String category;
-    private BigDecimal credit;      // 0.5 단위 그대로 노출
-    private Integer designedCredit; // 정수
-    private String grade;
+    private final Long id;
+    private final String name;
+    private final String category;
+    private final BigDecimal credit;      // 0.5 단위 그대로 노출
+    private final Integer designedCredit; // 정수
+    private final String grade;
     @JsonProperty("isEnglish")
-    private Boolean isEnglish;
+    private final Boolean isEnglish;
 
     public static CourseResponseDto from(Course c) {
         return CourseResponseDto.builder()
