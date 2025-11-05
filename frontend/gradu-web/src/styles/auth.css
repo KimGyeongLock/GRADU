@@ -32,7 +32,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,s
   margin:0 0 6px;
   font-size:28px;
   font-weight:800;
-  
 }
 .auth__subtitle{
   margin:0 0 18px;

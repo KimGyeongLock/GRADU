@@ -5,7 +5,6 @@ import com.example.gradu.domain.email.dto.VerificationResponseDto;
 import com.example.gradu.domain.email.dto.VerifyRequestDto;
 import com.example.gradu.domain.email.service.EmailVerificationService;
 import jakarta.validation.Valid;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

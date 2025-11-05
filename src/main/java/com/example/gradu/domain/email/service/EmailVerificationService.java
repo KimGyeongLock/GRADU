@@ -4,6 +4,7 @@ import com.example.gradu.domain.email.entity.EmailVerificationToken;
 import com.example.gradu.domain.email.repository.EmailVerificationTokenRepository;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.email.EmailException;
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,10 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class EmailVerificationService {
     @Value("${app.email.otp-ttl-minutes}")
     private long ttlMinutes;
 
-    private static final Random RND = new Random();
+    private static final SecureRandom RND = new SecureRandom();
 
     @Transactional
     public void sendCode(String email) {
@@ -100,8 +101,8 @@ public class EmailVerificationService {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             return Base64.getUrlEncoder().withoutPadding()
                     .encodeToString(md.digest(s.getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm not found", e);
         }
     }
 
@@ -113,7 +114,7 @@ public class EmailVerificationService {
             helper.setSubject(subject);
             helper.setText(html, true);
             mailSender.send(msg);
-        } catch (Exception e) {
+        } catch (MessagingException e) {
             throw new EmailException(ErrorCode.EMAIL_SEND_FAILED);
         }
     }

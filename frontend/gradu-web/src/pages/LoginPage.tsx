@@ -84,7 +84,7 @@ export default function LoginPage() {
 
         {err && <div className="auth__error">{err}</div>}
 
-        <button className="auth__button" onClick={onLogin} disabled={loading}>
+        <button className="auth__button" onClick={onLogin} disabled={loading || !studentId || !pw}>
           {loading ? "로그인 중..." : "로그인"}
         </button>
 
