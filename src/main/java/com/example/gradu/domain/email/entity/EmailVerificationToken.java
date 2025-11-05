@@ -22,7 +22,7 @@ public class EmailVerificationToken {
     @Column(nullable=false, length=120)
     private String email;
 
-    @Column(nullable=false, length=88, unique=true) // sha256 base64url 길이
+    @Column(nullable=false, length=88)
     private String codeHash;
 
     @Column(nullable=false)

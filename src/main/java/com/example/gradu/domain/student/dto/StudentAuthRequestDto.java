@@ -20,4 +20,5 @@ public class StudentAuthRequestDto {
     private String password;
 
     private String name;
+    private String code;
 }

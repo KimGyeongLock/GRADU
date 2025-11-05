@@ -8,6 +8,7 @@ import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.global.config.EmailProperties;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
+import com.example.gradu.global.exception.email.EmailException;
 import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
@@ -25,23 +26,31 @@ public class StudentService {
     private final RefreshTokenStore refreshTokenStore;
     private final EmailProperties emailProperties;
     private final CurriculumService curriculumService;
+    private final EmailVerificationService emailVerificationService;
 
     private String createEmail(String studentId) {
         return studentId + emailProperties.getDomain();
     }
 
     @Transactional
-    public void register(String studentId, String password, String name) {
+    public void register(String studentId, String password, String name, String code) {
         if (studentRepository.findByStudentId(studentId).isPresent())
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
-        String encodedPassword = passwordEncoder.encode(password);
         String email = createEmail(studentId);
+        boolean verified = emailVerificationService.verifyCode(email, code);
+        if (!verified) {
+            throw new EmailException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+        String encodedPassword = passwordEncoder.encode(password);
+
         Student student = Student.builder()
                 .studentId(studentId)
                 .password(encodedPassword)
                 .name(name)
                 .email(email)
+                .emailVerified(true)
                 .build();
 
         studentRepository.save(student);

@@ -19,9 +19,11 @@ public enum ErrorCode {
 
 
     CURRICULUM_NOT_FOUND("C001", HttpStatus.NOT_FOUND, "구분을 찾을 수 없습니다."),
-    COURSE_NOT_FOUND("C002", HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다.");
+    COURSE_NOT_FOUND("C002", HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다."),
 
-
+    EMAIL_NOT_VERIFIED("EM001", HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
+    EMAIL_SEND_FAILED("EM002", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),
+    EMAIL_HASH_ERROR("EM003", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 코드 해시 생성에 실패했습니다.");
 
     private final String code;
     private final HttpStatus httpStatus;

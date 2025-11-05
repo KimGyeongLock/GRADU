@@ -1,6 +1,10 @@
 package com.example.gradu.domain.email.controller;
 
+import com.example.gradu.domain.email.dto.EmailRequestDto;
+import com.example.gradu.domain.email.dto.VerificationResponseDto;
+import com.example.gradu.domain.email.dto.VerifyRequestDto;
 import com.example.gradu.domain.email.service.EmailVerificationService;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,19 +20,14 @@ public class EmailController {
     private final EmailVerificationService service;
 
     @PostMapping("/send")
-    public ResponseEntity<?> send(@RequestBody EmailReq req) {
+    public ResponseEntity<Void> send(@Valid @RequestBody EmailRequestDto req) {
         service.sendCode(req.getEmail());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<?> verify(@RequestBody VerifyReq req) {
+    public ResponseEntity<VerificationResponseDto> verify(@Valid @RequestBody VerifyRequestDto req) {
         boolean ok = service.verifyCode(req.getEmail(), req.getCode());
-        return ResponseEntity.ok(new Result(ok));
+        return ResponseEntity.ok(new VerificationResponseDto(ok));
     }
-
-    @Data
-    static class EmailReq { private String email; }
-    @Data static class VerifyReq { private String email; private String code; }
-    @Data static class Result { private final boolean ok; }
 }
