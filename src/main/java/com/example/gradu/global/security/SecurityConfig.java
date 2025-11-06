@@ -37,7 +37,8 @@ public class SecurityConfig {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/auth/email/otp/send",
-            "/api/v1/auth/reissue"
+            "/api/v1/auth/reissue",
+            "/api/v1/auth/logout"
     };
 
     @Bean
@@ -48,10 +49,10 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 스웨거 & 공개 엔드포인트 허용
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
                         // 그 외는 인증 필요
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -65,7 +66,8 @@ public class SecurityConfig {
 
         // ★ 정확한 오리진 지정
         config.setAllowedOrigins(List.of(
-                "http://localhost:5173"       // 개발
+                "http://localhost:5173",       // 개발,
+                "http://13.125.174.77"
                 //, "https://your-frontend-domain.com"  // 운영
         ));
 

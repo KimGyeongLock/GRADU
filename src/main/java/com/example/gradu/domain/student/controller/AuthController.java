@@ -63,36 +63,38 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String bearerToken, HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> logout(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            // 쿠키가 없으면 이미 로그아웃된 상태로 간주: 204로 조용히 성공 처리해도 됨
+            return noContentAndDeleteCookie(response);
         }
 
-        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        String accessToken = bearerToken.substring(JwtAuthenticationFilter.TOKEN_PREFIX.length());
-        studentService.logout(accessToken, refreshToken);
+        // 서버측 저장소(예: Redis)에서 refresh 폐기
+        studentService.logout(null, refreshToken); // access 불필요
 
+        // 동일 속성으로 삭제 쿠키 내려주기(secure/samesite/path 일치)
+        return noContentAndDeleteCookie(response);
+    }
+    private ResponseEntity<Void> noContentAndDeleteCookie(HttpServletResponse response) {
         ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN, "")
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("Lax")
                 .path("/")
-                .maxAge(0) // 삭제
-                .sameSite("Strict")
+                .maxAge(0)          // 삭제
                 .build();
-
         response.addHeader("Set-Cookie", deleteCookie.toString());
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
-
         return Arrays.stream(request.getCookies())
-                .filter(cookie -> REFRESH_TOKEN.equals(cookie.getName()))
+                .filter(c -> REFRESH_TOKEN.equals(c.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
