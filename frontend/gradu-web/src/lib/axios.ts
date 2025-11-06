@@ -92,7 +92,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
       (config as any).__isRetryRequest = true;
       try {
-        const r = await axiosInstance.post("/api/v1/auth/reissue");
+        const r = await axiosInstance.post("/api/v1/auth/reissue", {});
         const token = r?.data?.accessToken;
         const name = r?.data?.name; // 응답에 name이 오면 저장
         if (token) setAccessToken(token);

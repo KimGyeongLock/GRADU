@@ -43,11 +43,11 @@ public class AuthController {
                 .secure(true)
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtProperties.getRefreshExpiration()))
-                .sameSite("Strict")
+                .sameSite("None")
+                .domain("hgu-gradu.app")
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
-
         return ResponseEntity.ok(new AccessTokenResponseDto(tokens.getAccessToken()));
     }
 
@@ -55,6 +55,12 @@ public class AuthController {
     public ResponseEntity<AccessTokenResponseDto> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
+            String auth = request.getHeader("Authorization");
+            if (auth != null && auth.startsWith(JwtAuthenticationFilter.TOKEN_PREFIX)) {
+                refreshToken = auth.substring(JwtAuthenticationFilter.TOKEN_PREFIX.length());
+            }
+        }
+        if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -83,7 +89,8 @@ public class AuthController {
         ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN, "")
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("Lax")
+                .sameSite("None")
+                .domain("hgu-gradu.app")
                 .path("/")
                 .maxAge(0)          // 삭제
                 .build();
@@ -94,7 +101,9 @@ public class AuthController {
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
         return Arrays.stream(request.getCookies())
-                .filter(c -> REFRESH_TOKEN.equals(c.getName()))
+                .filter(c -> REFRESH_TOKEN.equals(c.getName())
+                        || "refresh_token".equalsIgnoreCase(c.getName())
+                        || "refreshtoken".equalsIgnoreCase(c.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
