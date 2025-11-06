@@ -1,19 +1,32 @@
-# www -> apex 리다이렉트(선택)
+# www -> apex 리다이렉트
 www.hgu-gradu.app {
-    redir https://hgu-gradu.app{uri}
+  redir https://hgu-gradu.app{uri}
 }
 
 hgu-gradu.app {
-    tls {$CADDY_EMAIL}
-    encode zstd gzip
+  encode zstd gzip
 
-    # /api -> Spring Boot
-    handle_path /api/* {
-        reverse_proxy backend:8080
+  # 1) API는 백엔드로 프록시
+  @api path /api/*
+  handle @api {
+    reverse_proxy backend:8080
+    # (선택) 원본 클라이언트 IP 전달 등 헤더 보강
+    header_up X-Forwarded-Proto {scheme}
+    header_up X-Real-IP {remote_host}
+  }
+
+  # 2) 그 외는 정적 사이트(SPA) 서빙
+  handle {
+    root * /srv/site
+
+    # SPA fallback: 존재하는 파일이면 제공, 없으면 /index.html
+    @file file {path}
+    handle @file {
+      file_server
     }
-
-    # 그 외 정적/SPA -> 프론트 nginx
     handle {
-        reverse_proxy frontend:80
+      rewrite * /index.html
+      file_server
     }
+  }
 }

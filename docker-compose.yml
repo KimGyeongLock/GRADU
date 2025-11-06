@@ -66,32 +66,23 @@ services:
     restart: always
     networks: [appnet]
 
-  frontend:
-    build:
-      context: ./frontend   # ← 프론트는 하위 폴더
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE: ${VITE_API_BASE}
-    container_name: gradu-frontend
-    depends_on: [backend]
-    networks: [appnet]
-
   caddy:
     image: caddy:2
     container_name: gradu-caddy
     ports:
       - "80:80"
       - "443:443"
-    environment:
-      - CADDY_EMAIL=gradu.ate0420@gmail.com   # 인증서용 이메일
     volumes:
+      # Caddyfile 마운트
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # 프론트 빌드 산출물(dist)을 Caddy가 읽도록 마운트
+      - ./frontend/gradu-web/dist:/srv/site:ro
+      # 인증서, 캐시 보존
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      - frontend
-      - backend
+    depends_on: [ backend ]
     networks: [ appnet ]
+
 
 networks:
   appnet:
