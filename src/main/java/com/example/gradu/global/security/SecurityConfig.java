@@ -67,8 +67,7 @@ public class SecurityConfig {
         // ★ 정확한 오리진 지정
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",       // 개발,
-                "http://13.125.174.77"
-                //, "https://your-frontend-domain.com"  // 운영
+                "https://hgu-gradu.app"        // 운영
         ));
 
         config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
