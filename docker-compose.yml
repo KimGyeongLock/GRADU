@@ -3,6 +3,17 @@ version: "3.9"
 name: gradu-stack
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: gradu-redis
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: always
+    networks: [ appnet ]
+
   db:
     image: mysql:8.0
     container_name: gradu-db
@@ -18,12 +29,13 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
-    networks: [appnet]
-
-  redis:
-    image: redis:7-alpine
-    container_name: gradu-redis
-    networks: [appnet]
+    networks: [ appnet ]
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: always
 
   backend:
     build:
@@ -46,7 +58,12 @@ services:
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH}
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: ${SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE}
-    depends_on: [db, redis]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
     networks: [appnet]
 
   frontend:
