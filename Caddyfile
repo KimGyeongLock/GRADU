@@ -8,25 +8,26 @@ hgu-gradu.app {
 
   # 1) API는 백엔드로 프록시
   @api path /api/*
+
   handle @api {
-    reverse_proxy backend:8080
-    # (선택) 원본 클라이언트 IP 전달 등 헤더 보강
-    header_up X-Forwarded-Proto {scheme}
-    header_up X-Real-IP {remote_host}
+    reverse_proxy backend:8080 {
+      header_up X-Forwarded-Proto {scheme}
+      header_up X-Real-IP        {remote_host}
+      # X-Forwarded-For는 기본으로 추가되므로 보통 생략해도 됩니다.
+    }
   }
 
   # 2) 그 외는 정적 사이트(SPA) 서빙
   handle {
     root * /srv/site
+    try_files {path} /index.html
+    file_server
+  }
 
-    # SPA fallback: 존재하는 파일이면 제공, 없으면 /index.html
-    @file file {path}
-    handle @file {
-      file_server
-    }
-    handle {
-      rewrite * /index.html
-      file_server
-    }
+  # 필요시 로그
+  log {
+    output stdout
+    level INFO
   }
 }
+
