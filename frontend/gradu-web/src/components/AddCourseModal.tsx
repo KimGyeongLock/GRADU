@@ -4,12 +4,17 @@ import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import Modal from "./Modal";
 import "./AddCourseModal.css";
+import type { Term } from "../pages/CurriculumPage"; // Term: '1' | '2' | 'sum' | 'win'
 
 type Props = {
   open: boolean;
   sid: string;
   onClose: () => void;
   onSaved: () => void;
+
+  /** ✅ 추가: 모달 오픈 시 기본으로 채워줄 학기 정보 (선택 가능) */
+  initialYear?: number;
+  initialTerm?: Term;
 };
 
 const KOR_LABELS = {
@@ -26,6 +31,14 @@ const KOR_LABELS = {
 
 const ORDER = Object.keys(KOR_LABELS) as Array<keyof typeof KOR_LABELS>;
 
+const TERM_OPTIONS = [
+  { value: "1", label: "1학기" },
+  { value: "2", label: "2학기" },
+  { value: "sum", label: "여름학기(summer)" },
+  { value: "win", label: "겨울학기(winter)" },
+] as const;
+type TermCode = typeof TERM_OPTIONS[number]["value"];
+
 type CourseInput = {
   name: string;
   credit: string;          // 소수 허용 문자열 e.g. "3.5"
@@ -33,6 +46,8 @@ type CourseInput = {
   category: keyof typeof KOR_LABELS;
   grade: string;
   isEnglish: boolean;
+  academicYear: string;    // "2025"
+  term: TermCode;          // "1" | "2" | "sum" | "win"
 };
 
 type CourseRequest = {
@@ -42,9 +57,28 @@ type CourseRequest = {
   category: keyof typeof KOR_LABELS;
   grade: string | null;
   isEnglish: boolean;
+  academicYear: number;          // 2025
+  term: TermCode;
 };
 
-export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
+export default function AddCourseModal({
+  open, sid, onClose, onSaved,
+  initialYear, initialTerm
+}: Props) {
+  const defaultYear = new Date().getFullYear();
+  const defaultTerm: Term = "1";
+
+  const [academicYear, setAcademicYear] = useState<number>(initialYear ?? defaultYear);
+  const [term, setTerm] = useState<Term>(initialTerm ?? defaultTerm);
+
+  // ✅ 모달이 열릴 때마다 props로 받은 초기값으로 리셋
+  useEffect(() => {
+    if (open) {
+      setAcademicYear(initialYear ?? defaultYear);
+      setTerm(initialTerm ?? defaultTerm);
+    }
+  }, [open, initialYear, initialTerm]);
+
   const [form, setForm] = useState<CourseInput>({
     name: "",
     credit: "",
@@ -52,6 +86,8 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
     category: "FAITH_WORLDVIEW",
     grade: "",
     isEnglish: false,
+    academicYear: String(new Date().getFullYear()),
+    term: "1",
   });
   const [errMsg, setErrMsg] = useState("");
 
@@ -67,6 +103,8 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
         category: "FAITH_WORLDVIEW",
         grade: "",
         isEnglish: false,
+        academicYear: String(new Date().getFullYear()),
+        term: "1",
       });
     }
   }, [open]);
@@ -85,6 +123,12 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
       // 정수만
       const cleaned = v.replace(/\D/g, "");
       setForm((f) => ({ ...f, designedCredit: cleaned }));
+      return;
+    }
+    if (k === "academicYear" && typeof v === "string") {
+      // 4자리 숫자만
+      const cleaned = v.replace(/[^\d]/g, "").slice(0, 4);
+      setForm((f) => ({ ...f, academicYear: cleaned }));
       return;
     }
     if (k === "category") {
@@ -121,6 +165,14 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
     e.preventDefault();
     if (!form.name.trim()) return setErrMsg("과목명을 입력하세요.");
     if (form.credit === "") return setErrMsg("학점을 입력하세요.");
+    if (!form.academicYear || form.academicYear.length !== 4) {
+      return setErrMsg("연도는 4자리(예: 2025)로 입력하세요.");
+    }
+
+    // 학기 선택 검증
+    if (!TERM_OPTIONS.find(t => t.value === form.term)) {
+      return setErrMsg("학기를 선택하세요.");
+    }
 
     // 소수 검증: 0.5 단위만 허용
     const creditNum = Number(form.credit);
@@ -139,6 +191,8 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
       category: form.category,
       grade: form.grade.trim() === "" ? null : form.grade.trim(),
       isEnglish: !!form.isEnglish,
+      academicYear: Number(form.academicYear),
+      term: form.term,
     };
 
     await addCourse.mutateAsync(payload);
@@ -174,6 +228,7 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
     } as const,
     hint: { color: "#6b7280", fontWeight: 400 } as const,
     toggleWrap: { display: "flex", alignItems: "center", gap: 10 } as const,
+    preview: { color: "#374151", fontSize: 12, marginTop: 6 } as const,
   };
 
   return (
@@ -282,6 +337,34 @@ export default function AddCourseModal({ open, sid, onClose, onSaved }: Props) {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* 학기(연도+학기) */}
+        <div style={ui.row}>
+          <div>
+            <label style={ui.label}>연도</label>
+            <input
+              style={ui.input}
+              inputMode="numeric"
+              pattern="\d{4}"
+              placeholder="예: 2025"
+              value={academicYear}
+              onChange={(e) => onChange("academicYear", e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label style={ui.label}>학기</label>
+            <select
+              style={ui.input}
+              value={term}
+              onChange={(e) => onChange("term", e.target.value as TermCode)}
+            >
+              {TERM_OPTIONS.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* 성적 */}

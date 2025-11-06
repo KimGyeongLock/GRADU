@@ -16,4 +16,6 @@ public class CourseUpdateRequestDto {
     private String grade;
     private Category category;
     private boolean isEnglish;
+    Short academicYear;
+    String term;
 }
