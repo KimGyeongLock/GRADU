@@ -34,7 +34,10 @@ public class SecurityConfig {
     };
 
     public static final String[] PUBLIC_WHITELIST = {
-            "/api/v1/auth/**",
+            "/api/v1/auth/login",
+            "/api/v1/auth/register",
+            "/api/v1/auth/email/otp/send",
+            "/api/v1/auth/reissue"
     };
 
     @Bean
@@ -48,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers(SWAGGER_WHITELIST).permitAll()
                         .requestMatchers(PUBLIC_WHITELIST).permitAll()
                         // 그 외는 인증 필요
+                        .requestMatchers("/api/v1/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
