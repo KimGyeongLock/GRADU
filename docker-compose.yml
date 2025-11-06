@@ -73,14 +73,31 @@ services:
       args:
         VITE_API_BASE: ${VITE_API_BASE}
     container_name: gradu-frontend
-    ports:
-      - "80:80"             # 외부 노출은 프론트만
     depends_on: [backend]
     networks: [appnet]
+
+  caddy:
+    image: caddy:2
+    container_name: gradu-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CADDY_EMAIL=gradu.ate0420@gmail.com   # 인증서용 이메일
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+    networks: [ appnet ]
 
 networks:
   appnet:
 
 volumes:
   db_data:
+  caddy_data:
+  caddy_config:
 

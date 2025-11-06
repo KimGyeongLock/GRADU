@@ -1,0 +1,19 @@
+# www -> apex 리다이렉트(선택)
+www.hgu-gradu.app {
+    redir https://hgu-gradu.app{uri}
+}
+
+hgu-gradu.app {
+    tls {$CADDY_EMAIL}
+    encode zstd gzip
+
+    # /api -> Spring Boot
+    handle_path /api/* {
+        reverse_proxy backend:8080
+    }
+
+    # 그 외 정적/SPA -> 프론트 nginx
+    handle {
+        reverse_proxy frontend:80
+    }
+}
