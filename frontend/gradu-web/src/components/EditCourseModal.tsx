@@ -3,9 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import Modal from "./Modal";
-// ✅ 별도 CSS 제거, 페이지 CSS 모듈만 사용
 import s from "../pages/CurriculumDetail.module.css";
-// ✅ 타입 전용 import (verbatimModuleSyntax 호환)
 import type { CourseDto } from "../pages/CurriculumDetailPage";
 
 const KOR_LABELS: Record<string, string> = {
@@ -20,6 +18,14 @@ const KOR_LABELS: Record<string, string> = {
   MAJOR: "전공",
 };
 const CATEGORY_ORDER = Object.keys(KOR_LABELS);
+
+const TERM_OPTIONS = [
+  { value: "1", label: "1학기" },
+  { value: "2", label: "2학기" },
+  { value: "sum", label: "여름학기(summer)" },
+  { value: "win", label: "겨울학기(winter)" },
+] as const;
+type TermCode = typeof TERM_OPTIONS[number]["value"];
 
 type Props = {
   open: boolean;
@@ -36,6 +42,8 @@ type FormState = {
   grade: string;
   category: string;
   isEnglish: boolean;
+  academicYear: string;    // "2025"
+  term: TermCode;          // "1"|"2"|"sum"|"win"
 };
 
 export default function EditCourseModal({ open, course, sid, onClose, onSaved }: Props) {
@@ -46,6 +54,8 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
     grade: "",
     category: "MAJOR",
     isEnglish: false,
+    academicYear: String(new Date().getFullYear()),
+    term: "1",
   });
   const [errMsg, setErrMsg] = useState("");
 
@@ -64,13 +74,27 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         grade: course.grade ?? "",
         category: course.category ?? "MAJOR",
         isEnglish: !!course.isEnglish,
+        academicYear: String(course.academicYear ?? new Date().getFullYear()),
+        term: (course.term as TermCode) ?? "1",
       });
     }
   }, [open, course]);
 
   const onChange = <K extends keyof FormState>(k: K, v: FormState[K]) => {
-    if (k === "credit" || k === "designedCredit") {
-      if (typeof v === "string") v = (v as string).replace(/\D/g, "") as any;
+    if (k === "credit") {
+      if (typeof v === "string") {
+        // 숫자/점 1개 + 소수 1자리
+        v = (v as string)
+          .replace(/[^\d.]/g, "")
+          .replace(/(\..*)\./g, "$1")
+          .replace(/^(\d+)\.(\d?).*$/, "$1.$2") as any;
+      }
+    }
+    if (k === "designedCredit" && typeof v === "string") {
+      v = (v as string).replace(/\D/g, "") as any; // 정수만
+    }
+    if (k === "academicYear" && typeof v === "string") {
+      v = (v as string).replace(/[^\d]/g, "").slice(0, 4) as any; // 4자리
     }
     if (k === "category") {
       const nextCat = v as string;
@@ -90,10 +114,27 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
 
       const creditNum =
         form.credit.trim() === "" ? null : Number(form.credit.trim());
+
+      // 0.5 단위 검증(입력했을 때만)
+      if (creditNum != null) {
+        if (Number.isNaN(creditNum)) throw new Error("학점이 올바르지 않습니다.");
+        if (Math.round(creditNum * 2) !== creditNum * 2) {
+          throw new Error("학점은 0.5 단위로 입력하세요.");
+        }
+      }
+
       const designedNumRaw =
         form.designedCredit.trim() === "" ? null : Number(form.designedCredit.trim());
       const designedNum =
         isMajor ? (Number.isNaN(designedNumRaw as number) ? null : designedNumRaw) : null;
+
+      // 학기 검증
+      if (!form.academicYear || form.academicYear.length !== 4) {
+        throw new Error("연도는 4자리(예: 2025)로 입력하세요.");
+      }
+      if (!TERM_OPTIONS.find(t => t.value === form.term)) {
+        throw new Error("학기를 선택하세요.");
+      }
 
       const body: Partial<{
         name: string;
@@ -102,13 +143,17 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         grade: string | null;
         category: string | null;
         isEnglish: boolean;
+        academicYear: number | null;
+        term: TermCode | null;
       }> = {
         name: form.name.trim() === "" ? undefined : form.name.trim(),
-        credit: Number.isNaN(creditNum as number) ? null : creditNum,
+        credit: creditNum,
         designedCredit: designedNum,
         grade: form.grade.trim() === "" ? null : form.grade.trim(),
         category: form.category,
         isEnglish: !!form.isEnglish,
+        academicYear: Number(form.academicYear),
+        term: form.term,
       };
 
       const url = `/api/v1/students/${encodeURIComponent(sid)}/courses/${course.id}`;
@@ -116,9 +161,13 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
     },
     onSuccess: () => onSaved(),
     onError: (e: any) => {
-      const status = e?.response?.status;
-      const text = e?.response?.data?.message || e?.message || "요청 실패";
-      setErrMsg(`저장 실패 (${status ?? "-"}) : ${text}`);
+      const msg = e?.message || e?.response?.data?.message;
+      if (msg) setErrMsg(String(msg));
+      else {
+        const status = e?.response?.status;
+        const text = e?.response?.data?.message || e?.message || "요청 실패";
+        setErrMsg(`저장 실패 (${status ?? "-"}) : ${text}`);
+      }
       console.error("[EditCourse] error", e);
     },
   });
@@ -126,14 +175,10 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!course) return;
-    if (!form.name.trim()) {
-      setErrMsg("과목명을 입력하세요.");
-      return;
-    }
-    if (form.credit.trim() === "") {
-      setErrMsg("학점을 입력하세요.");
-      return;
-    }
+    if (!form.name.trim()) return setErrMsg("과목명을 입력하세요.");
+    if (form.credit.trim() === "") return setErrMsg("학점을 입력하세요.");
+    if (!form.academicYear || form.academicYear.length !== 4)
+      return setErrMsg("연도는 4자리(예: 2025)로 입력하세요.");
     setErrMsg("");
     await patchMutation.mutateAsync();
   };
@@ -143,7 +188,6 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
       open={open}
       onClose={() => !patchMutation.isPending && onClose()}
       title="과목 수정"
-      /* 푸터 버튼 */
       footer={
         <>
           <button
@@ -165,7 +209,6 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         </>
       }
     >
-      {/* === 모달 본문 === */}
       <form id="edit-course-form" onSubmit={onSubmit} className={s.form}>
         {errMsg && <div className={s.error}>{errMsg}</div>}
 
@@ -180,33 +223,32 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         </div>
 
         <div className={s.grid2}>
-            <label className={s.label}>
-              학점
-              <input
-                className={s.input}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={form.credit}
-                onChange={(e) => onChange("credit", e.target.value)}
-                placeholder="예: 3"
-              />
-            </label>
+          <label className={s.label}>
+            학점
+            <input
+              className={s.input}
+              type="text"
+              inputMode="decimal"
+              value={form.credit}
+              onChange={(e) => onChange("credit", e.target.value)}
+              placeholder="예: 3 / 3.5"
+            />
+          </label>
 
-            <label className={s.label}>
-              카테고리
-              <select
-                className={s.input}
-                value={form.category}
-                onChange={(e) => onChange("category", e.target.value)}
-              >
-                {CATEGORY_ORDER.map((key) => (
-                  <option key={key} value={key}>
-                    {KOR_LABELS[key]}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <label className={s.label}>
+            카테고리
+            <select
+              className={s.input}
+              value={form.category}
+              onChange={(e) => onChange("category", e.target.value)}
+            >
+              {CATEGORY_ORDER.map((key) => (
+                <option key={key} value={key}>
+                  {KOR_LABELS[key]}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {isMajor && (
@@ -224,6 +266,34 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
           </label>
         )}
 
+        {/* 학기(연도+학기) */}
+        <div className={s.grid2}>
+          <label className={s.label}>
+            연도
+            <input
+              className={s.input}
+              inputMode="numeric"
+              pattern="\d{4}"
+              value={form.academicYear}
+              onChange={(e) => onChange("academicYear", e.target.value)}
+              placeholder="예: 2025"
+            />
+          </label>
+
+          <label className={s.label}>
+            학기
+            <select
+              className={s.input}
+              value={form.term}
+              onChange={(e) => onChange("term", e.target.value as TermCode)}
+            >
+              {TERM_OPTIONS.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <label className={s.label}>
           성적
           <input
@@ -234,7 +304,6 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
           />
         </label>
 
-        {/* 영어강의 여부(기본 체크박스) */}
         <div className={s.label}>
           영어강의 여부
           <div>
@@ -248,8 +317,6 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
             </label>
           </div>
         </div>
-
-        {/* 하단 버튼 영역은 Modal footer 사용 */}
       </form>
     </Modal>
   );

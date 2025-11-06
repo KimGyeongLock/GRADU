@@ -1,4 +1,3 @@
-// src/pages/CurriculumDetailPage.tsx
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,11 +8,14 @@ import s from "./CurriculumDetail.module.css";
 export type CourseDto = {
   id: number;
   name: string;
+  category: string;
   credit: number;
   designedCredit: number | null;
-  category: string;
   grade: string | null;
-  isEnglish?: boolean;
+  isEnglish: boolean;
+  academicYear: number;             // ← 서버에서 내려오는 연도(예: 2025)
+  term: "1" | "2" | "sum" | "win";  // ← 1, 2, sum, win
+  // displaySemester?: string;       // (서버가 제공 시 우선 사용 가능)
 };
 
 export const KOR_LABELS: Record<string, string> = {
@@ -29,6 +31,17 @@ export const KOR_LABELS: Record<string, string> = {
 };
 export const CATEGORY_ORDER = Object.keys(KOR_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
+
+/** ex) 2025 + '1'  -> '25-1'
+ *      2025 + 'sum'-> '25-summer'
+ *      2025 + 'win'-> '25-winter'
+ */
+function formatSemester(year?: number, term?: CourseDto["term"]) {
+  if (!year || !term) return "-";
+  const yy = String(year).slice(-2);
+  const t = term === "1" || term === "2" ? term : term === "sum" ? "summer" : "winter";
+  return `${yy}-${t}`;
+}
 
 export default function CurriculumDetailPage() {
   const { category = "" } = useParams();
@@ -112,11 +125,12 @@ export default function CurriculumDetailPage() {
           <table className={s.table}>
             <thead>
               <tr>
-                <th className={s.th} style={{ width: "34%" }}>과목명</th>
-                <th className={s.th} style={{ width: "12%" }}>학점</th>
-                {isMajor && <th className={s.th} style={{ width: "14%" }}>설계학점</th>}
-                <th className={s.th} style={{ width: isMajor ? "14%" : "28%" }}>성적</th>
-                <th className={s.th} style={{ width: "26%" }}>작업</th>
+                <th className={s.th} style={{ width: "31%" }}>과목명</th>
+                <th className={s.th} style={{ width: "10%" }}>학점</th>
+                {isMajor && <th className={s.th} style={{ width: "12%" }}>설계학점</th>}
+                <th className={s.th} style={{ width: isMajor ? "13%" : "23%" }}>성적</th>
+                <th className={s.th} style={{ width: "14%" }}>학기</th> {/* ← 추가 */}
+                <th className={s.th} style={{ width: "20%" }}>작업</th>
               </tr>
             </thead>
             <tbody>
@@ -126,6 +140,10 @@ export default function CurriculumDetailPage() {
                   <td className={s.td}>{c.credit}</td>
                   {isMajor && <td className={s.td}>{c.designedCredit ?? "-"}</td>}
                   <td className={s.td}>{c.grade || "-"}</td>
+                  <td className={s.td}>
+                    {formatSemester(c.academicYear, c.term)}
+                  </td>
+
                   <td className={s.tdActions}>
                     <div className={s.btnGroup}>
                       <button className={s.btnGhost} onClick={() => setEditing(c)}>수정</button>
@@ -150,7 +168,7 @@ export default function CurriculumDetailPage() {
         )}
       </div>
 
-      {/* 수정 모달 (분리 컴포넌트) */}
+      {/* 수정 모달 */}
       <EditCourseModal
         open={!!editing}
         course={editing}
