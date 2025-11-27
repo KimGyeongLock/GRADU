@@ -177,8 +177,6 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
     if (!course) return;
     if (!form.name.trim()) return setErrMsg("과목명을 입력하세요.");
     if (form.credit.trim() === "") return setErrMsg("학점을 입력하세요.");
-    if (!form.academicYear || form.academicYear.length !== 4)
-      return setErrMsg("연도는 4자리(예: 2025)로 입력하세요.");
     setErrMsg("");
     await patchMutation.mutateAsync();
   };
