@@ -209,6 +209,10 @@ public class CourseService {
         summaryService.recomputeAndSave(studentId);
     }
 
+    public List<Course> getCoursesAll(String studentId) {
+        return courseRepository.findByStudentStudentId(studentId);
+    }
+
     /** 변경 계산 컨텍스트 */
     private static class UpdateContext {
         Category oldCat;

@@ -130,34 +130,21 @@ export default function CurriculumPage() {
     queryKey: ["courses-semester", sid],
     enabled: !!sid && view === "semester",
     queryFn: async () => {
-      const cats = Object.keys(CATEGORY_LABELS);
-      const results = await Promise.allSettled(
-        cats.map((cat) =>
-          axiosInstance.get<CourseLite[]>(
-            `/api/v1/students/${encodeURIComponent(sid)}/courses/categories/${encodeURIComponent(
-              cat
-            )}`
-          )
-        )
+      const { data } = await axiosInstance.get<CourseLite[]>(
+        `/api/v1/students/${encodeURIComponent(sid)}/courses/all`
       );
-      const merged: CourseLite[] = [];
-      results.forEach((r) => {
-        if (r.status === "fulfilled" && Array.isArray(r.value.data)) {
-          merged.push(
-            ...r.value.data.map((c: any) => ({
-              id: c.id,
-              name: c.name,
-              category: c.category,
-              credit: c.credit,
-              grade: c.grade ?? null,
-              isEnglish: !!c.isEnglish,
-              academicYear: c.academicYear,
-              term: c.term,
-            }))
-          );
-        }
-      });
-      return merged;
+
+      // 백엔드 CourseResponseDto 구조에 맞춰 매핑
+      return data.map((c: any): CourseLite => ({
+        id: c.id,
+        name: c.name,
+        category: c.category,          // (string or enum name)
+        credit: c.credit,
+        grade: c.grade ?? null,
+        isEnglish: !!c.isEnglish,
+        academicYear: c.academicYear,
+        term: c.term,                  // '1' | 'sum' | '2' | 'win'
+      }));
     },
   });
 
