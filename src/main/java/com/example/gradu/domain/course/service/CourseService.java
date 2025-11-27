@@ -3,6 +3,7 @@ package com.example.gradu.domain.course.service;
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
 import com.example.gradu.domain.course.entity.Course;
+import com.example.gradu.domain.course.entity.Term;
 import com.example.gradu.domain.course.repository.CourseRepository;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.domain.curriculum.entity.Curriculum;
@@ -50,6 +51,8 @@ public class CourseService {
                 .designedCredit(request.designedCredit()) // Integer (정수)
                 .grade(request.grade())
                 .isEnglish(request.isEnglish())
+                .academicYear(request.academicYear())
+                .term(Term.fromCode(request.term()))
                 .build();
         courseRepository.save(course);
 
@@ -116,6 +119,16 @@ public class CourseService {
         // 커리큘럼에 반영할 학점 변화량(유닛)
         ctx.deltaUnits = toUnits(ctx.newCredit.subtract(ctx.oldCredit));
 
+        ctx.oldYear = course.getAcademicYear();
+        ctx.oldTerm = course.getTerm();
+
+        ctx.newYear = Optional.ofNullable(request.getAcademicYear()).orElse(ctx.oldYear);
+        ctx.newTerm = Optional.ofNullable(request.getTerm())
+                .map(Term::fromCode)
+                .orElse(ctx.oldTerm);
+
+        ctx.semesterChanged = !ctx.newYear.equals(ctx.oldYear) || ctx.newTerm != ctx.oldTerm;
+
         // 전공 설계 변화량(정수)
         if (ctx.oldCat == Category.MAJOR && ctx.newCat == Category.MAJOR) {
             ctx.deltaDesigned = ctx.newDesigned - ctx.oldDesigned;
@@ -162,15 +175,12 @@ public class CourseService {
     private void applyEntityFieldUpdates(Course course, CourseUpdateRequestDto request, UpdateContext ctx) {
         if (request.getName() != null) course.rename(request.getName());
         if (request.getGrade() != null) course.changeGrade(request.getGrade());
-
         if (ctx.categoryChanged) course.changeCategory(ctx.newCat);
-        // credit(BigDecimal) 변경
         if (ctx.deltaUnits != 0) course.changeCredit(ctx.newCredit);
-
-        // 설계학점: 전공만 유지, 그 외 0
         course.changeDesignedCredit((ctx.newCat == Category.MAJOR) ? ctx.newDesigned : 0);
 
-        // 영어강의 여부 변경이 들어왔다면 반영 (옵션)
+        if (ctx.semesterChanged) course.changeSemester(ctx.newYear, ctx.newTerm);
+
         course.changeEnglish(request.isEnglish());
     }
 
@@ -199,6 +209,10 @@ public class CourseService {
         summaryService.recomputeAndSave(studentId);
     }
 
+    public List<Course> getCoursesAll(String studentId) {
+        return courseRepository.findByStudentStudentId(studentId);
+    }
+
     /** 변경 계산 컨텍스트 */
     private static class UpdateContext {
         Category oldCat;
@@ -212,5 +226,9 @@ public class CourseService {
         boolean categoryChanged;
         int deltaUnits;     // 학점 변화량(유닛: ×2)
         int deltaDesigned;  // 전공 설계 변화량(정수)
+
+        Short oldYear; Term oldTerm;
+        Short newYear; Term newTerm;
+        boolean semesterChanged;
     }
 }

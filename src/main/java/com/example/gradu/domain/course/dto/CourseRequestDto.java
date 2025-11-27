@@ -14,5 +14,7 @@ public record CourseRequestDto(
     @NotNull(message = "카테고리는 필수입니다.") Category category,
     @PositiveOrZero(message = "설계 학점은 0 이상이어야 합니다.") int designedCredit,
     boolean isEnglish,
-    String grade
+    String grade,
+    Short academicYear,
+    String term
 ) {}

@@ -16,6 +16,9 @@ public class CourseResponseDto {
     private final String grade;
     @JsonProperty("isEnglish")
     private final Boolean isEnglish;
+    Short academicYear;
+    String term;
+    String displaySemester;
 
     public static CourseResponseDto from(Course c) {
         return CourseResponseDto.builder()
@@ -26,6 +29,9 @@ public class CourseResponseDto {
                 .designedCredit(c.getDesignedCredit())
                 .grade(c.getGrade())
                 .isEnglish(c.getIsEnglish())
+                .academicYear(c.getAcademicYear())
+                .term(c.getTerm().getCode())
+                .displaySemester(c.getDisplaySemester())
                 .build();
     }
 }

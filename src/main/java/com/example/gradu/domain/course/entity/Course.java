@@ -48,6 +48,15 @@ public class Course {
     @Column(name = "is_english", nullable = false)
     private Boolean isEnglish = false;
 
+    /** 예: 2025 (표시는 25로 가공) */
+    @Column(nullable = false)
+    private Short academicYear;
+
+    /** FIRST/SECOND/SUMMER/WINTER 저장 */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Term term;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -86,4 +95,15 @@ public class Course {
     public Boolean getIsEnglish() {
         return isEnglish != null ? isEnglish : false;
     }
+
+    public String getDisplaySemester() {
+        String yy = String.format("%02d", academicYear % 100); // 2025 → 25
+        return yy + "-" + term.getCode(); // "25-1" / "25-sum"
+    }
+
+    public void changeSemester(Short year, Term term) {
+        this.academicYear = year;
+        this.term = term;
+    }
 }
+
