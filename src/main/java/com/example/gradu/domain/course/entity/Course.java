@@ -97,7 +97,7 @@ public class Course {
     }
 
     public String getDisplaySemester() {
-        int yy = academicYear % 100; // 2025 → 25
+        String yy = String.format("%02d", academicYear % 100); // 2025 → 25
         return yy + "-" + term.getCode(); // "25-1" / "25-sum"
     }
 
