@@ -129,7 +129,7 @@ export default function RegisterPage() {
         </label>
 
         {/* 학교 이메일 + '인증하기' (전송 전용) */}
-        <div className="auth__row">
+        <div className="auth__emailRow">
           <label
             className="auth__field"
             style={{ gridTemplateColumns: "1fr", flex: 1, margin: 0 }}
@@ -165,17 +165,7 @@ export default function RegisterPage() {
             type="button"
             onClick={sendOtp}
             disabled={sending || remain > 0}
-            style={{
-              padding: "8px 12px",
-              fontSize: 13,
-              borderRadius: 10,
-              background: "var(--primary)",
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              opacity: sending || remain > 0 ? 0.6 : 1,
-              whiteSpace: "nowrap",
-            }}
+            className="auth__emailBtn"
             aria-label="이메일 인증 요청"
             title="이메일로 인증코드를 받습니다"
           >

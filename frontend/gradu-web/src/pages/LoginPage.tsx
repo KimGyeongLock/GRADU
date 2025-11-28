@@ -52,49 +52,67 @@ export default function LoginPage() {
 
   return (
     <main className="auth">
-      <section className="auth__card" aria-label="로그인">
-        <h1 className="auth__title">Sign In</h1>
-        <p className="auth__subtitle">한동대학교 컴공심화 졸업 요건 진단 서비스</p>
+      {/* ✅ 이미지 + 카드 레이아웃 래퍼 */}
+      <div className="auth__layout">
+        {/* 왼쪽: 로고 이미지 */}
+        <img
+          src="/gradu_text.png"
+          alt="GRADU"
+          className="auth__logo"
+          draggable={false}                 
+          onContextMenu={(e) => e.preventDefault()} 
+          onMouseDown={(e) => e.preventDefault()}  
+        />
 
-        <div className="auth__field">
-          <i className="bx bx-id-card auth__icon" aria-hidden />
-          <input
-            className="auth__input"
-            placeholder="학번 (Student ID)"
-            value={studentId}
-            onChange={(e) => setStudentIdInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onLogin()}
-            autoComplete="username"
-            autoFocus
-          />
-        </div>
+        {/* 오른쪽: 기존 카드 그대로 */}
+        <section className="auth__card" aria-label="로그인">
+          <h1 className="auth__title">Sign In</h1>
+          <p className="auth__subtitle">한동대학교 컴공심화 졸업 요건 진단 서비스</p>
 
-        <div className="auth__field">
-          <i className="bx bx-lock-alt auth__icon" aria-hidden />
-          <input
-            className="auth__input"
-            type="password"
-            placeholder="비밀번호"
-            value={pw}
-            onChange={(e) => setPw(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && onLogin()}
-            autoComplete="current-password"
-          />
-        </div>
+          <div className="auth__field">
+            <i className="bx bx-id-card auth__icon" aria-hidden />
+            <input
+              className="auth__input"
+              placeholder="학번 (Student ID)"
+              value={studentId}
+              onChange={(e) => setStudentIdInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && onLogin()}
+              autoComplete="username"
+              autoFocus
+            />
+          </div>
 
-        {err && <div className="auth__error">{err}</div>}
+          <div className="auth__field">
+            <i className="bx bx-lock-alt auth__icon" aria-hidden />
+            <input
+              className="auth__input"
+              type="password"
+              placeholder="비밀번호"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && onLogin()}
+              autoComplete="current-password"
+            />
+          </div>
 
-        <button className="auth__button" onClick={onLogin} disabled={loading || !studentId || !pw}>
-          {loading ? "로그인 중..." : "로그인"}
-        </button>
+          {err && <div className="auth__error">{err}</div>}
 
-        <div className="auth__footer auth__muted">
-          계정이 없나요?{" "}
-          <Link className="auth__link" to="/register">
-            회원가입
-          </Link>
-        </div>
-      </section>
+          <button
+            className="auth__button"
+            onClick={onLogin}
+            disabled={loading || !studentId || !pw}
+          >
+            {loading ? "로그인 중..." : "로그인"}
+          </button>
+
+          <div className="auth__footer auth__muted">
+            계정이 없나요?{" "}
+            <Link className="auth__link" to="/register">
+              회원가입
+            </Link>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

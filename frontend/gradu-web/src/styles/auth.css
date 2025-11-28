@@ -1,5 +1,5 @@
 :root{
-  --primary:#2563eb;         /* 프로젝트 메인 컬러만 바꾸면 전체 테마 변경 */
+  --primary:#2563eb;
   --primary-hover:#1d4ed8;
   --text:#111827;
   --muted:#6b7280;
@@ -11,23 +11,49 @@
 
 *{box-sizing:border-box}
 html,body,#root{height:100%}
-body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Apple Color Emoji,Segoe UI Emoji}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Apple Color Emoji,Segoe UI Emoji;
+}
 
-/* 레이아웃: 카드만 중앙 */
+/* ✅ 전체를 가운데로 */
 .auth{
   min-height:100vh;
   display:grid;
   place-items:center;
   padding:24px;
 }
+
+/* ✅ 이미지(왼쪽) + 카드(오른쪽) 레이아웃 */
+.auth__layout{
+  display:flex;
+  align-items:center;
+  gap:60px;   /* ✅ 기존 56px → 80px */
+}
+
+/* 540x540 1:1 비율 기반 로고 */
+.auth__logo{
+  width: 370px;        /* ✅ 기존 220px → 320px */
+  aspect-ratio:1 / 1;
+  object-fit:contain;
+  display:block;
+  user-select:none;
+  pointer-events: none; /* ✅ 클릭 자체도 무시 (완전 비활성화) */
+}
+
+
+/* ⭐ 기존 카드 스타일 그대로 */
 .auth__card{
-  width:100%;
-  max-width:440px;
+  width: 480px;   /* ✅ 기존 440px → 520px */
   background:var(--surface);
   border-radius:18px;
   box-shadow:var(--shadow);
-  padding:28px 24px;
+  padding:32px 28px; /* ✅ 내부 여백도 살짝 증가 */
 }
+
+
 .auth__title{
   margin:0 0 6px;
   font-size:28px;
@@ -38,12 +64,7 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,s
   color:var(--muted);
   font-size:14px;
 }
-.auth__row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:12px;   /* ← 위 여백 */
-}
+
 /* 폼 */
 .auth__field{
   display:grid;
@@ -88,4 +109,57 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,s
   margin:8px 0 0;
   color:#dc2626; background:#fee2e2; border:1px solid #fecaca;
   padding:8px 10px; border-radius:10px; font-size:13px;
+}
+
+/* 📱 모바일에서는 다시 세로 배치 */
+@media (max-width: 768px){
+  .auth__layout{
+    flex-direction:column;
+    gap:28px;
+  }
+
+  .auth__logo{
+    width:180px;   /* ✅ 모바일에서도 너무 작지 않게 */
+  }
+
+  .auth__card{
+    max-width:100%;
+  }
+}
+
+/* 이메일 + 인증 버튼 가로 정렬 */
+.auth__emailRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: nowrap; /* 줄 바꿈 방지 */
+}
+
+/* 이메일 입력 필드가 남는 공간 꽉 채우도록 */
+.auth__emailField {
+  flex: 1;
+  margin: 0; /* 기본 auth__field margin-top 제거 */
+}
+
+/* 인증하기 버튼 공통 스타일 */
+.auth__emailBtn {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.auth__emailBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.auth__emailBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
