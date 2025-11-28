@@ -151,3 +151,9 @@
 .cm-btn + .cm-btn {
   margin-left: 10px; /* 원하는 만큼 조절 (8~12px 정도 추천) */
 }
+
+.cm-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

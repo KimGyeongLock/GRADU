@@ -182,7 +182,9 @@ export default function CurriculumPage() {
   return (
     <div className="relative">
       {showBanner && (
-        <div /* 축하 배너 */>🎓 졸업을 축하합니다!</div>
+        <div className={s.congratsBanner} role="status">
+          🎓 졸업을 축하합니다!
+        </div>
       )}
 
       <div className={s.ribbonWrap}>

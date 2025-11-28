@@ -99,7 +99,7 @@ export default function AddCourseModal({
         term: (initialTerm ?? defaultTerm) as TermCode,
       });
     }
-  }, [open, initialYear, initialTerm, defaultYear, defaultTerm]);
+  }, [open, initialYear, initialTerm]);
 
   const onChange = <K extends keyof CourseInput>(
     k: K,

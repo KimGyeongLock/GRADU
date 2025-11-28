@@ -1,7 +1,11 @@
 // src/pages/CurriculumPage/SemesterView.tsx
 import { useNavigate } from "react-router-dom";
 import type { CourseLite, Term } from "./curriculumTypes";
-import { CATEGORY_LABELS, TERM_ORDER, fmtCred } from "./curriculumTypes";
+import {
+  CATEGORY_LABELS,
+  fmtCred,
+  formatSemester,   // ✅ 새로 추가
+} from "./curriculumTypes";
 import s from "./CurriculumTable.module.css";
 
 type Group = { key: string; year: number; term: Term; items: CourseLite[] };
@@ -40,9 +44,7 @@ export function SemesterView({
           {mergedGroups.map((g) => (
             <div key={g.key} className={s.semesterCard}>
               <div className={s.semesterHeader}>
-                {`${String(g.year).slice(-2)}-${
-                  ["1", "summer", "2", "winter"][TERM_ORDER[g.term]]
-                }`}
+                {formatSemester(g.year, g.term)}
                 <button
                   className={s.semesterAddSmall}
                   onClick={() => onOpenAddFor(g.year, g.term)}

@@ -64,3 +64,15 @@ export const fmtCred = (n?: number | null) => {
 
 export const statusText = (sTxt: string) =>
   sTxt === "PASS" ? "합격" : sTxt === "FAIL" ? "불합격" : sTxt || "-";
+
+export function formatSemester(year?: number, term?: Term): string {
+  if (!year || !term) return "-";
+  const yy = String(year).slice(-2);
+  const t =
+    term === "1" || term === "2"
+      ? term
+      : term === "sum"
+      ? "summer"
+      : "winter";
+  return `${yy}-${t}`;
+}

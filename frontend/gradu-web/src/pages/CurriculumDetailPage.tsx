@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance, getStudentId } from "../lib/axios";
 import EditCourseModal from "../components/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
+import { formatSemester } from "./CurriculumPage/curriculumTypes";
+
 
 export type CourseDto = {
   id: number;
@@ -31,17 +33,6 @@ export const KOR_LABELS: Record<string, string> = {
 };
 export const CATEGORY_ORDER = Object.keys(KOR_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
-
-/** ex) 2025 + '1'  -> '25-1'
- *      2025 + 'sum'-> '25-summer'
- *      2025 + 'win'-> '25-winter'
- */
-function formatSemester(year?: number, term?: CourseDto["term"]) {
-  if (!year || !term) return "-";
-  const yy = String(year).slice(-2);
-  const t = term === "1" || term === "2" ? term : term === "sum" ? "summer" : "winter";
-  return `${yy}-${t}`;
-}
 
 export default function CurriculumDetailPage() {
   const { category = "" } = useParams();
@@ -77,7 +68,9 @@ export default function CurriculumDetailPage() {
   // 삭제
   const deleteMutation = useMutation({
     mutationFn: async (courseId: number) => {
-      const url = `/api/v1/students/${encodeURIComponent(sid)}/courses/${courseId}`;
+      const url = `/api/v1/students/${encodeURIComponent(
+        sid
+      )}/courses/${courseId}`;
       await axiosInstance.delete(url);
     },
     onSuccess: () => {
@@ -86,6 +79,12 @@ export default function CurriculumDetailPage() {
       });
     },
   });
+
+  const handleDelete = (course: CourseDto) => {
+    if (window.confirm(`"${course.name}" 과목을 삭제할까요?`)) {
+      deleteMutation.mutate(course.id);
+    }
+  };
 
   // 수정 모달 상태
   const [editing, setEditing] = useState<CourseDto | null>(null);
@@ -97,7 +96,12 @@ export default function CurriculumDetailPage() {
     closeEdit();
   };
 
-  if (!sid) return <div className={s.centerNotice}>로그인 정보를 찾을 수 없습니다.</div>;
+  if (!sid)
+    return (
+      <div className={s.centerNotice}>
+        로그인 정보를 찾을 수 없습니다.
+      </div>
+    );
   if (!isValid) {
     return (
       <div className={s.centerNotice}>
@@ -193,13 +197,7 @@ export default function CurriculumDetailPage() {
                           </button>
                           <button
                             className={s.btnDanger}
-                            onClick={() => {
-                              if (
-                                window.confirm(`"${c.name}" 과목을 삭제할까요?`)
-                              ) {
-                                deleteMutation.mutate(c.id);
-                              }
-                            }}
+                            onClick={() => handleDelete(c)}
                             disabled={deleteMutation.isPending}
                             title="삭제"
                           >
@@ -260,13 +258,7 @@ export default function CurriculumDetailPage() {
                       </button>
                       <button
                         className={s.btnDanger}
-                        onClick={() => {
-                          if (
-                            window.confirm(`"${c.name}" 과목을 삭제할까요?`)
-                          ) {
-                            deleteMutation.mutate(c.id);
-                          }
-                        }}
+                        onClick={() => handleDelete(c)}
                         disabled={deleteMutation.isPending}
                         title="삭제"
                       >

@@ -330,6 +330,7 @@ export default function EditCourseModal({
             <span>{form.isEnglish ? "영어강의" : "일반강의"}</span>
           </div>
         </div>
+
       </form>
     </Modal>
   );
