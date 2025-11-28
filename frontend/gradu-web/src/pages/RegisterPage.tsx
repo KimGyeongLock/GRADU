@@ -46,14 +46,8 @@ export default function RegisterPage() {
     return left > 0 ? left : 0;
   }, [otpSentAt, tick]);
 
-  const validEmailLocal = /^[a-zA-Z0-9._-]+$/.test(emailLocal);
-
   // OTP 전송(검증은 회원가입에서만 수행/소비)
   async function sendOtp() {
-    if (!validEmailLocal) {
-      setErr("학교 이메일 앞부분 형식이 올바르지 않습니다.");
-      return;
-    }
     setErr(null);
     setSending(true);
     try {
@@ -81,15 +75,6 @@ export default function RegisterPage() {
       setErr("비밀번호가 일치하지 않습니다.");
       return;
     }
-    if (!validEmailLocal) {
-      setErr("학교 이메일 앞부분 형식이 올바르지 않습니다.");
-      return;
-    }
-    // 서버가 studentId@handong.ac.kr 로 이메일을 구성하므로 로컬파트=학번을 권장
-    if (emailLocal !== studentId) {
-      setErr("학교 이메일 앞부분은 학번과 동일해야 합니다.");
-      return;
-    }
     if (otp.length !== OTP_LEN) {
       setErr("인증코드 6자리를 정확히 입력하세요.");
       return;
@@ -102,6 +87,7 @@ export default function RegisterPage() {
         name,
         password,
         code: otp, 
+        email: emailFull
       });
       alert("회원가입이 완료되었습니다. 로그인 해주세요.");
       nav("/login", { replace: true });
@@ -178,7 +164,7 @@ export default function RegisterPage() {
           <button
             type="button"
             onClick={sendOtp}
-            disabled={sending || !validEmailLocal || remain > 0}
+            disabled={sending || remain > 0}
             style={{
               padding: "8px 12px",
               fontSize: 13,
@@ -187,7 +173,7 @@ export default function RegisterPage() {
               color: "#fff",
               border: "none",
               cursor: "pointer",
-              opacity: sending || !validEmailLocal || remain > 0 ? 0.6 : 1,
+              opacity: sending || remain > 0 ? 0.6 : 1,
               whiteSpace: "nowrap",
             }}
             aria-label="이메일 인증 요청"
