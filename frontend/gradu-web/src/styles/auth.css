@@ -30,12 +30,12 @@ body{
 .auth__layout{
   display:flex;
   align-items:center;
-  gap:60px;   /* ✅ 기존 56px → 80px */
+  gap:60px;
 }
 
 /* 540x540 1:1 비율 기반 로고 */
 .auth__logo{
-  width: 370px;        /* ✅ 기존 220px → 320px */
+  width: 370px; 
   aspect-ratio:1 / 1;
   object-fit:contain;
   display:block;
@@ -46,7 +46,7 @@ body{
 
 /* ⭐ 기존 카드 스타일 그대로 */
 .auth__card{
-  width: 480px;   /* ✅ 기존 440px → 520px */
+  width: 480px; 
   background:var(--surface);
   border-radius:18px;
   box-shadow:var(--shadow);
@@ -111,22 +111,6 @@ body{
   padding:8px 10px; border-radius:10px; font-size:13px;
 }
 
-/* 📱 모바일에서는 다시 세로 배치 */
-@media (max-width: 768px){
-  .auth__layout{
-    flex-direction:column;
-    gap:28px;
-  }
-
-  .auth__logo{
-    width:180px;   /* ✅ 모바일에서도 너무 작지 않게 */
-  }
-
-  .auth__card{
-    max-width:100%;
-  }
-}
-
 /* 이메일 + 인증 버튼 가로 정렬 */
 .auth__emailRow {
   display: flex;
@@ -162,4 +146,47 @@ body{
 .auth__emailBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+
+/* 📱 모바일에서는 세로 배치 + 비율 조정 */
+@media (max-width: 768px){
+  .auth{
+    padding: 16px;              /* 양 옆 여백 조금 줄이기 */
+  }
+
+  .auth__layout{
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* 이미지 더 크게 */
+  .auth__logo{
+    width: min(260px, 70vw);    /* 화면 폭의 70%까지, 최대 260px */
+  }
+
+  /* 카드 폭/패딩 줄이기 */
+  .auth__card{
+    width: 480px;         /* 고정 480px 덮어쓰기 */
+    max-width: 420px;
+    padding: 22px 18px;
+  }
+}
+
+/* 아주 좁은 화면 (아이폰 SE 급) 추가 보정 */
+@media (max-width: 480px){
+  .auth{
+    padding: 12px;
+  }
+
+  .auth__logo{
+    width: min(230px, 72vw);
+  }
+
+  .auth__card{
+    width: 342px;
+    max-width: 380px;
+    margin-top: 10px;
+    padding: 20px 16px;
+  }
 }

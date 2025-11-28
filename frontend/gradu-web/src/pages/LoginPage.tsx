@@ -52,18 +52,13 @@ export default function LoginPage() {
 
   return (
     <main className="auth">
-      {/* ✅ 이미지 + 카드 레이아웃 래퍼 */}
       <div className="auth__layout">
         {/* 왼쪽: 로고 이미지 */}
         <img
           src="/gradu_text.png"
           alt="GRADU"
           className="auth__logo"
-          draggable={false}                 
-          onContextMenu={(e) => e.preventDefault()} 
-          onMouseDown={(e) => e.preventDefault()}  
         />
-
         {/* 오른쪽: 기존 카드 그대로 */}
         <section className="auth__card" aria-label="로그인">
           <h1 className="auth__title">Sign In</h1>
