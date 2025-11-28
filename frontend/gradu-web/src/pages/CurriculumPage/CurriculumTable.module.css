@@ -7,8 +7,20 @@
   padding: 24px;
   position: relative;
   z-index: 10;
+  transition: opacity .18s, transform .18s;
 }
 
+.cardOnTop {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardDimmed {
+  opacity: .65;
+  transform: translateY(2px);
+}
+
+/* 공통 테이블 래퍼 */
 .tableWrap {
   border: 1px solid #d1d5db;
   border-radius: 12px;
@@ -263,7 +275,7 @@
 
 .semesterAddSmall:hover { background:#f8fafc }
 
-/* ✅ 하단 바 버튼 – 파란 점선 스타일 (최종본만 유지) */
+/* ✅ 하단 바 버튼 – 파란 점선 스타일 */
 .semesterAddBar {
   display: flex;
   justify-content: center;
@@ -298,4 +310,131 @@
   align-items:center;
   justify-content:center;
   z-index:60;
+}
+
+/* ========= PC / 모바일 스위치 ========= */
+.desktopOnly { display: block; }
+.mobileOnly { display: none; }
+
+/* ========= 모바일 카드 스타일 ========= */
+@media (max-width: 768px) {
+  .card {
+    margin: 12px 8px 0;
+    padding: 16px 10px;
+  }
+
+  .desktopOnly { display: none; }
+  .mobileOnly { display: block; }
+
+  .mobileSummaryWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 6px;
+  }
+
+  .mobileCard {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .mobileCardHeader {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+
+  .mobileCategory {
+    font-weight:700;
+    font-size:14px;
+    color:#111827;
+  }
+
+  .mobileStatusBadge {
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:12px;
+    border:1px solid currentColor;
+  }
+
+  .mobileCardBody {
+    font-size:13px;
+  }
+
+  .mobileRow {
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:4px;
+  }
+
+  .mobileLabel {
+    color:#6b7280;
+  }
+
+  .mobileValue {
+    font-weight:600;
+    color:#111827;
+  }
+
+  .mobileCardFooter {
+    margin-top:8px;
+    text-align:right;
+  }
+
+  .mobileViewBtn {
+    padding:4px 10px;
+    border-radius:9999px;
+    font-size:12px;
+    background:#fff;
+    border:1px solid #d1d5db;
+    cursor:pointer;
+  }
+
+  /* 학기별 모바일 과목 카드 */
+  .mobileCourseList {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:8px;
+  }
+
+  .mobileCourseCard {
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    padding:8px 10px;
+    background:#fff;
+  }
+
+  .mobileCourseTitleRow {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+  }
+
+  .mobileCourseName {
+    font-size:14px;
+    font-weight:600;
+    color:#111827;
+  }
+
+  .mobileCourseMeta {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    font-size:12px;
+    color:#4b5563;
+    margin-bottom:6px;
+  }
+
+  .mobileEmpty {
+    padding:10px 12px;
+    font-size:13px;
+    color:#6b7280;
+  }
 }

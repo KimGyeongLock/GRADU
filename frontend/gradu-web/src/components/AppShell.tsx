@@ -1,3 +1,4 @@
+// src/layout/AppShell.tsx (경로는 너 프로젝트에 맞게)
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { getDisplayName } from "../lib/displayName";
@@ -62,8 +63,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-
-      <hr className="appRule" />
 
       <main className="appMain">
         <div className="appContent">{children}</div>

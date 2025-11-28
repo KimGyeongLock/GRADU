@@ -11,23 +11,29 @@
 /* Header */
 .appHeader {
   width: 100%;
-  /* background: #ffffff; */
+  /* 선 싫다고 해서 border-bottom 도 안 줌 */
 }
 
 .appHeaderInner {
   max-width: 1200px;
-  height: 48px;                 /* h-12 */
-  margin: 0 auto;               /* 가운데 정렬 */
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px 24px;       /* 기본(웹) 좌우 여백 */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .appTitle {
-  font-size: 22px;              /* text-2xl */
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.02em;
   margin-block: 10px;
+}
+
+.appTitleLink {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* Account / Dropdown */
@@ -40,7 +46,7 @@
   border-radius: 9999px;
   padding: 4px 10px;
   font-size: 14px;
-  color: #374151;               /* gray-700 */
+  color: #374151;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -74,22 +80,28 @@
 }
 .accountMenuItem:hover { background: #f9fafb; }
 
-/* Full-bleed divider under header */
-.appRule {
-  height: 1px;
-  background: rgba(0,0,0,0.4);
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  border: 0;
-}
-
 /* Main & content container */
 .appMain { flex: 1; width: 100%; }
 
 .appContent {
   max-width: 1200px;
   width: 100%;
-  padding: 32px 24px;   /* py-8 px-6 */
-  margin: 0 auto;       /* 가운데 정렬 */
+  padding: 32px 24px;
+  margin: 0 auto;
+}
+
+/* 📱 모바일에서 로고/계정 양 끝 여백 조금 더 주기 */
+@media (max-width: 480px) {
+  .appHeaderInner {
+    padding-left: 30px;
+    padding-right: 10px;
+  }
+
+  .appTitle {
+    font-size: 20px;
+  }
+
+  .accountBtn {
+    font-size: 13px;
+  }
 }
