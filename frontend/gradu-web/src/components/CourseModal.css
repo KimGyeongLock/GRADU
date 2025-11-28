@@ -1,0 +1,159 @@
+/* 공용 코스 모달 폼 스타일 */
+
+.cm-form {
+  display: grid;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.cm-field {
+  display: grid;
+  gap: 6px;
+}
+
+.cm-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cm-hint {
+  font-weight: 400;
+  color: #6b7280;
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.cm-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  color: #111827;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+.cm-input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+  border-color: #2563eb;
+}
+
+.cm-grid2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .cm-grid2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.cm-error {
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  padding: 8px 12px;
+}
+
+/* 버튼 공통 */
+.cm-btn {
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.cm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cm-btn-ghost {
+  background: #fff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+}
+
+.cm-btn-ghost:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.cm-btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.cm-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+/* ENG 뱃지 재사용 (있으면) */
+.cm-badge-eng {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 토글 스위치 */
+.cm-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.cm-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.cm-toggle span {
+  position: absolute;
+  inset: 0;
+  background: #e5e7eb;
+  border-radius: 999px;
+  transition: 0.2s;
+}
+
+.cm-toggle span::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.cm-toggle input:checked + span {
+  background: #2563eb;
+}
+
+.cm-toggle input:checked + span::before {
+  transform: translateX(20px);
+}
+
+.cm-btn + .cm-btn {
+  margin-left: 10px; /* 원하는 만큼 조절 (8~12px 정도 추천) */
+}
+
+.cm-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}

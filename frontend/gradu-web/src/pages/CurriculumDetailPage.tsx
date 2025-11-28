@@ -1,9 +1,12 @@
+// src/pages/CurriculumDetailPage.tsx
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance, getStudentId } from "../lib/axios";
 import EditCourseModal from "../components/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
+import { formatSemester } from "./CurriculumPage/curriculumTypes";
+
 
 export type CourseDto = {
   id: number;
@@ -13,9 +16,8 @@ export type CourseDto = {
   designedCredit: number | null;
   grade: string | null;
   isEnglish: boolean;
-  academicYear: number;             // ← 서버에서 내려오는 연도(예: 2025)
-  term: "1" | "2" | "sum" | "win";  // ← 1, 2, sum, win
-  // displaySemester?: string;       // (서버가 제공 시 우선 사용 가능)
+  academicYear: number;
+  term: "1" | "2" | "sum" | "win";
 };
 
 export const KOR_LABELS: Record<string, string> = {
@@ -32,17 +34,6 @@ export const KOR_LABELS: Record<string, string> = {
 export const CATEGORY_ORDER = Object.keys(KOR_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
 
-/** ex) 2025 + '1'  -> '25-1'
- *      2025 + 'sum'-> '25-summer'
- *      2025 + 'win'-> '25-winter'
- */
-function formatSemester(year?: number, term?: CourseDto["term"]) {
-  if (!year || !term) return "-";
-  const yy = String(year).slice(-2);
-  const t = term === "1" || term === "2" ? term : term === "sum" ? "summer" : "winter";
-  return `${yy}-${t}`;
-}
-
 export default function CurriculumDetailPage() {
   const { category = "" } = useParams();
   const sid = getStudentId() || "";
@@ -57,7 +48,12 @@ export default function CurriculumDetailPage() {
   const label = isValid ? KOR_LABELS[categoryEnum] : categoryEnum;
   const isMajor = categoryEnum === "MAJOR";
 
-  const { data = [], isLoading, isError, error } = useQuery<CourseDto[]>({
+  const {
+    data = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery<CourseDto[]>({
     queryKey: ["courses-by-category", sid, categoryEnum],
     enabled: !!sid && isValid,
     queryFn: async () => {
@@ -72,23 +68,40 @@ export default function CurriculumDetailPage() {
   // 삭제
   const deleteMutation = useMutation({
     mutationFn: async (courseId: number) => {
-      const url = `/api/v1/students/${encodeURIComponent(sid)}/courses/${courseId}`;
+      const url = `/api/v1/students/${encodeURIComponent(
+        sid
+      )}/courses/${courseId}`;
       await axiosInstance.delete(url);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["courses-by-category", sid, categoryEnum] });
+      qc.invalidateQueries({
+        queryKey: ["courses-by-category", sid, categoryEnum],
+      });
     },
   });
+
+  const handleDelete = (course: CourseDto) => {
+    if (window.confirm(`"${course.name}" 과목을 삭제할까요?`)) {
+      deleteMutation.mutate(course.id);
+    }
+  };
 
   // 수정 모달 상태
   const [editing, setEditing] = useState<CourseDto | null>(null);
   const closeEdit = () => setEditing(null);
   const handleEdited = () => {
-    qc.invalidateQueries({ queryKey: ["courses-by-category", sid, categoryEnum] });
+    qc.invalidateQueries({
+      queryKey: ["courses-by-category", sid, categoryEnum],
+    });
     closeEdit();
   };
 
-  if (!sid) return <div className={s.centerNotice}>로그인 정보를 찾을 수 없습니다.</div>;
+  if (!sid)
+    return (
+      <div className={s.centerNotice}>
+        로그인 정보를 찾을 수 없습니다.
+      </div>
+    );
   if (!isValid) {
     return (
       <div className={s.centerNotice}>
@@ -122,49 +135,141 @@ export default function CurriculumDetailPage() {
         ) : data.length === 0 ? (
           <div className={s.empty}>등록된 과목이 없습니다.</div>
         ) : (
-          <table className={s.table}>
-            <thead>
-              <tr>
-                <th className={s.th} style={{ width: "31%" }}>과목명</th>
-                <th className={s.th} style={{ width: "10%" }}>학점</th>
-                {isMajor && <th className={s.th} style={{ width: "12%" }}>설계학점</th>}
-                <th className={s.th} style={{ width: isMajor ? "13%" : "23%" }}>성적</th>
-                <th className={s.th} style={{ width: "14%" }}>학기</th> {/* ← 추가 */}
-                <th className={s.th} style={{ width: "20%" }}>작업</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((c, idx) => (
-                <tr key={c.id ?? `${c.name}-${idx}`} className={idx % 2 ? s.rowEven : undefined}>
-                  <td className={s.td}>{c.name}</td>
-                  <td className={s.td}>{c.credit}</td>
-                  {isMajor && <td className={s.td}>{c.designedCredit ?? "-"}</td>}
-                  <td className={s.td}>{c.grade || "-"}</td>
-                  <td className={s.td}>
-                    {formatSemester(c.academicYear, c.term)}
-                  </td>
+          <>
+            {/* 💻 데스크톱: 테이블 */}
+            <div className={s.desktopOnly}>
+              <table className={s.table}>
+                <thead>
+                  <tr>
+                    <th className={s.th} style={{ width: "31%" }}>
+                      과목명
+                    </th>
+                    <th className={s.th} style={{ width: "10%" }}>
+                      학점
+                    </th>
+                    {isMajor && (
+                      <th className={s.th} style={{ width: "12%" }}>
+                        설계학점
+                      </th>
+                    )}
+                    <th
+                      className={s.th}
+                      style={{ width: isMajor ? "13%" : "23%" }}
+                    >
+                      성적
+                    </th>
+                    <th className={s.th} style={{ width: "14%" }}>
+                      학기
+                    </th>
+                    <th className={s.th} style={{ width: "20%" }}>
+                      작업
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((c, idx) => (
+                    <tr
+                      key={c.id ?? `${c.name}-${idx}`}
+                      className={idx % 2 ? s.rowEven : undefined}
+                    >
+                      <td className={s.td}>
+                        {c.name}
+                        {c.isEnglish && (
+                          <span className={s.badgeEng}>ENG</span>
+                        )}
+                      </td>
+                      <td className={s.td}>{c.credit}</td>
+                      {isMajor && (
+                        <td className={s.td}>{c.designedCredit ?? "-"}</td>
+                      )}
+                      <td className={s.td}>{c.grade || "-"}</td>
+                      <td className={s.td}>
+                        {formatSemester(c.academicYear, c.term)}
+                      </td>
 
-                  <td className={s.tdActions}>
-                    <div className={s.btnGroup}>
-                      <button className={s.btnGhost} onClick={() => setEditing(c)}>수정</button>
+                      <td className={s.tdActions}>
+                        <div className={s.btnGroup}>
+                          <button
+                            className={s.btnGhost}
+                            onClick={() => setEditing(c)}
+                          >
+                            수정
+                          </button>
+                          <button
+                            className={s.btnDanger}
+                            onClick={() => handleDelete(c)}
+                            disabled={deleteMutation.isPending}
+                            title="삭제"
+                          >
+                            {deleteMutation.isPending ? "삭제 중…" : "삭제"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 📱 모바일: 카드 리스트 */}
+            <div className={s.mobileOnly}>
+              <div className={s.mobileList}>
+                {data.map((c) => (
+                  <div key={c.id} className={s.mobileCard}>
+                    <div className={s.mobileCardHeader}>
+                      <div className={s.mobileCourseTitle}>
+                        <span className={s.mobileCourseName}>{c.name}</span>
+                        {c.isEnglish && (
+                          <span className={s.badgeEng}>ENG</span>
+                        )}
+                      </div>
+                      <span className={s.mobileSemester}>
+                        {formatSemester(c.academicYear, c.term)}
+                      </span>
+                    </div>
+
+                    <div className={s.mobileCardBody}>
+                      <div className={s.mobileRow}>
+                        <span className={s.mobileLabel}>학점</span>
+                        <span className={s.mobileValue}>{c.credit}</span>
+                      </div>
+
+                      {isMajor && (
+                        <div className={s.mobileRow}>
+                          <span className={s.mobileLabel}>설계학점</span>
+                          <span className={s.mobileValue}>
+                            {c.designedCredit ?? "-"}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className={s.mobileRow}>
+                        <span className={s.mobileLabel}>성적</span>
+                        <span className={s.mobileValue}>{c.grade || "-"}</span>
+                      </div>
+                    </div>
+
+                    <div className={s.mobileCardFooter}>
+                      <button
+                        className={s.btnGhost}
+                        onClick={() => setEditing(c)}
+                      >
+                        수정
+                      </button>
                       <button
                         className={s.btnDanger}
-                        onClick={() => {
-                          if (window.confirm(`"${c.name}" 과목을 삭제할까요?`)) {
-                            deleteMutation.mutate(c.id);
-                          }
-                        }}
+                        onClick={() => handleDelete(c)}
                         disabled={deleteMutation.isPending}
                         title="삭제"
                       >
                         {deleteMutation.isPending ? "삭제 중…" : "삭제"}
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
 

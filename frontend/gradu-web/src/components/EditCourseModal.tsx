@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../lib/axios";
 import Modal from "./Modal";
-import s from "../pages/CurriculumDetail.module.css";
 import type { CourseDto } from "../pages/CurriculumDetailPage";
+import "./CourseModal.css";
 
 const KOR_LABELS: Record<string, string> = {
   FAITH_WORLDVIEW: "신앙및세계관",
@@ -25,7 +25,7 @@ const TERM_OPTIONS = [
   { value: "sum", label: "여름학기(summer)" },
   { value: "win", label: "겨울학기(winter)" },
 ] as const;
-type TermCode = typeof TERM_OPTIONS[number]["value"];
+type TermCode = (typeof TERM_OPTIONS)[number]["value"];
 
 type Props = {
   open: boolean;
@@ -37,16 +37,22 @@ type Props = {
 
 type FormState = {
   name: string;
-  credit: string;          // 문자열로 관리
-  designedCredit: string;  // 문자열
+  credit: string;
+  designedCredit: string;
   grade: string;
   category: string;
   isEnglish: boolean;
-  academicYear: string;    // "2025"
-  term: TermCode;          // "1"|"2"|"sum"|"win"
+  academicYear: string;
+  term: TermCode;
 };
 
-export default function EditCourseModal({ open, course, sid, onClose, onSaved }: Props) {
+export default function EditCourseModal({
+  open,
+  course,
+  sid,
+  onClose,
+  onSaved,
+}: Props) {
   const [form, setForm] = useState<FormState>({
     name: "",
     credit: "",
@@ -74,27 +80,26 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         grade: course.grade ?? "",
         category: course.category ?? "MAJOR",
         isEnglish: !!course.isEnglish,
-        academicYear: String(course.academicYear ?? new Date().getFullYear()),
+        academicYear: String(
+          course.academicYear ?? new Date().getFullYear()
+        ),
         term: (course.term as TermCode) ?? "1",
       });
     }
   }, [open, course]);
 
   const onChange = <K extends keyof FormState>(k: K, v: FormState[K]) => {
-    if (k === "credit") {
-      if (typeof v === "string") {
-        // 숫자/점 1개 + 소수 1자리
-        v = (v as string)
-          .replace(/[^\d.]/g, "")
-          .replace(/(\..*)\./g, "$1")
-          .replace(/^(\d+)\.(\d?).*$/, "$1.$2") as any;
-      }
+    if (k === "credit" && typeof v === "string") {
+      v = v
+        .replace(/[^\d.]/g, "")
+        .replace(/(\..*)\./g, "$1")
+        .replace(/^(\d+)\.(\d?).*$/, "$1.$2") as any;
     }
     if (k === "designedCredit" && typeof v === "string") {
-      v = (v as string).replace(/\D/g, "") as any; // 정수만
+      v = v.replace(/\D/g, "") as any;
     }
     if (k === "academicYear" && typeof v === "string") {
-      v = (v as string).replace(/[^\d]/g, "").slice(0, 4) as any; // 4자리
+      v = v.replace(/[^\d]/g, "").slice(0, 4) as any;
     }
     if (k === "category") {
       const nextCat = v as string;
@@ -114,8 +119,6 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
 
       const creditNum =
         form.credit.trim() === "" ? null : Number(form.credit.trim());
-
-      // 0.5 단위 검증(입력했을 때만)
       if (creditNum != null) {
         if (Number.isNaN(creditNum)) throw new Error("학점이 올바르지 않습니다.");
         if (Math.round(creditNum * 2) !== creditNum * 2) {
@@ -124,15 +127,19 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
       }
 
       const designedNumRaw =
-        form.designedCredit.trim() === "" ? null : Number(form.designedCredit.trim());
-      const designedNum =
-        isMajor ? (Number.isNaN(designedNumRaw as number) ? null : designedNumRaw) : null;
+        form.designedCredit.trim() === ""
+          ? null
+          : Number(form.designedCredit.trim());
+      const designedNum = isMajor
+        ? Number.isNaN(designedNumRaw as number)
+          ? null
+          : designedNumRaw
+        : null;
 
-      // 학기 검증
       if (!form.academicYear || form.academicYear.length !== 4) {
         throw new Error("연도는 4자리(예: 2025)로 입력하세요.");
       }
-      if (!TERM_OPTIONS.find(t => t.value === form.term)) {
+      if (!TERM_OPTIONS.find((t) => t.value === form.term)) {
         throw new Error("학기를 선택하세요.");
       }
 
@@ -156,7 +163,9 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         term: form.term,
       };
 
-      const url = `/api/v1/students/${encodeURIComponent(sid)}/courses/${course.id}`;
+      const url = `/api/v1/students/${encodeURIComponent(
+        sid
+      )}/courses/${course.id}`;
       await axiosInstance.patch(url, body);
     },
     onSuccess: () => onSaved(),
@@ -190,7 +199,7 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         <>
           <button
             type="button"
-            className={s.btnGhost}
+            className="cm-btn cm-btn-ghost"
             disabled={patchMutation.isPending}
             onClick={onClose}
           >
@@ -199,7 +208,7 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
           <button
             form="edit-course-form"
             type="submit"
-            className={s.btnPrimary}
+            className="cm-btn cm-btn-primary"
             disabled={patchMutation.isPending}
           >
             {patchMutation.isPending ? "저장 중…" : "저장"}
@@ -207,36 +216,40 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
         </>
       }
     >
-      <form id="edit-course-form" onSubmit={onSubmit} className={s.form}>
-        {errMsg && <div className={s.error}>{errMsg}</div>}
+      <form
+        id="edit-course-form"
+        onSubmit={onSubmit}
+        className="cm-form"
+      >
+        {errMsg && <div className="cm-error">{errMsg}</div>}
 
-        <div className={s.label}>
-          과목명
+        <div className="cm-field">
+          <label className="cm-label">과목명</label>
           <input
-            className={s.input}
+            className="cm-input"
             value={form.name}
             onChange={(e) => onChange("name", e.target.value)}
             placeholder="예: 자료구조"
           />
         </div>
 
-        <div className={s.grid2}>
-          <label className={s.label}>
-            학점
+        <div className="cm-grid2">
+          <div className="cm-field">
+            <label className="cm-label">학점</label>
             <input
-              className={s.input}
+              className="cm-input"
               type="text"
               inputMode="decimal"
               value={form.credit}
               onChange={(e) => onChange("credit", e.target.value)}
               placeholder="예: 3 / 3.5"
             />
-          </label>
+          </div>
 
-          <label className={s.label}>
-            카테고리
+          <div className="cm-field">
+            <label className="cm-label">카테고리</label>
             <select
-              className={s.input}
+              className="cm-input"
               value={form.category}
               onChange={(e) => onChange("category", e.target.value)}
             >
@@ -246,14 +259,14 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
                 </option>
               ))}
             </select>
-          </label>
+          </div>
         </div>
 
         {isMajor && (
-          <label className={s.label}>
-            설계학점
+          <div className="cm-field">
+            <label className="cm-label">설계학점</label>
             <input
-              className={s.input}
+              className="cm-input"
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -261,60 +274,63 @@ export default function EditCourseModal({ open, course, sid, onClose, onSaved }:
               onChange={(e) => onChange("designedCredit", e.target.value)}
               placeholder="예: 2"
             />
-          </label>
+          </div>
         )}
 
-        {/* 학기(연도+학기) */}
-        <div className={s.grid2}>
-          <label className={s.label}>
-            연도
+        <div className="cm-grid2">
+          <div className="cm-field">
+            <label className="cm-label">연도</label>
             <input
-              className={s.input}
+              className="cm-input"
               inputMode="numeric"
               pattern="\d{4}"
               value={form.academicYear}
               onChange={(e) => onChange("academicYear", e.target.value)}
               placeholder="예: 2025"
             />
-          </label>
+          </div>
 
-          <label className={s.label}>
-            학기
+          <div className="cm-field">
+            <label className="cm-label">학기</label>
             <select
-              className={s.input}
+              className="cm-input"
               value={form.term}
               onChange={(e) => onChange("term", e.target.value as TermCode)}
             >
               {TERM_OPTIONS.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
               ))}
             </select>
-          </label>
+          </div>
         </div>
 
-        <label className={s.label}>
-          성적
+        <div className="cm-field">
+          <label className="cm-label">성적</label>
           <input
-            className={s.input}
+            className="cm-input"
             value={form.grade}
             onChange={(e) => onChange("grade", e.target.value)}
             placeholder="예: A+"
           />
-        </label>
+        </div>
 
-        <div className={s.label}>
-          영어강의 여부
-          <div>
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+        <div className="cm-field">
+          <label className="cm-label">영어강의 여부</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <label className="cm-toggle">
               <input
                 type="checkbox"
                 checked={form.isEnglish}
                 onChange={(e) => onChange("isEnglish", e.target.checked)}
               />
-              <span>{form.isEnglish ? "영어강의" : "일반강의"}</span>
+              <span />
             </label>
+            <span>{form.isEnglish ? "영어강의" : "일반강의"}</span>
           </div>
         </div>
+
       </form>
     </Modal>
   );

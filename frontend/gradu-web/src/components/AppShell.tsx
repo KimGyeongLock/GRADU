@@ -63,8 +63,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <hr className="appRule" />
-
       <main className="appMain">
         <div className="appContent">{children}</div>
       </main>
