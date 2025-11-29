@@ -26,7 +26,6 @@ public class SummaryCalculator {
         if (credit == null) return 0;
         return credit.multiply(BigDecimal.valueOf(2)).intValue(); // 0.5 단위 전제
     }
-    private static double fromUnits(int units) { return units / 2.0; }
 
     // “기독교 세계관”만 총합/영어/GPA 1회만 반영
     private static String normName(String s) {

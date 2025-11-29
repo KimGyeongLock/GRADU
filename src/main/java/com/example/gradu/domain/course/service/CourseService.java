@@ -83,7 +83,7 @@ public class CourseService {
         Course course = loadCourse(studentId, courseId);
 
         UpdateContext ctx = computedNewValues(course, request);
-
+        System.out.println(request.isEnglish());
         if (ctx.categoryChanged) {
             applyCategoryChange(studentId, ctx);
         } else {
@@ -182,7 +182,9 @@ public class CourseService {
 
         if (ctx.semesterChanged) course.changeSemester(ctx.newYear, ctx.newTerm);
 
+        System.out.println(course.getIsEnglish());
         course.changeEnglish(request.isEnglish());
+        System.out.println(course.getIsEnglish());
     }
 
     private Curriculum getCurriculum(String studentId, Category category) {
