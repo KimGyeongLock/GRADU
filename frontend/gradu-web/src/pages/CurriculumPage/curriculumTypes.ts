@@ -56,6 +56,10 @@ export const CATEGORY_LABELS: Record<string, string> = {
   MAJOR: "전공",
 };
 
+export function getCategoryLabel(code: string) {
+  return CATEGORY_LABELS[code] ?? code; // 혹시 모르는 값은 그냥 원문 노출
+}
+
 export const fmtCred = (n?: number | null) => {
   if (n == null || Number.isNaN(n)) return "-";
   const v = Math.round(n * 10) / 10;

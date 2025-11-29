@@ -1,10 +1,10 @@
 // src/components/EditCourseModal.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { axiosInstance } from "../lib/axios";
-import Modal from "./Modal";
-import type { CourseDto } from "../pages/CurriculumDetailPage";
-import "./CourseModal.css";
+import { axiosInstance } from "../../../lib/axios";
+import Modal from "../../../components/Modal";
+import type { CourseDto } from "../../CurriculumDetailPage/CurriculumDetailPage";
+import "../../../components/CourseModal.css";
 
 const KOR_LABELS: Record<string, string> = {
   FAITH_WORLDVIEW: "신앙및세계관",

@@ -1,5 +1,6 @@
 package com.example.gradu.domain.course.service;
 
+import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
 import com.example.gradu.domain.course.entity.Course;
@@ -211,6 +212,28 @@ public class CourseService {
 
     public List<Course> getCoursesAll(String studentId) {
         return courseRepository.findByStudentStudentId(studentId);
+    }
+
+    @Transactional
+    public void bulkInsert(String studentId, List<CourseBulkRequest> courses) {
+        Student student = studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+
+        List<Course> entites = courses.stream()
+                .map(req -> Course.builder()
+                        .student(student)
+                        .name(req.getName())
+                        .category(req.getCategory())
+                        .credit(req.getCredit())
+                        .designedCredit(req.getDesignedCredit())
+                        .grade(req.getGrade())
+                        .isEnglish(req.isEnglish())
+                        .academicYear(req.getAcademicYear())
+                        .term(Term.fromCode(req.getTerm()))
+                        .build()
+                ).toList();
+        courseRepository.saveAll(entites);
+        summaryService.recomputeAndSave(studentId);
     }
 
     /** 변경 계산 컨텍스트 */
