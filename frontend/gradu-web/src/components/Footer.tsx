@@ -1,5 +1,11 @@
 import s from "./Footer.module.css";
 
+const GMAIL_URL =
+  "https://mail.google.com/mail/?view=cm&fs=1" +
+  "&to=gradu.ate0420@gmail.com" +
+  "&su=" + encodeURIComponent("GRADU 문의") +
+  "&body=" + encodeURIComponent("안녕하세요, GRADU 관련 문의드립니다.\n\n");
+
 export default function Footer() {
   return (
     <footer className={s.footer}>
@@ -23,7 +29,7 @@ export default function Footer() {
             <a href="/notice">공지사항</a>
             {/* <a href="/faq">자주 묻는 질문</a> */}
           </div>
-{/* 
+          {/* 
           <div className={s.col}>
             <h4>약관</h4>
             <a href="/terms">이용약관</a>
@@ -33,7 +39,10 @@ export default function Footer() {
           <div className={s.col}>
             <h4>문의</h4>
             <span>gradu.ate0420@gmail.com</span>
-            <a href="/contact">문의하기</a>
+            <a href={GMAIL_URL} target="_blank" rel="noreferrer">
+            문의하기
+          </a>
+
           </div>
         </div>
       </div>
