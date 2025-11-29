@@ -18,7 +18,7 @@ import { PrivateRoute } from "./routes/PrivateRoute";
 
 
 import "./index.css";
-import "./styles/reset.css"; // (원하는 대로) 마지막에
+import "./styles/reset.css";
 
 const qc = new QueryClient();
 

@@ -64,10 +64,8 @@
   cursor: pointer;
 }
 
-/* ✅ 플로팅 FAB 영역 */
 .plusArea {
-  position: fixed; /* ✅ 스크롤해도 고정 */
-  right: max(16px, calc((100vw - 1000px) / 2 - 72px));
+  position: sticky;
   bottom: 32px;
 
   display: flex;
@@ -75,6 +73,11 @@
   align-items: flex-end;
   gap: 8px;
   z-index: 40;
+
+  margin-left: auto;
+  padding-right: 16px;
+
+  transform: translateX(130px);  /* ✅ 오른쪽으로 8px 이동 */
 }
 
 .fabMenu {
@@ -640,5 +643,9 @@
     font-size: 13px;
     padding: 5px 10px;
   }
-  
+  .plusArea {
+    bottom: 20px;
+    padding-right: 8px;
+    transform: translateX(30px);  /* 모바일도 살짝 오른쪽 */
+  }
 }

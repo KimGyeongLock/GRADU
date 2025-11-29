@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { getDisplayName } from "../lib/displayName";
 import { logoutApi } from "../lib/axios";
+import Footer from "./Footer";
 
 import "./AppShell.css";
 
@@ -66,6 +67,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <main className="appMain">
         <div className="appContent">{children}</div>
       </main>
+      <Footer />
     </div>
   );
 }
