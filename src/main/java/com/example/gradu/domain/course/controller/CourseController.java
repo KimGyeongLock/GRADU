@@ -40,7 +40,6 @@ public class CourseController {
 
     @PatchMapping("/{courseId}")
     public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable String studentId, @PathVariable Long courseId, @RequestBody CourseUpdateRequestDto requestDto) {
-        System.out.println(requestDto);
         Course updated = courseService.updateCourse(studentId, courseId, requestDto);
         return ResponseEntity.ok(CourseResponseDto.from(updated));
     }

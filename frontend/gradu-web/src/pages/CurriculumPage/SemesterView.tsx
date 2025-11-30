@@ -1,6 +1,6 @@
 // src/pages/CurriculumPage/SemesterView.tsx
 import { useState } from "react";
-import type { CourseLite, Term } from "./curriculumTypes";
+import type { CourseDto, Term } from "./curriculumTypes";
 import {
   CATEGORY_LABELS,
   fmtCred,
@@ -12,7 +12,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance, getStudentId } from "../../lib/axios";
 import EditCourseModal from "./modal/EditCourseModal";
 
-type Group = { key: string; year: number; term: Term; items: CourseLite[] };
+type Group = { key: string; year: number; term: Term; items: CourseDto[] };
 
 type Props = {
   mergedGroups: Group[];
@@ -34,14 +34,14 @@ export function SemesterView({
   const sid = getStudentId() || "";
   const qc = useQueryClient();
 
-  // 수정 모달용 상태
-  const [editing, setEditing] = useState<CourseLite | null>(null);
+  // ✅ 이제 CourseDto 기준으로 관리
+  const [editing, setEditing] = useState<CourseDto | null>(null);
+
   const closeEdit = () => setEditing(null);
+
   const handleEdited = () => {
-    // ✅ 학기/요약 데이터 다시 가져오기 (queryKey는 실제 사용 중인 키로 변경)
-    qc.invalidateQueries({
-      queryKey: ["courses-semester", sid],
-    });
+    qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
+    qc.invalidateQueries({ queryKey: ["summary", sid] });
     closeEdit();
   };
 
@@ -54,13 +54,12 @@ export function SemesterView({
       await axiosInstance.delete(url);
     },
     onSuccess: () => {
-      qc.invalidateQueries({
-        queryKey: ["courses-semester", sid],
-      });
+      qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
+      qc.invalidateQueries({ queryKey: ["summary", sid] });
     },
   });
 
-  const handleDelete = (course: CourseLite) => {
+  const handleDelete = (course: CourseDto) => {
     if (window.confirm(`"${course.name}" 과목을 삭제할까요?`)) {
       if (!course.id) return;
       deleteMutation.mutate(course.id);
@@ -151,7 +150,6 @@ export function SemesterView({
                                 </button>
                               </div>
                             </td>
-
                           </tr>
                         ))
                       ) : (
@@ -248,7 +246,7 @@ export function SemesterView({
 
       <EditCourseModal
         open={!!editing}
-        course={editing as any}
+        course={editing}
         sid={sid}
         onClose={closeEdit}
         onSaved={handleEdited}

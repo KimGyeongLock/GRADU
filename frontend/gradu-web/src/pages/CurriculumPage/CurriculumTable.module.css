@@ -77,7 +77,7 @@
   margin-left: auto;
   padding-right: 16px;
 
-  transform: translateX(130px);  /* ✅ 오른쪽으로 8px 이동 */
+  transform: translateX(130px);
 }
 
 .fabMenu {
@@ -646,6 +646,6 @@
   .plusArea {
     bottom: 20px;
     padding-right: 8px;
-    transform: translateX(30px);  /* 모바일도 살짝 오른쪽 */
+    transform: translateX(30px);
   }
 }

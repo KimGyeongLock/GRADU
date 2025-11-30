@@ -5,20 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance, getStudentId } from "../../lib/axios";
 import EditCourseModal from "../CurriculumPage/modal/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
+import type { CourseDto } from "../CurriculumPage/curriculumTypes";
 import { formatSemester } from "../CurriculumPage/curriculumTypes";
-
-
-export type CourseDto = {
-  id: number;
-  name: string;
-  category: string;
-  credit: number;
-  designedCredit: number | null;
-  grade: string | null;
-  isEnglish: boolean;
-  academicYear: number;
-  term: "1" | "2" | "sum" | "win";
-};
 
 export const KOR_LABELS: Record<string, string> = {
   FAITH_WORLDVIEW: "신앙및세계관",

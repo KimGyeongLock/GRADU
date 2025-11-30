@@ -1,12 +1,8 @@
 import s from "./Footer.module.css";
 
-const GMAIL_URL =
-  "https://mail.google.com/mail/?view=cm&fs=1" +
-  "&to=gradu.ate0420@gmail.com" +
-  "&su=" + encodeURIComponent("GRADU 문의") +
-  "&body=" + encodeURIComponent("안녕하세요, GRADU 관련 문의드립니다.\n\n");
-
 export default function Footer() {
+  const GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=gradu.ate0420@gmail.com&su=${encodeURIComponent("GRADU 문의")}&body=${encodeURIComponent("안녕하세요, GRADU 관련 문의드립니다.\n\n")}`;
+  
   return (
     <footer className={s.footer}>
       <div className={s.inner}>
