@@ -10,15 +10,15 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import AppShell from "./components/AppShell";
-import CurriculumPage from "./pages/CurriculumPage";
-import CurriculumDetailPage from "./pages/CurriculumDetailPage"; // ← 상세 페이지
+import CurriculumPage from "./pages/CurriculumPage/CurriculumPage";
+import CurriculumDetailPage from "./pages/CurriculumDetailPage/CurriculumDetailPage"; // ← 상세 페이지
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { PrivateRoute } from "./routes/PrivateRoute";
 
 
 import "./index.css";
-import "./styles/reset.css"; // (원하는 대로) 마지막에
+import "./styles/reset.css";
 
 const qc = new QueryClient();
 

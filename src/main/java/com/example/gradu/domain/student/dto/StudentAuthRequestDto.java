@@ -1,5 +1,6 @@
 package com.example.gradu.domain.student.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -21,4 +22,7 @@ public class StudentAuthRequestDto {
 
     private String name;
     private String code;
+
+    @Email(message = "유효한 이메일 주소여야 합니다.")
+    private String email;
 }

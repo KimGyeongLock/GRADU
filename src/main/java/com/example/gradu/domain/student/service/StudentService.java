@@ -5,7 +5,6 @@ import com.example.gradu.domain.email.service.EmailVerificationService;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
-import com.example.gradu.global.config.EmailProperties;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
 import com.example.gradu.global.exception.email.EmailException;
@@ -24,20 +23,14 @@ public class StudentService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenStore refreshTokenStore;
-    private final EmailProperties emailProperties;
     private final CurriculumService curriculumService;
     private final EmailVerificationService emailVerificationService;
 
-    private String createEmail(String studentId) {
-        return studentId + emailProperties.getDomain();
-    }
-
     @Transactional
-    public void register(String studentId, String password, String name, String code) {
+    public void register(String studentId, String password, String name, String code, String email) {
         if (studentRepository.findByStudentId(studentId).isPresent())
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
-        String email = createEmail(studentId);
         boolean verified = emailVerificationService.verifyCode(email, code);
         if (!verified) {
             throw new EmailException(ErrorCode.EMAIL_NOT_VERIFIED);

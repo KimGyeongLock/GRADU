@@ -1,0 +1,651 @@
+.card {
+  max-width: 1000px;
+  margin: 18px auto 0;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  padding: 24px;
+  position: relative;
+  z-index: 10;
+  transition: opacity .18s, transform .18s;
+}
+
+.cardOnTop {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.cardDimmed {
+  opacity: .65;
+  transform: translateY(2px);
+}
+
+/* 공통 테이블 래퍼 */
+.tableWrap {
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: center;
+  font-size: 15px;
+}
+
+.th {
+  background: #f9fafb;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+}
+
+.td {
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+}
+
+.rowEven {
+  background: rgba(249, 250, 251, 0.4);
+}
+
+.statusPass { color:#16a34a; font-weight:700; }
+.statusFail { color:#dc2626; font-weight:700; }
+.statusNeutral { color:#6b7280; }
+
+.viewBtn {
+  padding: 6px 10px;
+  border-radius: 9999px;
+  font-size: 14px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+}
+
+.plusArea {
+  position: sticky;
+  bottom: 32px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 40;
+
+  margin-left: auto;
+  padding-right: 16px;
+
+  transform: translateX(130px);
+}
+
+.fabMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+  animation: fab-fade-up 0.18s ease-out;
+}
+
+@keyframes fab-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fabItem {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f9fafb;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 12px 32px rgba(15,23,42,0.35);
+  white-space: nowrap;
+}
+
+.fabItem:hover {
+  background: #111827;
+}
+
+/* 동그란 플로팅 버튼 */
+.plusBtn {
+  height: 52px;
+  width: 52px;
+  border-radius: 9999px;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+  border: 0;
+  cursor: pointer;
+  transform: rotate(0deg);
+  transition:
+    transform 0.25s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.plusBtn:hover {
+  background: #1d4ed8;
+}
+
+.plusBtnOpen {
+  transform: rotate(180deg); /* 플립 효과 */
+  background: #1d4ed8;
+}
+
+/* + → X 아이콘 */
+.plusIcon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+}
+
+.plusIcon::before,
+.plusIcon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: #fff;
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+
+/* 기본 + */
+.plusIcon::before {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+.plusIcon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+/* 열린 상태 X */
+.plusBtnOpen .plusIcon::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.plusBtnOpen .plusIcon::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.summarySep td { height: 10px; background: #f3f4f6; border: none; }
+
+.tdLabel {
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  background:#fafafa;
+  font-weight:600;
+}
+
+.tdNote {
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  color:#6b7280;
+}
+
+.tdValue {
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  text-align:center;
+}
+
+.summaryFinal td {
+  border-top:2px solid #e5e7eb;
+}
+
+/* 토글 */
+.toggle {
+  position:relative;
+  display:inline-block;
+  width:44px;
+  height:24px;
+}
+
+.toggle input {
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.toggle span {
+  position:absolute;
+  inset:0;
+  background:#e5e7eb;
+  border-radius:999px;
+  transition:.2s;
+}
+
+.toggle span:before {
+  content:"";
+  position:absolute;
+  height:18px;
+  width:18px;
+  left:3px;
+  top:3px;
+  background:#fff;
+  border-radius:50%;
+  transition:.2s;
+}
+
+.toggle input:checked + span { background:#2563eb; }
+.toggle input:checked + span:before { transform:translateX(20px); }
+
+/* 저장 버튼 */
+.saveBtn {
+  appearance:none;
+  -webkit-appearance:none;
+  display:inline-block;
+  padding:6px 12px;
+  background:#2563eb;
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+  line-height:1;
+  transition:transform .12s, box-shadow .12s, background-color .12s;
+}
+
+.saveBtn:hover {
+  background:#1d4ed8;
+  box-shadow:0 2px 8px rgba(37,99,235,.25);
+}
+
+.saveBtn:active { transform:translateY(1px) }
+
+.saveBtn:disabled {
+  background:#94a3b8;
+  color:#f8fafc;
+  cursor:not-allowed;
+  box-shadow:none;
+  transform:none;
+}
+
+/* 리본 탭 */
+.ribbonWrap {
+  position:relative;
+  max-width:1000px;
+  margin:0 auto;
+  height:0;
+  z-index:20;
+}
+
+.ribbon {
+  position:absolute;
+  top:-26px;
+  padding:8px 14px;
+  border-radius:10px;
+  font-weight:700;
+  font-size:13px;
+  border:1px solid rgba(0,0,0,.08);
+  box-shadow:0 8px 18px rgba(0,0,0,.12);
+  background:#fffbe8;
+  transform:rotate(-2deg);
+  cursor:pointer;
+  user-select:none;
+  transition:transform .15s, box-shadow .15s, background-color .15s;
+}
+
+.ribbon:hover {
+  transform:translateY(-1px) rotate(-2deg);
+  box-shadow:0 10px 22px rgba(0,0,0,.16);
+}
+
+.ribbonActive {
+  background:#fff3c4;
+  box-shadow:0 12px 26px rgba(0,0,0,.18);
+}
+
+.ribbonLeft { left:22px }
+.ribbonLeft2 { left:120px; transform:rotate(2deg) }
+.ribbonLeft2:hover { transform:translateY(-1px) rotate(2deg) }
+
+/* 학기별 보기 */
+.semesterWrap { padding:12px }
+
+.semesterCard {
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  overflow:hidden;
+  background:#fff;
+  margin-bottom:16px;
+}
+
+.semesterHeader {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#f3f4f6;
+  color:#111827;
+  font-weight:700;
+  padding:10px 12px;
+  border-bottom:1px solid #e5e7eb;
+}
+
+.badgeEng {
+  margin-left:8px;
+  display:inline-block;
+  padding:2px 8px;
+  font-size:12px;
+  border-radius:9999px;
+  background:#e0f2fe;
+  color:#0369a1;
+  font-weight:700;
+}
+
+.badgePlan {
+  margin-left:8px;
+  font-size:12px;
+  color:#7c3aed;
+  background:#ede9fe;
+  border-radius:9999px;
+  padding:2px 8px;
+  font-weight:700;
+}
+
+.semesterAddSmall {
+  margin-left:auto;
+  background:#fff;
+  border:1px solid #cbd5e1;
+  color:#1f2937;
+  border-radius:8px;
+  padding:4px 10px;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.semesterAddSmall:hover { background:#f8fafc }
+
+.semesterAddBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0 4px;
+}
+
+.semesterAddBtn {
+  width: 100%;
+  max-width: 960px;
+  border: 2px dashed #c7d2fe;
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: .15s;
+}
+
+.semesterAddBtn:hover {
+  background: #e0e7ff;
+  transform: translateY(-1px);
+}
+
+/* ========= PC / 모바일 스위치 ========= */
+.desktopOnly { display: block; }
+.mobileOnly { display: none; }
+
+/* ========= 모바일 카드 스타일 ========= */
+@media (max-width: 768px) {
+  .card {
+    margin: 12px 8px 0;
+    padding: 16px 10px;
+  }
+
+  .desktopOnly { display: none; }
+  .mobileOnly { display: block; }
+
+  .mobileSummaryWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 6px;
+  }
+
+  .mobileCard {
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 10px 12px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+
+  .mobileCardHeader {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+
+  .mobileCategory {
+    font-weight:700;
+    font-size:14px;
+    color:#111827;
+  }
+
+  .mobileStatusBadge {
+    padding:2px 8px;
+    border-radius:9999px;
+    font-size:12px;
+    border:1px solid currentColor;
+  }
+
+  .mobileCardBody {
+    font-size:13px;
+  }
+
+  .mobileRow {
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:4px;
+  }
+
+  .mobileLabel {
+    color:#6b7280;
+  }
+
+  .mobileValue {
+    font-weight:600;
+    color:#111827;
+  }
+
+  .mobileCardFooter {
+    margin-top:8px;
+    text-align:right;
+  }
+
+  .mobileViewBtn {
+    padding:4px 10px;
+    border-radius:9999px;
+    font-size:12px;
+    background:#fff;
+    border:1px solid #d1d5db;
+    cursor:pointer;
+  }
+
+  /* 학기별 모바일 과목 카드 */
+  .mobileCourseList {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding:8px;
+  }
+
+  .mobileCourseCard {
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    padding:8px 10px;
+    background:#fff;
+  }
+
+  .mobileCourseTitleRow {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:4px;
+  }
+
+  .mobileCourseName {
+    font-size:14px;
+    font-weight:600;
+    color:#111827;
+  }
+
+  .mobileCourseMeta {
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    font-size:12px;
+    color:#4b5563;
+    margin-bottom:6px;
+  }
+
+  .mobileEmpty {
+    padding:10px 12px;
+    font-size:13px;
+    color:#6b7280;
+  }
+
+  /* 모바일에서 FAB 위치 조금 위로 조정 */
+  .plusArea {
+    right: 16px;
+    bottom: 20px;
+  }
+}
+
+/* 🎓 졸업 축하 배너 */
+.congratsBanner {
+  position: fixed;
+  top: 64px;            /* 헤더 바로 아래 정도 */
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fef9c3, #fffbeb);
+  color: #713f12;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  z-index: 60;
+  white-space: nowrap;
+  animation: congrats-slide-in 0.25s ease-out;
+}
+
+
+
+@keyframes congrats-slide-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* ✅ NEW 배지용 FAB 아이템 */
+.fabItemNew {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ✅ NEW 뱃지 디자인 */
+.newBadge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f97316, #ef4444);
+  color: #fff;
+  line-height: 1;
+  letter-spacing: .3px;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
+  animation: new-badge-pop 0.8s ease infinite alternate;
+}
+
+/* ✅ 살짝 튀는 애니메이션 */
+@keyframes new-badge-pop {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+.btnGroup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btnGhost,
+.btnDanger {
+  background: transparent;
+  border: 1px solid #d0d5dd;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+
+  /* ✅ 추가 */
+  white-space: nowrap;   /* 글자 줄바꿈 방지 */
+  min-width: 48px;       /* 너무 좁아지지 않게 최소 폭 */
+  text-align: center;
+}
+
+.btnDanger {
+  background: #ef4444;
+  border: none;
+  color: white;
+}
+.btnGhost:hover {
+  background: #f9fafb;
+}
+
+.btnDanger:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* 모바일에서는 조금 더 작게 */
+@media (max-width: 768px) {
+  .btnGroup {
+    gap: 6px;
+  }
+  .congratsBanner {
+    top: 56px;
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .btnGhost,
+  .btnDanger {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+  .plusArea {
+    bottom: 20px;
+    padding-right: 8px;
+    transform: translateX(30px);
+  }
+}

@@ -1,23 +1,20 @@
-package com.example.gradu.domain.course.dto;
+package com.example.gradu.domain.captureAI.dto;
 
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Data;
 
 import java.math.BigDecimal;
 
-@Getter @NoArgsConstructor @AllArgsConstructor @Builder
-public class CourseUpdateRequestDto {
+@Data
+public class CourseBulkRequest {
     private String name;
     private BigDecimal credit;
     private Integer designedCredit;
-    private String grade;
     private Category category;
+    private String grade;
     @JsonProperty("isEnglish")
     private boolean isEnglish;
-    Short academicYear;
-    String term;
+    private Short academicYear;
+    private String term;
 }

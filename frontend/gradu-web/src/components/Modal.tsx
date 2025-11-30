@@ -1,3 +1,4 @@
+// src/components/Modal.tsx
 import { useEffect, type ReactNode, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 
@@ -22,9 +23,9 @@ const wrapStyle: CSSProperties = {
 const overlayStyle: CSSProperties = {
   position: "fixed",
   inset: 0,
-  background: "rgba(0,0,0,.45)",
-  backdropFilter: "blur(1px)",
+  background: "rgba(0, 0, 0, 0.35)"
 };
+
 
 const dialogStyle: CSSProperties = {
   position: "relative",
@@ -33,8 +34,13 @@ const dialogStyle: CSSProperties = {
   width: "min(640px, 92vw)",
   maxHeight: "88vh",
   overflow: "auto",
-  boxShadow: "0 24px 64px rgba(0,0,0,.28)",
+
+  boxShadow: `
+    0 20px 40px rgba(15, 23, 42, 0.32),
+    0 0 0 1px rgba(148, 163, 184, 0.4)
+  `,
 };
+
 
 export default function Modal({
   open,
@@ -60,25 +66,28 @@ export default function Modal({
 
   return createPortal(
     <div style={wrapStyle}>
-      <div style={overlayStyle} onClick={() => closeOnBackdrop && onClose?.()} />
+      <div
+        style={overlayStyle}
+        onClick={() => closeOnBackdrop && onClose?.()}
+      />
       <div
         style={dialogStyle}
         onClick={(e) => e.stopPropagation()}
-        className="relative bg-white text-gray-900 [color-scheme:light] modal-reset ring-1 ring-black/10"
+        className="modal-reset relative bg-white text-gray-900 [color-scheme:light]"
       >
         {/* Header */}
         {title && (
           <div
             className="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-white rounded-t-2xl"
-            style={{ padding: "16px 24px" }}  // padding 보장(fallback)
+            style={{ padding: "16px 24px" }}
           >
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">{title}</h2>
               <button
                 aria-label="닫기"
                 onClick={onClose}
-                style={{ position: "absolute", top: 12, right: 12 }}
-                className="px-2 text-xl leading-none bg-transparent text-gray-700 hover:text-black"
+                style={{ position: "absolute", top: 12, right: 24 }}
+                className="px-2 text-xl leading-none bg-transparent text-gray-600 hover:text-black"
               >
                 ×
               </button>
@@ -87,7 +96,7 @@ export default function Modal({
         )}
 
         {/* Body */}
-        <div className="p-6" style={{ padding: 24 }}>
+        <div className="p-6" style={{ padding: "6px 24px 24px" }}>
           {children}
         </div>
 
@@ -95,7 +104,7 @@ export default function Modal({
         {footer && (
           <div
             className="px-6 py-4 border-t bg-white sticky bottom-0"
-            style={{ padding: "16px 24px" }}
+            style={{ padding: "10px 24px 12px" }}
           >
             <div className="flex justify-end gap-2">{footer}</div>
           </div>

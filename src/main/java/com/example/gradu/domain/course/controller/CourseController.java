@@ -1,5 +1,6 @@
 package com.example.gradu.domain.course.controller;
 
+import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseResponseDto;
 import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
@@ -31,6 +32,12 @@ public class CourseController {
         return ResponseEntity.ok(list.stream().map(CourseResponseDto::from).toList());
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<List<CourseResponseDto>> getAllCourses(@PathVariable String studentId) {
+        List<Course> list = courseService.getCoursesAll(studentId);
+        return ResponseEntity.ok(list.stream().map(CourseResponseDto::from).toList());
+    }
+
     @PatchMapping("/{courseId}")
     public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable String studentId, @PathVariable Long courseId, @RequestBody CourseUpdateRequestDto requestDto) {
         Course updated = courseService.updateCourse(studentId, courseId, requestDto);
@@ -41,5 +48,11 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable String studentId, @PathVariable Long courseId) {
         courseService.deleteCourse(studentId, courseId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<Void> saveBulk(@PathVariable String studentId, @RequestBody List<CourseBulkRequest> courses) {
+        courseService.bulkInsert(studentId, courses);
+        return ResponseEntity.ok().build();
     }
 }
