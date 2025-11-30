@@ -64,10 +64,8 @@
   cursor: pointer;
 }
 
-/* ✅ 플로팅 FAB 영역 */
 .plusArea {
-  position: fixed; /* ✅ 스크롤해도 고정 */
-  right: max(16px, calc((100vw - 1000px) / 2 - 72px));
+  position: sticky;
   bottom: 32px;
 
   display: flex;
@@ -75,6 +73,11 @@
   align-items: flex-end;
   gap: 8px;
   z-index: 40;
+
+  margin-left: auto;
+  padding-right: 16px;
+
+  transform: translateX(130px);
 }
 
 .fabMenu {
@@ -367,7 +370,6 @@
 
 .semesterAddSmall:hover { background:#f8fafc }
 
-/* ✅ 하단 바 버튼 – 파란 점선 스타일 */
 .semesterAddBar {
   display: flex;
   justify-content: center;
@@ -546,14 +548,7 @@
   animation: congrats-slide-in 0.25s ease-out;
 }
 
-/* 모바일에서는 조금 더 작게 */
-@media (max-width: 768px) {
-  .congratsBanner {
-    top: 56px;
-    font-size: 13px;
-    padding: 8px 14px;
-  }
-}
+
 
 @keyframes congrats-slide-in {
   from {
@@ -594,5 +589,63 @@
   }
   to {
     transform: scale(1.08);
+  }
+}
+
+.btnGroup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btnGhost,
+.btnDanger {
+  background: transparent;
+  border: 1px solid #d0d5dd;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+
+  /* ✅ 추가 */
+  white-space: nowrap;   /* 글자 줄바꿈 방지 */
+  min-width: 48px;       /* 너무 좁아지지 않게 최소 폭 */
+  text-align: center;
+}
+
+.btnDanger {
+  background: #ef4444;
+  border: none;
+  color: white;
+}
+.btnGhost:hover {
+  background: #f9fafb;
+}
+
+.btnDanger:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* 모바일에서는 조금 더 작게 */
+@media (max-width: 768px) {
+  .btnGroup {
+    gap: 6px;
+  }
+  .congratsBanner {
+    top: 56px;
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .btnGhost,
+  .btnDanger {
+    font-size: 13px;
+    padding: 5px 10px;
+  }
+  .plusArea {
+    bottom: 20px;
+    padding-right: 8px;
+    transform: translateX(30px);
   }
 }

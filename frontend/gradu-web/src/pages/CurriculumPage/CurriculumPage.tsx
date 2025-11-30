@@ -5,7 +5,7 @@ import { axiosInstance, getStudentId } from "../../lib/axios";
 import AddCourseModal from "./modal/AddCourseModal";
 import {
   type SummaryDto,
-  type CourseLite,
+  type CourseDto,
   type Term,
   TERM_ORDER,
 } from "./curriculumTypes";
@@ -34,7 +34,9 @@ async function fireConfetti(duration = 1800) {
 }
 
 type View = "summary" | "semester";
-type PlannedGroup = { key: string; year: number; term: Term; items: CourseLite[] };
+
+// ✅ PlannedGroup도 CourseDto 기반으로 변경
+type PlannedGroup = { key: string; year: number; term: Term; items: CourseDto[] };
 
 function nextSemester(y: number, t: Term): { year: number; term: Term } {
   if (t === "1") return { year: y, term: "sum" };
@@ -68,11 +70,11 @@ export default function CurriculumPage() {
     data: allCourses = [],
     isLoading: isLoadingSem,
     isError: isErrorSem,
-  } = useQuery<CourseLite[]>({
+  } = useQuery<CourseDto[]>({
     queryKey: ["courses-semester", sid],
     enabled: !!sid && view === "semester",
     queryFn: async () => {
-      const { data } = await axiosInstance.get<CourseLite[]>(
+      const { data } = await axiosInstance.get<CourseDto[]>(
         `/api/v1/students/${encodeURIComponent(sid)}/courses/all`
       );
       return data;
@@ -170,33 +172,31 @@ export default function CurriculumPage() {
   useEffect(() => {
     if (!summary || !sid) return;
 
-    // 아직 졸업 기준을 충족하지 못했다면 아무 것도 안 함
     if (!summary.finalPass) return;
 
     const key = celebrateKey(sid);
 
-    const alreadyCelebrated = (() => {
+    const checkAlreadyCelebrated = (storageKey: string): boolean => {
       try {
         if (typeof window === "undefined") return false;
-        return window.localStorage.getItem(key) === "1";
+        return window.localStorage.getItem(storageKey) === "1";
       } catch {
         return false;
       }
-    })();
+    };
+    const alreadyCelebrated = checkAlreadyCelebrated(key);
 
-    // 이미 축하했으면 다시 실행하지 않음
     if (alreadyCelebrated || hasCelebratedRef.current) {
       return;
     }
 
-    // 여기부터는 이번이 첫 축하
     hasCelebratedRef.current = true;
     try {
       if (typeof window !== "undefined") {
         window.localStorage.setItem(key, "1");
       }
     } catch {
-      // localStorage 실패해도 한 번은 축하
+      // ignore
     }
 
     fireConfetti(1800);

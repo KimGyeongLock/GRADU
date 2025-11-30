@@ -84,7 +84,6 @@ public class CourseService {
         Course course = loadCourse(studentId, courseId);
 
         UpdateContext ctx = computedNewValues(course, request);
-
         if (ctx.categoryChanged) {
             applyCategoryChange(studentId, ctx);
         } else {

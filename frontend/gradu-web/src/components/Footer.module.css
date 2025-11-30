@@ -1,0 +1,78 @@
+.footer {
+  margin-top: 60px;
+  padding: 48px 20px 56px;
+  background: #f8fafc;           /* ✅ 밝은 카드 톤 */
+  color: #334155;
+  border-top: 1px solid #e5e7eb; /* ✅ 위쪽과 자연스럽게 분리 */
+}
+
+.inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  gap: 40px;
+  justify-content: space-between;
+}
+
+/* 좌측 브랜드 */
+.brand .logo {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #0f172a;
+}
+
+.desc {
+  margin: 10px 0 6px;
+  font-size: 14px;
+  color: #475569;
+}
+
+.copy {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* 우측 링크 */
+.links {
+  display: flex;
+  gap: 40px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.col h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.col a,
+.col span {
+  font-size: 13px;
+  color: #334155;
+  text-decoration: none;
+}
+
+.col a:hover {
+  color: #2563eb;   /* ✅ 너 서비스 메인 블루 */
+  text-decoration: underline;
+}
+
+/* ✅ 모바일 */
+@media (max-width: 768px) {
+  .inner {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .links {
+    flex-direction: column;
+    gap: 20px;
+  }
+}

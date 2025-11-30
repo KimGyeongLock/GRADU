@@ -1,6 +1,7 @@
 package com.example.gradu.domain.course.dto;
 
 import com.example.gradu.domain.curriculum.entity.Category;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class CourseUpdateRequestDto {
     private Integer designedCredit;
     private String grade;
     private Category category;
+    @JsonProperty("isEnglish")
     private boolean isEnglish;
     Short academicYear;
     String term;

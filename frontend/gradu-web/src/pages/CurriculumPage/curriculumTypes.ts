@@ -26,16 +26,18 @@ export type SummaryDto = {
   finalPass: boolean;
 };
 
-export type CourseLite = {
+export type CourseDto = {
   id: number;
   name: string;
   category: string;
   credit: number;
+  designedCredit: number | null;
   grade: string | null;
   isEnglish: boolean;
   academicYear: number;
-  term: Term;
+  term: "1" | "2" | "sum" | "win";
 };
+
 
 export const TERM_ORDER: Record<Term, number> = {
   "1": 0,

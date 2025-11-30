@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../../../lib/axios";
 import Modal from "../../../components/Modal";
-import type { CourseDto } from "../../CurriculumDetailPage/CurriculumDetailPage";
+import type { CourseDto } from "../curriculumTypes";
 import "../../../components/CourseModal.css";
 
 const KOR_LABELS: Record<string, string> = {
