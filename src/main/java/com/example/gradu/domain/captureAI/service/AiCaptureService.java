@@ -4,6 +4,8 @@ import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
 import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.global.client.OpenAiClient;
+import com.example.gradu.global.exception.ErrorCode;
+import com.example.gradu.global.exception.ai.AIException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,7 +37,7 @@ public class AiCaptureService {
         try {
             return Base64.getEncoder().encodeToString(image.getBytes());
         } catch (IOException e) {
-            throw new RuntimeException("이미지 변환 실패" + e);
+            throw new AIException(ErrorCode.AI_IMAGE_CONVERSION_FAILED);
         }
     }
 
@@ -47,12 +49,12 @@ public class AiCaptureService {
 
             for (CourseBulkRequest c : list) {
                 boolean english = isEnglishCourseName(c.getName(), c.getCategory());
-                c.setEnglish(english);   // 필드가 isEnglish지만 setter 이름은 setEnglish
+                c.setEnglish(english);
             }
 
             return list;
         } catch (Exception e) {
-            throw new RuntimeException("AI 응답 파싱 실패" + e);
+            throw new AIException(ErrorCode.AI_RESPONSE_PARSING_FAILED);
         }
     }
 
@@ -63,12 +65,6 @@ public class AiCaptureService {
         String trimmed = name.replaceAll("[\\s\\d.,()\\-+/]", "");
         if (trimmed.isEmpty()) return false;
 
-        for (char ch : trimmed.toCharArray()) {
-            if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))) {
-                // 한글이나 다른 문자 섞여 있으면 false
-                return false;
-            }
-        }
-        return true;
+        return trimmed.matches("^[a-zA-Z]+$");
     }
 }

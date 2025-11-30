@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -233,6 +234,28 @@ public class CourseService {
                         .build()
                 ).toList();
         courseRepository.saveAll(entites);
+
+        // Curriculum 엔티티의 학점 정보 업데이트
+        courses.stream()
+                .collect(Collectors.groupingBy(CourseBulkRequest::getCategory,
+                        Collectors.mapping(CourseBulkRequest::getCredit, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
+                .forEach((category, totalCredit) -> {
+                    Curriculum cur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, category)
+                            .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+                    cur.addEarnedCredits(toUnits(totalCredit));
+                });
+
+        int totalDesignedCredit = courses.stream()
+                .filter(c -> c.getCategory() == Category.MAJOR && c.getDesignedCredit() != null)
+                .mapToInt(CourseBulkRequest::getDesignedCredit)
+                .sum();
+
+        if (totalDesignedCredit > 0) {
+            Curriculum designedCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
+                    .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+            designedCur.addEarnedCredits(totalDesignedCredit);
+        }
+
         summaryService.recomputeAndSave(studentId);
     }
 

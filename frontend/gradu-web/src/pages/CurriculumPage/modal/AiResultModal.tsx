@@ -5,6 +5,7 @@ import s from "./AiCaptureModal.module.css";
 import { getCategoryLabel } from "../curriculumTypes";
 
 export interface AiCourseResult {
+  id: string;              
   name: string;
   credit: number;
   designedCredit: number | null;
@@ -46,7 +47,7 @@ export function AiResultModal({
   const anyChecked = checked.some(Boolean);
 
   return createPortal(
-    <div className={s.aiResultOverlay}>
+    <div className={s.aiResultOverlay} onClick={onClose}>
       <div className={s.aiResultModal} onClick={stop}>
         <button
           type="button"
@@ -84,7 +85,7 @@ export function AiResultModal({
             <tbody>
               {Array.isArray(courses) &&
                 courses.map((c, i) => (
-                  <tr key={i}>
+                  <tr key={c.id}> 
                     <td>
                       <input
                         type="checkbox"

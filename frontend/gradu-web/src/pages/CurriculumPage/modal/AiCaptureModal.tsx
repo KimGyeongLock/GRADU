@@ -154,10 +154,7 @@ export function AiCaptureModal({
 
     setIsSaving(true);
     try {
-      await axiosInstance.post(`/api/v1/students/${sid}/courses/bulk`, {
-        sid,
-        courses: payload,
-      });
+      await axiosInstance.post(`/api/v1/students/${sid}/courses/bulk`, payload);
 
       alert(`선택한 ${payload.length}개 과목을 저장했습니다.`);
       onSaved();
@@ -176,10 +173,7 @@ export function AiCaptureModal({
 
     setIsSaving(true);
     try {
-      await axiosInstance.post(`/api/v1/students/${sid}/courses/bulk`, {
-        sid,
-        courses: aiResult,
-      });
+      await axiosInstance.post(`/api/v1/students/${sid}/courses/bulk`, aiResult);
 
       alert(`총 ${aiResult.length}개 과목을 저장했습니다.`);
       onSaved();
