@@ -25,7 +25,11 @@ public enum ErrorCode {
 
     EMAIL_NOT_VERIFIED("EM001", HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
     EMAIL_SEND_FAILED("EM002", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),
-    EMAIL_HASH_ERROR("EM003", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 코드 해시 생성에 실패했습니다.");
+    EMAIL_HASH_ERROR("EM003", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 코드 해시 생성에 실패했습니다."),
+
+    AI_IMAGE_CONVERSION_FAILED("AI001", HttpStatus.INTERNAL_SERVER_ERROR, "이미지 변환에 실패했습니다."),
+    AI_RESPONSE_PARSING_FAILED("AI002", HttpStatus.INTERNAL_SERVER_ERROR, "AI 응답을 파싱하는 데 실패했습니다.");
+
 
     private final String code;
     private final HttpStatus httpStatus;

@@ -23,19 +23,24 @@ const wrapStyle: CSSProperties = {
 const overlayStyle: CSSProperties = {
   position: "fixed",
   inset: 0,
-  background: "rgba(0,0,0,.45)",
-  backdropFilter: "blur(2px)",
+  background: "rgba(0, 0, 0, 0.35)"
 };
+
 
 const dialogStyle: CSSProperties = {
   position: "relative",
   background: "#fff",
   borderRadius: 16,
-  width: "min(640px, 92vw)", // 모바일에서 화면 안에 딱 맞게
-  maxHeight: "88vh",         // 세로는 뷰포트 88% 이내에서 스크롤
+  width: "min(640px, 92vw)",
+  maxHeight: "88vh",
   overflow: "auto",
-  boxShadow: "0 24px 64px rgba(0,0,0,.28)",
+
+  boxShadow: `
+    0 20px 40px rgba(15, 23, 42, 0.32),
+    0 0 0 1px rgba(148, 163, 184, 0.4)
+  `,
 };
+
 
 export default function Modal({
   open,

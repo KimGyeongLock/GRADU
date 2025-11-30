@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { axiosInstance, getStudentId } from "../../lib/axios";
-import AddCourseModal from "../../components/AddCourseModal";
+import AddCourseModal from "./modal/AddCourseModal";
 import {
   type SummaryDto,
   type CourseLite,
@@ -12,6 +12,7 @@ import {
 import { SummaryView } from "./SummaryView";
 import { SemesterView } from "./SemesterView";
 import s from "./CurriculumTable.module.css";
+import { AiCaptureModal } from "./modal/AiCaptureModal";
 
 /* confetti util은 그대로 위쪽에 선언 */
 type ConfettiFn = (opts?: any) => void;
@@ -41,6 +42,9 @@ function nextSemester(y: number, t: Term): { year: number; term: Term } {
   if (t === "2") return { year: y, term: "win" };
   return { year: y + 1, term: "1" };
 }
+
+// 🎉 학번별로 “축하 이미 함” 여부를 저장할 localStorage key
+const celebrateKey = (sid: string) => `gradu_celebrated_${sid}`;
 
 export default function CurriculumPage() {
   const sid = getStudentId() || "";
@@ -159,23 +163,60 @@ export default function CurriculumPage() {
     openAddFor(ny, nt);
   };
 
+  // 🎉 축하 배너 & 컨페티 (학번별로 딱 한 번만)
   const hasCelebratedRef = useRef(false);
   const [showBanner, setShowBanner] = useState(false);
-  useEffect(() => {
-    if (!summary) return;
-    if (summary.finalPass && !hasCelebratedRef.current) {
-      hasCelebratedRef.current = true;
-      fireConfetti(1800);
-      setShowBanner(true);
-      const t = setTimeout(() => setShowBanner(false), 3000);
-      return () => clearTimeout(t);
-    }
-    if (!summary.finalPass) hasCelebratedRef.current = false;
-  }, [summary?.finalPass]);
 
-  if (!sid) return <div className="text-center py-14">로그인 정보를 찾을 수 없습니다.</div>;
-  if (isLoading) return <div className="text-center py-14">불러오는 중…</div>;
-  if (isError || !summary) return <div className="text-center py-14">조회 실패</div>;
+  useEffect(() => {
+    if (!summary || !sid) return;
+
+    // 아직 졸업 기준을 충족하지 못했다면 아무 것도 안 함
+    if (!summary.finalPass) return;
+
+    const key = celebrateKey(sid);
+
+    const alreadyCelebrated = (() => {
+      try {
+        if (typeof window === "undefined") return false;
+        return window.localStorage.getItem(key) === "1";
+      } catch {
+        return false;
+      }
+    })();
+
+    // 이미 축하했으면 다시 실행하지 않음
+    if (alreadyCelebrated || hasCelebratedRef.current) {
+      return;
+    }
+
+    // 여기부터는 이번이 첫 축하
+    hasCelebratedRef.current = true;
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(key, "1");
+      }
+    } catch {
+      // localStorage 실패해도 한 번은 축하
+    }
+
+    fireConfetti(1800);
+    setShowBanner(true);
+    const t = setTimeout(() => setShowBanner(false), 3000);
+    return () => clearTimeout(t);
+  }, [summary?.finalPass, sid]);
+
+  // ✅ 플로팅 FAB 상태
+  const [fabOpen, setFabOpen] = useState(false);
+  const [aiCaptureOpen, setAiCaptureOpen] = useState(false); // AI 캡쳐 모달 열기용
+
+  if (!sid)
+    return (
+      <div className="text-center py-14">로그인 정보를 찾을 수 없습니다.</div>
+    );
+  if (isLoading)
+    return <div className="text-center py-14">불러오는 중…</div>;
+  if (isError || !summary)
+    return <div className="text-center py-14">조회 실패</div>;
 
   const pfLimitNote = Math.max(39, summary.pfLimit);
 
@@ -231,13 +272,43 @@ export default function CurriculumPage() {
           />
         )}
 
+        {/* ✅ 플로팅 FAB – summary 뷰에서만 표시 */}
         {view === "summary" && (
           <div className={s.plusArea}>
+            {fabOpen && (
+              <div className={s.fabMenu}>
+                <button
+                  type="button"
+                  className={s.fabItem}
+                  onClick={() => {
+                    setFabOpen(false);
+                    openAddFor(undefined, undefined); // 기존 단일 과목 추가
+                  }}
+                >
+                  단일 과목 추가
+                </button>
+                <button
+                  type="button"
+                  className={`${s.fabItem} ${s.fabItemNew}`}
+                  onClick={() => {
+                    setFabOpen(false);
+                    setAiCaptureOpen(true);
+                  }}
+                >
+                  <span className={s.newBadge}>NEW</span>
+                  <span>AI 캡쳐로 일괄 추가</span>
+                </button>
+              </div>
+            )}
+
             <button
-              onClick={() => openAddFor(undefined, undefined)}
-              className={s.plusBtn}
+              type="button"
+              onClick={() => setFabOpen((prev) => !prev)}
+              className={`${s.plusBtn} ${fabOpen ? s.plusBtnOpen : ""}`}
+              aria-label={fabOpen ? "메뉴 닫기" : "과목 추가 옵션 열기"}
+              aria-expanded={fabOpen}
             >
-              +
+              <span className={s.plusIcon} />
             </button>
           </div>
         )}
@@ -250,6 +321,14 @@ export default function CurriculumPage() {
         onSaved={afterAddSaved}
         initialYear={prefill.year}
         initialTerm={prefill.term}
+      />
+
+      <AiCaptureModal
+        open={aiCaptureOpen}
+        sid={sid}
+        onClose={() => setAiCaptureOpen(false)}
+        onSaved={afterAddSaved}
+        exampleImageUrl="/course_example.png"
       />
     </div>
   );

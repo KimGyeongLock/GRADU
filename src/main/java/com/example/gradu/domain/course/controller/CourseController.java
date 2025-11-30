@@ -1,5 +1,6 @@
 package com.example.gradu.domain.course.controller;
 
+import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseResponseDto;
 import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
@@ -47,5 +48,11 @@ public class CourseController {
     public ResponseEntity<Void> deleteCourse(@PathVariable String studentId, @PathVariable Long courseId) {
         courseService.deleteCourse(studentId, courseId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<Void> saveBulk(@PathVariable String studentId, @RequestBody List<CourseBulkRequest> courses) {
+        courseService.bulkInsert(studentId, courses);
+        return ResponseEntity.ok().build();
     }
 }

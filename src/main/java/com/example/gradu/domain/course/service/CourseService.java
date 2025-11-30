@@ -1,5 +1,6 @@
 package com.example.gradu.domain.course.service;
 
+import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
 import com.example.gradu.domain.course.entity.Course;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -211,6 +213,50 @@ public class CourseService {
 
     public List<Course> getCoursesAll(String studentId) {
         return courseRepository.findByStudentStudentId(studentId);
+    }
+
+    @Transactional
+    public void bulkInsert(String studentId, List<CourseBulkRequest> courses) {
+        Student student = studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+
+        List<Course> entites = courses.stream()
+                .map(req -> Course.builder()
+                        .student(student)
+                        .name(req.getName())
+                        .category(req.getCategory())
+                        .credit(req.getCredit())
+                        .designedCredit(req.getDesignedCredit())
+                        .grade(req.getGrade())
+                        .isEnglish(req.isEnglish())
+                        .academicYear(req.getAcademicYear())
+                        .term(Term.fromCode(req.getTerm()))
+                        .build()
+                ).toList();
+        courseRepository.saveAll(entites);
+
+        // Curriculum 엔티티의 학점 정보 업데이트
+        courses.stream()
+                .collect(Collectors.groupingBy(CourseBulkRequest::getCategory,
+                        Collectors.mapping(CourseBulkRequest::getCredit, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
+                .forEach((category, totalCredit) -> {
+                    Curriculum cur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, category)
+                            .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+                    cur.addEarnedCredits(toUnits(totalCredit));
+                });
+
+        int totalDesignedCredit = courses.stream()
+                .filter(c -> c.getCategory() == Category.MAJOR && c.getDesignedCredit() != null)
+                .mapToInt(CourseBulkRequest::getDesignedCredit)
+                .sum();
+
+        if (totalDesignedCredit > 0) {
+            Curriculum designedCur = curriculumRepository.findByStudentStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
+                    .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
+            designedCur.addEarnedCredits(totalDesignedCredit);
+        }
+
+        summaryService.recomputeAndSave(studentId);
     }
 
     /** 변경 계산 컨텍스트 */

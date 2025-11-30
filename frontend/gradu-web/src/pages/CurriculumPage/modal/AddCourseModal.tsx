@@ -1,9 +1,9 @@
 // src/components/AddCourseModal.tsx
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { axiosInstance } from "../lib/axios";
-import Modal from "./Modal";
-import "./CourseModal.css";
+import { axiosInstance } from "../../../lib/axios";
+import Modal from "../../../components/Modal";
+import "../../../components/CourseModal.css";
 
 type Props = {
   open: boolean;

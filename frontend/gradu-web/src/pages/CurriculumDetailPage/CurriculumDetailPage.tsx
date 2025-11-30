@@ -2,10 +2,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { axiosInstance, getStudentId } from "../lib/axios";
-import EditCourseModal from "../components/EditCourseModal";
+import { axiosInstance, getStudentId } from "../../lib/axios";
+import EditCourseModal from "../CurriculumPage/modal/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
-import { formatSemester } from "./CurriculumPage/curriculumTypes";
+import { formatSemester } from "../CurriculumPage/curriculumTypes";
 
 
 export type CourseDto = {

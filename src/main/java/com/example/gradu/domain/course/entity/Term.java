@@ -13,8 +13,14 @@ public enum Term {
 
     /** "1" / "2" / "sum" / "win" → Term */
     public static Term fromCode(String code) {
-        for (Term t : values()) if (t.code.equalsIgnoreCase(code)) return t;
-        throw new IllegalArgumentException("Unknown term code: " + code);
+        return switch (code.toLowerCase()) {
+            case "1" -> FIRST;
+            case "2" -> SECOND;
+            case "3", "sum" -> SUMMER;
+            case "4", "win" -> WINTER;
+            default -> throw new IllegalArgumentException("Unknown term code: " + code);
+        };
+
     }
 
     /** 직렬화/표시용 코드 */
