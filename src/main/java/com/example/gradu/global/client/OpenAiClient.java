@@ -1,5 +1,6 @@
 package com.example.gradu.global.client;
 
+import com.example.gradu.domain.captureAI.dto.OpenAiResponseDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,13 +12,21 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class OpenAiClient {
+    private final String apiKey;
+    private final String apiUrl;
+    private final String modelName;
+    private final RestTemplate restTemplate;
 
-    @Value("${openai.api.key}")
-    private String apiKey;
-
-    private final RestTemplate restTemplate = new RestTemplate();
+    public OpenAiClient(@Value("${openai.api.key}") String apiKey,
+                        @Value("${openai.api.url}") String apiUrl,
+                        @Value("${openai.api.model}") String modelName,
+                            RestTemplate restTemplate) {
+        this.apiKey = apiKey;
+        this.apiUrl = apiUrl;
+        this.modelName = modelName;
+        this.restTemplate = restTemplate;
+    }
 
     public String analyzeCourseImages(List<String> base64Images) {
 
@@ -115,7 +124,7 @@ public class OpenAiClient {
         content.addAll(createImageBlocks(base64Images));
 
         Map<String, Object> requestBody = Map.of(
-                "model", "gpt-4.1-mini",
+                "model", modelName,
                 "messages", List.of(
                         Map.of(
                                 "role", "user",
@@ -130,17 +139,23 @@ public class OpenAiClient {
 
         HttpEntity<?> request = new HttpEntity<>(requestBody, headers);
 
-        ResponseEntity<JsonNode> response = restTemplate.exchange(
-                "https://api.openai.com/v1/chat/completions",
-                HttpMethod.POST, request, JsonNode.class
+        ResponseEntity<OpenAiResponseDto> response = restTemplate.exchange(
+                apiUrl,
+                HttpMethod.POST,
+                request,
+                OpenAiResponseDto.class
         );
 
-        return response.getBody()
-                .get("choices")
+        OpenAiResponseDto body = response.getBody();
+
+        if (body == null || body.getChoices().isEmpty()) {
+            throw new IllegalStateException("OpenAI 응답이 비어 있습니다.");
+        }
+
+        return body.getChoices()
                 .get(0)
-                .get("message")
-                .get("content")
-                .asText();
+                .getMessage()
+                .getContent();
     }
 
     private List<Map<String, Object>> createImageBlocks(List<String> base64Images) {
