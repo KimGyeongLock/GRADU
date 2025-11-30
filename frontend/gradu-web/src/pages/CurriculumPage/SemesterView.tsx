@@ -34,7 +34,6 @@ export function SemesterView({
   const sid = getStudentId() || "";
   const qc = useQueryClient();
 
-  // ✅ 이제 CourseDto 기준으로 관리
   const [editing, setEditing] = useState<CourseDto | null>(null);
 
   const closeEdit = () => setEditing(null);
