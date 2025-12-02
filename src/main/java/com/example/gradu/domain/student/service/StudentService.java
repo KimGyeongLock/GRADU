@@ -1,10 +1,12 @@
 package com.example.gradu.domain.student.service;
 
+import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.service.CurriculumService;
 import com.example.gradu.domain.email.service.EmailVerificationService;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
+import com.example.gradu.domain.summary.service.SummaryService;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
 import com.example.gradu.global.exception.email.EmailException;
@@ -25,6 +27,8 @@ public class StudentService {
     private final RefreshTokenStore refreshTokenStore;
     private final CurriculumService curriculumService;
     private final EmailVerificationService emailVerificationService;
+    private final SummaryService summaryService;
+    private final CourseService courseService;
 
     @Transactional
     public void register(String studentId, String password, String name, String code, String email) {
@@ -88,5 +92,27 @@ public class StudentService {
         }
 
         refreshTokenStore.remove(studentId);
+    }
+
+    @Transactional
+    public void withdraw(String studentId, String refreshToken) {
+        // 1) refresh 토큰 검증 후 삭제 (있다면)
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            if (!refreshTokenStore.validate(studentId, refreshToken)) {
+                throw new AuthException(ErrorCode.TOKEN_INVALID);
+            }
+            refreshTokenStore.remove(studentId);
+        }
+
+        // 2) 학생 엔티티 삭제
+        Student student = studentRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+
+        // 필요하다면 커리큘럼 데이터 등도 함께 정리
+        curriculumService.removeForStudent(studentId);
+        summaryService.removeForStudent(studentId);
+        courseService.removeForStudent(studentId);
+
+        studentRepository.delete(student);
     }
 }

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -107,6 +108,22 @@ public class AuthController {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
+    }
+
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<Void> withdraw(
+            Authentication authentication,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        // JwtAuthenticationFilter 에서 studentId를 principal 로 넣었음
+        String studentId = (String) authentication.getPrincipal();
+        String refreshToken = extractRefreshTokenFromCookie(request);
+
+        studentService.withdraw(studentId, refreshToken);
+
+        // 쿠키 삭제 + 204
+        return noContentAndDeleteCookie(response);
     }
 
 }

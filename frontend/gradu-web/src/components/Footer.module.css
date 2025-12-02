@@ -76,3 +76,16 @@
     gap: 20px;
   }
 }
+
+.withdrawBtn {
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.withdrawBtn:hover {
+  text-decoration: underline;
+}

@@ -14,4 +14,6 @@ public interface CurriculumRepository extends JpaRepository<Curriculum, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Curriculum> findByStudentStudentIdAndCategory(String studentId, Category category);
+
+    void deleteByStudentStudentId(String studentId);
 }
