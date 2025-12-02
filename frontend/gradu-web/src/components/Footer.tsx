@@ -21,8 +21,8 @@ export default function Footer() {
         <div className={s.links}>
           <div className={s.col}>
             <h4>서비스</h4>
-            <a href="https://gradu0420.notion.site/Notion-2bdd4780dde180709bd6c3e868fa1360?source=copy_link">소개</a>
-            <a href="https://www.notion.so/gradu0420/2bdd4780dde1809fb930c96e3e7e6fc1?t=new">공지사항</a>
+            <a href="https://gradu0420.notion.site/Notion-2bdd4780dde180709bd6c3e868fa1360?source=copy_link" target="_blank" rel="noopener noreferrer">소개</a>
+            <a href="https://www.notion.so/gradu0420/2bdd4780dde1809fb930c96e3e7e6fc1?t=new" target="_blank" rel="noopener noreferrer">공지사항</a>
             {/* <a href="/faq">자주 묻는 질문</a> */}
           </div>
           {/* 
