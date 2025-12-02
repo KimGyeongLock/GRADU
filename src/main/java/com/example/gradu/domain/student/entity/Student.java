@@ -32,4 +32,11 @@ public class Student {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    public void changePassword(String encodedPassword) {
+        if (this.password.equals(encodedPassword)) {
+            throw new IllegalArgumentException("기존 비밀번호와 동일합니다.");
+        }
+        this.password = encodedPassword;
+    }
 }

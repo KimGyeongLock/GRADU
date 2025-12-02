@@ -2,6 +2,7 @@ package com.example.gradu.domain.student.controller;
 
 import com.example.gradu.domain.student.dto.AccessTokenResponseDto;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
+import com.example.gradu.domain.student.dto.PasswordResetRequestDto;
 import com.example.gradu.domain.student.dto.StudentAuthRequestDto;
 import com.example.gradu.domain.student.service.StudentService;
 import com.example.gradu.global.security.jwt.JwtAuthenticationFilter;
@@ -119,4 +120,9 @@ public class AuthController {
                 .orElse(null);
     }
 
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequestDto req) {
+        studentService.resetPassword(req);
+        return ResponseEntity.noContent().build();
+    }
 }

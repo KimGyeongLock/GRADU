@@ -3,6 +3,7 @@ package com.example.gradu.domain.student.service;
 import com.example.gradu.domain.curriculum.service.CurriculumService;
 import com.example.gradu.domain.email.service.EmailVerificationService;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
+import com.example.gradu.domain.student.dto.PasswordResetRequestDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.global.exception.ErrorCode;
@@ -11,6 +12,7 @@ import com.example.gradu.global.exception.email.EmailException;
 import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
+import jakarta.validation.Valid;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -85,5 +87,20 @@ public class StudentService {
         }
 
         refreshTokenStore.remove(studentId);
+    }
+
+    @Transactional
+    public void resetPassword(PasswordResetRequestDto req) {
+        // 1) 이메일 OTP 검증 (만료/불일치 예외는 앞에서 만든 EmailVerificationService 사용)
+        emailVerificationService.verifyCode(req.getEmail(), req.getCode());
+
+        // 2) 학생 조회
+        Student student = studentRepository
+                .findByStudentIdAndEmail(req.getStudentId(), req.getEmail())
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+
+        // 3) 비밀번호 규칙 검증(필요하면 다시 한 번)
+        // 4) 비밀번호 변경 (BCrypt)
+        student.changePassword(passwordEncoder.encode(req.getNewPassword()));
     }
 }
