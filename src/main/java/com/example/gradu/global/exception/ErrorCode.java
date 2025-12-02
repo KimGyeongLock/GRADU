@@ -10,6 +10,7 @@ public enum ErrorCode {
     // ==== Student 관련 ====
     STUDENT_ALREADY_EXISTS("S001", HttpStatus.CONFLICT, "학생이 이미 존재합니다."),
     STUDENT_NOT_FOUND("S002", HttpStatus.NOT_FOUND, "학생을 찾을 수 없습니다."),
+    SAME_PASSWORD_NOT_ALLOWED("S003", HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일합니다."),
 
     // ==== Auth 관련 ====
     TOKEN_EXPIRED("A001", HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
@@ -26,6 +27,9 @@ public enum ErrorCode {
     EMAIL_NOT_VERIFIED("EM001", HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
     EMAIL_SEND_FAILED("EM002", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 전송에 실패했습니다."),
     EMAIL_HASH_ERROR("EM003", HttpStatus.INTERNAL_SERVER_ERROR, "이메일 코드 해시 생성에 실패했습니다."),
+    EMAIL_OTP_EXPIRED("EM004", HttpStatus.BAD_REQUEST, "인증코드가 만료되었습니다."),
+    EMAIL_OTP_ALREADY_USED("EM005", HttpStatus.BAD_REQUEST, "이미 사용된 인증코드입니다."),
+    EMAIL_OTP_INVALID("EM006", HttpStatus.BAD_REQUEST, "인증코드가 일치하지 않습니다."),
 
     AI_IMAGE_CONVERSION_FAILED("AI001", HttpStatus.INTERNAL_SERVER_ERROR, "이미지 변환에 실패했습니다."),
     AI_RESPONSE_PARSING_FAILED("AI002", HttpStatus.INTERNAL_SERVER_ERROR, "AI 응답을 파싱하는 데 실패했습니다.");

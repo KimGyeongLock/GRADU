@@ -147,7 +147,7 @@ body{
   opacity: 0.6;
   cursor: not-allowed;
 }
-
+.auth__separator { margin: 0 8px; }
 
 /* 📱 모바일에서는 세로 배치 + 비율 조정 */
 @media (max-width: 768px){
