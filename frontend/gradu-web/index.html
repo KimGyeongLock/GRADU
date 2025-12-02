@@ -1,11 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/gradu_icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>GRADU</title>
+
+    <!-- ✅ Open Graph (카카오톡 미리보기용) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="GRADU" />
+    <meta
+      property="og:description"
+      content="한동대 학생을 위한 대학 이수 관리 및 졸업 설계 서비스"
+    />
+    <meta property="og:url" content="https://hgu-gradu.app" />
+    <meta
+      property="og:image"
+      content="https://hgu-gradu.app/gradu_background.png"
+    />
+
+    <!-- ✅ 트위터/기타 SNS 대응 -->
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
+
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

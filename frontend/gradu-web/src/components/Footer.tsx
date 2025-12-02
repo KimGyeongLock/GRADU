@@ -10,7 +10,7 @@ export default function Footer() {
         <div className={s.brand}>
           <div className={s.logo}>GRADU</div>
           <p className={s.desc}>
-            대학 이수 관리 및 졸업 설계 서비스
+            한동대학교 컴공심화 이수 관리 및 졸업 설계 서비스
           </p>
           <p className={s.copy}>
             © {new Date().getFullYear()} GRADU. All rights reserved.
@@ -21,8 +21,8 @@ export default function Footer() {
         <div className={s.links}>
           <div className={s.col}>
             <h4>서비스</h4>
-            <a href="/about">소개</a>
-            <a href="/notice">공지사항</a>
+            <a href="https://gradu0420.notion.site/Notion-2bdd4780dde180709bd6c3e868fa1360?source=copy_link" target="_blank" rel="noopener noreferrer">소개</a>
+            <a href="https://www.notion.so/gradu0420/2bdd4780dde1809fb930c96e3e7e6fc1?t=new" target="_blank" rel="noopener noreferrer">공지사항</a>
             {/* <a href="/faq">자주 묻는 질문</a> */}
           </div>
           {/* 

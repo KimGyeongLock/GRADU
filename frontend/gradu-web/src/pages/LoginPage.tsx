@@ -62,7 +62,7 @@ export default function LoginPage() {
         {/* 오른쪽: 기존 카드 그대로 */}
         <section className="auth__card" aria-label="로그인">
           <h1 className="auth__title">Sign In</h1>
-          <p className="auth__subtitle">한동대학교 컴공심화 졸업 요건 진단 서비스</p>
+          <p className="auth__subtitle">한동대학교 컴공심화 이수 관리 및 졸업 설계 서비스</p>
 
           <div className="auth__field">
             <i className="bx bx-id-card auth__icon" aria-hidden />
@@ -101,9 +101,16 @@ export default function LoginPage() {
           </button>
 
           <div className="auth__footer auth__muted">
-            계정이 없나요?{" "}
+            <span>계정이 없나요? </span>
             <Link className="auth__link" to="/register">
               회원가입
+            </Link>
+
+            <span className="auth__separator">|</span>
+
+            <span>비밀번호를 잊으셨나요? </span>
+            <Link className="auth__link" to="/reset-password">
+              비밀번호 재설정
             </Link>
           </div>
         </section>
