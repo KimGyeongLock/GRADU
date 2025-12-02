@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface SummaryRepository extends JpaRepository<Summary, Long> {
     Optional<Summary> findByStudentId(String studentId);
+
+    void deleteByStudentId(String studentId);
 }
