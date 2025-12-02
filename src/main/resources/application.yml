@@ -22,7 +22,9 @@ spring:
 #    com.example.gradu: DEBUG
 
 app:
-  frontend-base-url: http://localhost:5173
+  frontend-domain: localhost
+  cookie:
+    secure: false
+    same-site: Lax
   email:
-    domain: "@handong.ac.kr"
-    otp-ttl-minutes: 60
+    otp-ttl-minutes: 5

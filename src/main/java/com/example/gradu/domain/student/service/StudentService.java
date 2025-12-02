@@ -4,6 +4,7 @@ import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.service.CurriculumService;
 import com.example.gradu.domain.email.service.EmailVerificationService;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
+import com.example.gradu.domain.student.dto.PasswordResetRequestDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.domain.summary.service.SummaryService;
@@ -13,6 +14,7 @@ import com.example.gradu.global.exception.email.EmailException;
 import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
+import jakarta.validation.Valid;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,10 +37,7 @@ public class StudentService {
         if (studentRepository.findByStudentId(studentId).isPresent())
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
-        boolean verified = emailVerificationService.verifyCode(email, code);
-        if (!verified) {
-            throw new EmailException(ErrorCode.EMAIL_NOT_VERIFIED);
-        }
+        emailVerificationService.verifyCode(email, code);
 
         String encodedPassword = passwordEncoder.encode(password);
 
@@ -114,5 +113,23 @@ public class StudentService {
         courseService.removeForStudent(studentId);
 
         studentRepository.delete(student);
+    }
+  
+    public void resetPassword(PasswordResetRequestDto req) {
+        // 1) 이메일 OTP 검증 (만료/불일치 예외는 앞에서 만든 EmailVerificationService 사용)
+        emailVerificationService.verifyCode(req.getEmail(), req.getCode());
+
+        // 2) 학생 조회
+        Student student = studentRepository
+                .findByStudentIdAndEmail(req.getStudentId(), req.getEmail())
+                .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+
+        // 3) 기존 비밀번호와 동일한지 확인
+        if (passwordEncoder.matches(req.getNewPassword(), student.getPassword())) {
+            throw new StudentException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
+        }
+
+        // 4) 비밀번호 변경 (BCrypt)
+        student.changePassword(passwordEncoder.encode(req.getNewPassword()));
     }
 }

@@ -32,4 +32,8 @@ public class Student {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 }

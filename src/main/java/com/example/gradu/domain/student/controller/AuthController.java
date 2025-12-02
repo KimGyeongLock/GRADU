@@ -2,6 +2,7 @@ package com.example.gradu.domain.student.controller;
 
 import com.example.gradu.domain.student.dto.AccessTokenResponseDto;
 import com.example.gradu.domain.student.dto.LoginResponseDto;
+import com.example.gradu.domain.student.dto.PasswordResetRequestDto;
 import com.example.gradu.domain.student.dto.StudentAuthRequestDto;
 import com.example.gradu.domain.student.service.StudentService;
 import com.example.gradu.global.security.jwt.JwtAuthenticationFilter;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +24,29 @@ import java.util.Arrays;
 import java.util.Map;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     public static final String REFRESH_TOKEN = "refreshToken";
     private final StudentService studentService;
     private final JwtProperties jwtProperties;
+
+    private final String frontendDomain;
+    private final boolean cookieSecure;
+    private final String cookieSameSite;
+
+    public AuthController(
+            StudentService studentService,
+            JwtProperties jwtProperties,
+            @Value("${app.frontend-domain}") String frontendDomain,
+            @Value("${app.cookie.secure}") boolean cookieSecure,
+            @Value("${app.cookie.same-site}") String cookieSameSite
+    ) {
+        this.studentService = studentService;
+        this.jwtProperties = jwtProperties;
+        this.frontendDomain = frontendDomain;
+        this.cookieSecure = cookieSecure;
+        this.cookieSameSite = cookieSameSite;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
@@ -41,11 +60,11 @@ public class AuthController {
 
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN, tokens.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtProperties.getRefreshExpiration()))
-                .sameSite("None")
-                .domain("hgu-gradu.app")
+                .sameSite(cookieSameSite)
+                .domain(frontendDomain)
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -89,9 +108,9 @@ public class AuthController {
     private ResponseEntity<Void> noContentAndDeleteCookie(HttpServletResponse response) {
         ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN, "")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .domain("hgu-gradu.app")
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
+                .domain(frontendDomain)
                 .path("/")
                 .maxAge(0)          // 삭제
                 .build();
@@ -126,4 +145,9 @@ public class AuthController {
         return noContentAndDeleteCookie(response);
     }
 
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequestDto req) {
+        studentService.resetPassword(req);
+        return ResponseEntity.noContent().build();
+    }
 }
