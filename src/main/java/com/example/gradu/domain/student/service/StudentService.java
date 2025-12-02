@@ -31,10 +31,7 @@ public class StudentService {
         if (studentRepository.findByStudentId(studentId).isPresent())
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
-        boolean verified = emailVerificationService.verifyCode(email, code);
-        if (!verified) {
-            throw new EmailException(ErrorCode.EMAIL_NOT_VERIFIED);
-        }
+        emailVerificationService.verifyCode(email, code);
 
         String encodedPassword = passwordEncoder.encode(password);
 

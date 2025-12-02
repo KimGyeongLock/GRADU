@@ -61,18 +61,27 @@ public class EmailVerificationService {
     }
 
     @Transactional
-    public boolean verifyCode(String email, String rawCode) {
-        Optional<EmailVerificationToken> tokenOpt = repo.findTopByEmailOrderByIdDesc(email)
-                .filter(o -> !o.isExpired() && !o.isUsed())
-                .filter(token -> isCodeValid(token, rawCode));
+    public void verifyCode(String email, String rawCode) {
 
-        tokenOpt.ifPresent(token -> {
-            token.markUsed();
-            repo.save(token);
-        });
+        EmailVerificationToken token = repo.findTopByEmailOrderByIdDesc(email)
+                .orElseThrow(() -> new EmailException(ErrorCode.EMAIL_OTP_INVALID));
 
-        return tokenOpt.isPresent();
+        if (token.isExpired()) {
+            throw new EmailException(ErrorCode.EMAIL_OTP_EXPIRED);
+        }
+
+        if (token.isUsed()) {
+            throw new EmailException(ErrorCode.EMAIL_OTP_ALREADY_USED);
+        }
+
+        if (!isCodeValid(token, rawCode)) {
+            throw new EmailException(ErrorCode.EMAIL_OTP_INVALID);
+        }
+
+        token.markUsed();
+        repo.save(token);
     }
+
 
     private boolean isCodeValid(EmailVerificationToken token, String rawCode) {
         byte[] storedHash;

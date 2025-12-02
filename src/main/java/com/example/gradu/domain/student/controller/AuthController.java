@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,15 @@ public class AuthController {
     private final StudentService studentService;
     private final JwtProperties jwtProperties;
 
+    @Value("${app.frontend-domain}")
+    private String frontendDomain;
+
+    @Value("${app.cookie.secure}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.same-site}")
+    private String cookieSameSite;
+
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
         studentService.register(request.getStudentId(), request.getPassword(), request.getName(), request.getCode(), request.getEmail());
@@ -40,11 +50,11 @@ public class AuthController {
 
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN, tokens.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(Duration.ofMillis(jwtProperties.getRefreshExpiration()))
-                .sameSite("None")
-                .domain("hgu-gradu.app")
+                .sameSite(cookieSameSite)
+                .domain(frontendDomain)
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
@@ -88,9 +98,9 @@ public class AuthController {
     private ResponseEntity<Void> noContentAndDeleteCookie(HttpServletResponse response) {
         ResponseCookie deleteCookie = ResponseCookie.from(REFRESH_TOKEN, "")
                 .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .domain("hgu-gradu.app")
+                .secure(cookieSecure)
+                .sameSite(cookieSameSite)
+                .domain(frontendDomain)
                 .path("/")
                 .maxAge(0)          // 삭제
                 .build();

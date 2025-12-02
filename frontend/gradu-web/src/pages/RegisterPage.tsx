@@ -5,7 +5,7 @@ import { axiosInstance } from "../lib/axios";
 
 const HANDONG_DOMAIN = "handong.ac.kr";
 const OTP_LEN = 6;
-const RESEND_SEC = 60;
+const RESEND_SEC = 300;
 
 export default function RegisterPage() {
   const nav = useNavigate();
@@ -63,7 +63,7 @@ export default function RegisterPage() {
   }
 
   // 회원가입(백엔드에서 OTP 검증 + 소비 + 회원생성 일괄 처리)
-  async function onSubmit(e: React.FormEvent) {
+    async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
 
@@ -86,17 +86,27 @@ export default function RegisterPage() {
         studentId,
         name,
         password,
-        code: otp, 
-        email: emailFull
+        code: otp,
+        email: emailFull,
       });
       alert("회원가입이 완료되었습니다. 로그인 해주세요.");
       nav("/login", { replace: true });
     } catch (e: any) {
-      setErr(e?.response?.data?.message || "회원가입에 실패했습니다.");
+      const data = e?.response?.data;
+
+      const passwordError = data?.errors?.password;
+      const firstFieldError =
+        data?.errors && typeof data.errors === "object"
+          ? Object.values<string>(data.errors)[0]
+          : null;
+      const fallbackMessage = data?.message || "회원가입에 실패했습니다.";
+
+      setErr(passwordError || firstFieldError || fallbackMessage);
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <div className="auth">
