@@ -106,7 +106,7 @@ export default function LoginPage() {
               회원가입
             </Link>
 
-            <span style={{ margin: "0 8px" }}>|</span>
+            <span className="auth__separator">|</span>
 
             <span>비밀번호를 잊으셨나요? </span>
             <Link className="auth__link" to="/reset-password">

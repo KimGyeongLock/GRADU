@@ -99,7 +99,11 @@ public class StudentService {
                 .findByStudentIdAndEmail(req.getStudentId(), req.getEmail())
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
-        // 3) 비밀번호 규칙 검증(필요하면 다시 한 번)
+        // 3) 기존 비밀번호와 동일한지 확인
+        if (passwordEncoder.matches(req.getNewPassword(), student.getPassword())) {
+            throw new StudentException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
+        }
+
         // 4) 비밀번호 변경 (BCrypt)
         student.changePassword(passwordEncoder.encode(req.getNewPassword()));
     }

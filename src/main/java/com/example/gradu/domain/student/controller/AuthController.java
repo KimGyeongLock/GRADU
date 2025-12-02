@@ -23,21 +23,29 @@ import java.util.Arrays;
 import java.util.Map;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 public class AuthController {
     public static final String REFRESH_TOKEN = "refreshToken";
     private final StudentService studentService;
     private final JwtProperties jwtProperties;
 
-    @Value("${app.frontend-domain}")
-    private String frontendDomain;
+    private final String frontendDomain;
+    private final boolean cookieSecure;
+    private final String cookieSameSite;
 
-    @Value("${app.cookie.secure}")
-    private boolean cookieSecure;
-
-    @Value("${app.cookie.same-site}")
-    private String cookieSameSite;
+    public AuthController(
+            StudentService studentService,
+            JwtProperties jwtProperties,
+            @Value("${app.frontend-domain}") String frontendDomain,
+            @Value("${app.cookie.secure}") boolean cookieSecure,
+            @Value("${app.cookie.same-site}") String cookieSameSite
+    ) {
+        this.studentService = studentService;
+        this.jwtProperties = jwtProperties;
+        this.frontendDomain = frontendDomain;
+        this.cookieSecure = cookieSecure;
+        this.cookieSameSite = cookieSameSite;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {

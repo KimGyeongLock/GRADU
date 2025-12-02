@@ -63,7 +63,7 @@ export default function RegisterPage() {
   }
 
   // 회원가입(백엔드에서 OTP 검증 + 소비 + 회원생성 일괄 처리)
-    async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
 
@@ -95,10 +95,14 @@ export default function RegisterPage() {
       const data = e?.response?.data;
 
       const passwordError = data?.errors?.password;
-      const firstFieldError =
-        data?.errors && typeof data.errors === "object"
-          ? Object.values<string>(data.errors)[0]
-          : null;
+      let firstFieldError: string | null = null;
+
+      if (data?.errors && typeof data.errors === "object") {
+        const values = Object.values<string>(data.errors);
+        if (values.length > 0) {
+          firstFieldError = values[0];
+        }
+      }
       const fallbackMessage = data?.message || "회원가입에 실패했습니다.";
 
       setErr(passwordError || firstFieldError || fallbackMessage);

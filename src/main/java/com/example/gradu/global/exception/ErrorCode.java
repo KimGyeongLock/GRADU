@@ -10,6 +10,7 @@ public enum ErrorCode {
     // ==== Student 관련 ====
     STUDENT_ALREADY_EXISTS("S001", HttpStatus.CONFLICT, "학생이 이미 존재합니다."),
     STUDENT_NOT_FOUND("S002", HttpStatus.NOT_FOUND, "학생을 찾을 수 없습니다."),
+    SAME_PASSWORD_NOT_ALLOWED("S003", HttpStatus.BAD_REQUEST, "기존 비밀번호와 동일합니다."),
 
     // ==== Auth 관련 ====
     TOKEN_EXPIRED("A001", HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다."),
