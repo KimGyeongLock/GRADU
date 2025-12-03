@@ -89,3 +89,19 @@
 .withdrawBtn:hover {
   text-decoration: underline;
 }
+
+.noticeLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* 점이랑 텍스트 간격 */
+}
+
+/* 빨간 점 버전 */
+.noticeNewDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #ef4444; /* red-500 */
+  /* box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.25); */
+}
