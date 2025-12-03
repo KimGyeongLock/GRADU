@@ -34,6 +34,16 @@ export function AiCaptureModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // 공통 파일 추가 함수 (input + 클립보드에서 같이 사용)
+  const appendFiles = (incoming: File[]) => {
+    if (!incoming.length) return;
+
+    setFiles(prev => {
+      const merged = [...prev, ...incoming];
+      return merged.slice(0, 5); // 최대 5장
+    });
+  };
+
   // 모달 열릴 때 뒷 스크롤 막기
   useEffect(() => {
     if (!open) return;
@@ -58,6 +68,47 @@ export function AiCaptureModal({
     }
   }, [open]);
 
+  // 클립보드에서 이미지 붙여넣기 지원 (모달 열려 있을 때만)
+  useEffect(() => {
+    if (!open) return;
+
+    const handlePaste = (e: ClipboardEvent) => {
+      // 인풋/텍스트 영역에 포커스 중이면 기본 붙여넣기 유지
+      const active = document.activeElement;
+      if (
+        active &&
+        (active.tagName === "INPUT" ||
+          active.tagName === "TEXTAREA" ||
+          (active as HTMLElement).isContentEditable)
+      ) {
+        return;
+      }
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      const images: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) images.push(file);
+        }
+      }
+
+      if (!images.length) return;
+
+      // 우리가 이미지로 처리할 거니 기본 붙여넣기는 막아도 됨
+      e.preventDefault();
+      appendFiles(images);
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => {
+      window.removeEventListener("paste", handlePaste);
+    };
+  }, [open]);
+
   if (!open) return null;
 
   const handleBackdropClick = () => {
@@ -75,11 +126,7 @@ export function AiCaptureModal({
     const selected = Array.from(e.target.files ?? []);
     if (!selected.length) return;
 
-    setFiles(prev => {
-      const merged = [...prev, ...selected];
-      return merged.slice(0, 5);
-    });
-
+    appendFiles(selected);
     e.target.value = "";
   };
 
@@ -257,7 +304,7 @@ export function AiCaptureModal({
               </label>
 
               <span className={s.aiUploadInfo}>
-                학사 페이지 캡쳐 이미지를 <strong>최대 5장</strong>까지 업로드할 수 있어요.
+                학사 페이지 캡쳐 이미지를 <strong>최대 5장</strong>까지 업로드할 수 있어요.<br/>복사/붙여놓기로도 가능해요.
               </span>
             </div>
 
