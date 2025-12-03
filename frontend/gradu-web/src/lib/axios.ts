@@ -112,3 +112,9 @@ axiosInstance.interceptors.response.use(
     throw error;
   }
 );
+
+export function clearAuth() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("studentId");
+  localStorage.removeItem("profileName");
+}

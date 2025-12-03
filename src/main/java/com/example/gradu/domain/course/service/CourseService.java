@@ -258,6 +258,10 @@ public class CourseService {
         summaryService.recomputeAndSave(studentId);
     }
 
+    public void removeForStudent(String studentId) {
+        courseRepository.deleteByStudentStudentId(studentId);
+    }
+
     /** 변경 계산 컨텍스트 */
     private static class UpdateContext {
         Category oldCat;

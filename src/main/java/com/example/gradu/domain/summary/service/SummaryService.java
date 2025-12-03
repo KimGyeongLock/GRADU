@@ -28,6 +28,7 @@ public class SummaryService {
     private final SummaryRepository summaryRepo;
     private final SummaryPolicyService policyService;
     private final ObjectMapper om = new ObjectMapper();
+    private final SummaryRepository summaryRepository;
 
     @Transactional
     public SummaryDto getSummary(String sid) {
@@ -106,5 +107,9 @@ public class SummaryService {
         } catch (Exception ex) {
             throw new RuntimeException("rows deserialize failed", ex);
         }
+    }
+
+    public void removeForStudent(String studentId) {
+        summaryRepository.deleteByStudentId(studentId);
     }
 }

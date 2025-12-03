@@ -43,4 +43,8 @@ public class CurriculumService {
     public List<Curriculum> getCurriculumsByStudentId(String studentId) {
         return curriculumRepository.findByStudentStudentId(studentId);
     }
+
+    public void removeForStudent(String studentId) {
+        curriculumRepository.deleteByStudentStudentId(studentId);
+    }
 }
