@@ -64,7 +64,7 @@ public class StudentService {
         String accessToken = jwtTokenProvider.generateAccessToken(studentId, student.getName());
         String refreshToken = jwtTokenProvider.generateRefreshToken(studentId);
 
-        refreshTokenStore.save(studentId, refreshToken);
+        refreshTokenStore.save(refreshToken, studentId);
         return new LoginResponseDto(accessToken, refreshToken);
     }
 
@@ -75,7 +75,7 @@ public class StudentService {
 
         String studentId = jwtTokenProvider.getStudentIdFromToken(refreshToken);
 
-        if (!refreshTokenStore.validate(studentId, refreshToken)){
+        if (!refreshTokenStore.validate(refreshToken)){
             throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
         Student student = studentRepository.findByStudentId(studentId)
@@ -86,21 +86,20 @@ public class StudentService {
     public void logout(String accessToken, String refreshToken) {
         String studentId = jwtTokenProvider.extractStudentIdIgnoringExpiration(accessToken);
 
-        if (!refreshTokenStore.validate(studentId, refreshToken)) {
+        if (!refreshTokenStore.validate(refreshToken)) {
             throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
 
-        refreshTokenStore.remove(studentId);
+        refreshTokenStore.remove(refreshToken);
     }
 
     @Transactional
     public void withdraw(String studentId, String refreshToken) {
-        // 1) refresh 토큰 검증 후 삭제 (있다면)
         if (refreshToken != null && !refreshToken.isBlank()) {
-            if (!refreshTokenStore.validate(studentId, refreshToken)) {
+            if (!refreshTokenStore.validate(refreshToken)) {
                 throw new AuthException(ErrorCode.TOKEN_INVALID);
             }
-            refreshTokenStore.remove(studentId);
+            refreshTokenStore.remove(refreshToken);
         }
 
         // 2) 학생 엔티티 삭제
