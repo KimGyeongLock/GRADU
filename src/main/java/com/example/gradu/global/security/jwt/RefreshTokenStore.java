@@ -16,21 +16,17 @@ public class RefreshTokenStore {
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtProperties jwtProperties;
 
-    public void save(String studentId, String refreshToken) {
-        log.info("RefreshToken 길이: {} bytes", refreshToken.getBytes().length);
-        log.info("StudentId: {}", studentId);
-
-        ValueOperations<String, String> values = redisTemplate.opsForValue();
-        values.set(studentId, refreshToken, jwtProperties.getRefreshExpiration(), TimeUnit.MILLISECONDS);
+    public void save(String refreshToken, String studentId) {
+        redisTemplate.opsForValue()
+                .set(refreshToken, studentId, jwtProperties.getRefreshExpiration(), TimeUnit.MILLISECONDS);
     }
 
-    public boolean validate(String studentId, String refreshToken) {
-        ValueOperations<String, String> values = redisTemplate.opsForValue();
-        String storedRefreshToken = values.get(studentId);
-        return refreshToken.equals(storedRefreshToken);
+    public boolean validate(String refreshToken) {
+        String storedStudentId = redisTemplate.opsForValue().get(refreshToken);
+        return storedStudentId != null;
     }
 
-    public void remove(String studentId) {
-        redisTemplate.delete(studentId);
+    public void remove(String refreshToken) {
+        redisTemplate.delete(refreshToken);
     }
 }
