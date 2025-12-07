@@ -22,7 +22,7 @@ public class CurriculumController {
 
     @GetMapping
     @CheckStudentAccess
-    public ResponseEntity<List<CurriculumResponseDto>> getCurriculums(@PathVariable String studentId){
+    public ResponseEntity<List<CurriculumResponseDto>> getCurriculums(@PathVariable Long studentId){
         List<Curriculum> curriculums = curriculumService.getCurriculumsByStudentId(studentId);
         List<CurriculumResponseDto> body = curriculums.stream()
                 .map(CurriculumResponseDto::from)

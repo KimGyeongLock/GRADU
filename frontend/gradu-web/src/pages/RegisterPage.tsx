@@ -10,17 +10,14 @@ const RESEND_SEC = 300;
 export default function RegisterPage() {
   const nav = useNavigate();
 
-  const [studentId, setStudentId] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [pw2, setPw2] = useState("");
-
-  // 이메일 앞부분(로컬파트) 입력
   const [emailLocal, setEmailLocal] = useState("");
   const emailFull = useMemo(
     () => (emailLocal ? `${emailLocal}@${HANDONG_DOMAIN}` : ""),
     [emailLocal]
   );
+
+  const [password, setPassword] = useState("");
+  const [pw2, setPw2] = useState("");
 
   // OTP
   const [otp, setOtp] = useState("");
@@ -32,7 +29,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // 쿨다운용 틱
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!otpSentAt) return;
@@ -46,9 +42,15 @@ export default function RegisterPage() {
     return left > 0 ? left : 0;
   }, [otpSentAt, tick]);
 
-  // OTP 전송(검증은 회원가입에서만 수행/소비)
+  // ✓ OTP 전송
   async function sendOtp() {
     setErr(null);
+
+    if (!emailFull) {
+      setErr("학교 이메일을 입력하세요.");
+      return;
+    }
+
     setSending(true);
     try {
       await axiosInstance.post("/api/v1/auth/email/otp/send", { email: emailFull });
@@ -62,13 +64,13 @@ export default function RegisterPage() {
     }
   }
 
-  // 회원가입(백엔드에서 OTP 검증 + 소비 + 회원생성 일괄 처리)
+  // ✓ 회원가입
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
 
-    if (!studentId || !name || !password) {
-      setErr("학번, 이름, 비밀번호를 모두 입력하세요.");
+    if (!emailFull) {
+      setErr("학교 이메일을 입력하세요.");
       return;
     }
     if (password !== pw2) {
@@ -76,77 +78,46 @@ export default function RegisterPage() {
       return;
     }
     if (otp.length !== OTP_LEN) {
-      setErr("인증코드 6자리를 정확히 입력하세요.");
+      setErr("인증코드 6자리를 입력하세요.");
       return;
     }
 
     try {
       setLoading(true);
       await axiosInstance.post("/api/v1/auth/register", {
-        studentId,
-        name,
+        email: emailFull,
         password,
         code: otp,
-        email: emailFull,
       });
-      alert("회원가입이 완료되었습니다. 로그인 해주세요.");
+
+      alert("회원가입 완료! 로그인해주세요.");
       nav("/login", { replace: true });
     } catch (e: any) {
       const data = e?.response?.data;
+      const fieldErr =
+        data?.errors && typeof data.errors === "object"
+          ? Object.values<string>(data.errors)[0]
+          : null;
 
-      const passwordError = data?.errors?.password;
-      let firstFieldError: string | null = null;
-
-      if (data?.errors && typeof data.errors === "object") {
-        const values = Object.values<string>(data.errors);
-        if (values.length > 0) {
-          firstFieldError = values[0];
-        }
-      }
-      const fallbackMessage = data?.message || "회원가입에 실패했습니다.";
-
-      setErr(passwordError || firstFieldError || fallbackMessage);
+      setErr(fieldErr || data?.message || "회원가입 실패");
     } finally {
       setLoading(false);
     }
   }
 
-
   return (
-    <div className="auth">
+    <main className="auth">
       <form className="auth__card" onSubmit={onSubmit}>
         <h1 className="auth__title">Create Account</h1>
         <p className="auth__subtitle">회원가입</p>
 
         {err && <div className="auth__error">{err}</div>}
 
-        {/* 학번 */}
-        <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
-          <input
-            className="auth__input"
-            placeholder="학번"
-            value={studentId}
-            onChange={(e) => setStudentId(e.target.value.trim())}
-            autoComplete="off"
-          />
-        </label>
-
-        {/* 이름 */}
-        <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
-          <input
-            className="auth__input"
-            placeholder="이름"
-            value={name}
-            onChange={(e) => setName(e.target.value.trim())}
-            autoComplete="off"
-          />
-        </label>
-
-        {/* 학교 이메일 + '인증하기' (전송 전용) */}
+        {/* 학교 이메일 */}
         <div className="auth__emailRow">
           <label
-            className="auth__field"
-            style={{ gridTemplateColumns: "1fr", flex: 1, margin: 0 }}
+            className="auth__field auth__emailField"
+            style={{ gridTemplateColumns: "1fr" }}
           >
             <div style={{ display: "flex", width: "100%", gap: 8 }}>
               <input
@@ -155,21 +126,14 @@ export default function RegisterPage() {
                 value={emailLocal}
                 onChange={(e) => {
                   setEmailLocal(e.target.value.trim());
-                  setOtp(""); // 이메일이 바뀌면 코드 초기화
+                  setOtp("");
                   setShowOtp(false);
                   setOtpSentAt(null);
                 }}
                 autoComplete="off"
                 style={{ flex: 1 }}
               />
-              <div
-                style={{
-                  alignSelf: "center",
-                  fontSize: 14,
-                  color: "var(--muted)",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <div className="auth__emailDomain">
                 @handong.ac.kr
               </div>
             </div>
@@ -180,33 +144,30 @@ export default function RegisterPage() {
             onClick={sendOtp}
             disabled={sending || remain > 0}
             className="auth__emailBtn"
-            aria-label="이메일 인증 요청"
-            title="이메일로 인증코드를 받습니다"
           >
             {remain > 0 ? `인증하기 (${remain}s)` : "인증하기"}
           </button>
         </div>
 
-        {/* 인증코드 입력(전송 성공 후 노출) */}
+
+        {/* OTP 입력 */}
         {showOtp && (
-          <div>
-            <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
-              <input
-                className="auth__input"
-                placeholder="인증코드 6자리"
-                value={otp}
-                onChange={(e) =>
-                  setOtp(e.target.value.replace(/\D/g, "").slice(0, OTP_LEN))
-                }
-                inputMode="numeric"
-                maxLength={OTP_LEN}
-              />
-            </label>
-          </div>
+          <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
+            <input
+              className="auth__input"
+              placeholder="인증코드 6자리"
+              value={otp}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, "").slice(0, OTP_LEN))
+              }
+              inputMode="numeric"
+              maxLength={OTP_LEN}
+            />
+          </label>
         )}
 
         {/* 비밀번호 */}
-        <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
+        <label className="auth__field">
           <input
             type="password"
             className="auth__input"
@@ -217,7 +178,7 @@ export default function RegisterPage() {
         </label>
 
         {/* 비밀번호 확인 */}
-        <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
+        <label className="auth__field">
           <input
             type="password"
             className="auth__input"
@@ -236,11 +197,9 @@ export default function RegisterPage() {
 
         <div className="auth__footer">
           <span className="auth__muted">이미 계정이 있나요? </span>
-          <Link className="auth__link" to="/login">
-            로그인
-          </Link>
+          <Link className="auth__link" to="/login">로그인</Link>
         </div>
       </form>
-    </div>
+    </main>
   );
 }

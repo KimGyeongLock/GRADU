@@ -1,5 +1,6 @@
 package com.example.gradu.domain.summary.entity;
 
+import com.example.gradu.domain.student.entity.Student;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,8 +17,9 @@ public class Summary {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 64, unique = true)
-    private String studentId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     // P/F
     private double pfCredits;
@@ -43,7 +45,6 @@ public class Summary {
     // 최종 판단
     private boolean finalPass;
 
-    // ✅ MySQL JSON 컬럼이면 @Lob 불필요. JSON 유효성 체크 장점.
     @Column(columnDefinition = "JSON")
     private String rowsJson;
 
@@ -86,7 +87,22 @@ public class Summary {
     }
 
     /** 팩토리: sid로 빈 스냅샷 생성 */
-    public static Summary ofStudent(String sid) {
-        return Summary.builder().studentId(sid).build();
+    public static Summary ofStudent(Student student) {
+        return Summary.builder()
+                .student(student)
+                .pfCredits(0)
+                .pfLimit(0)
+                .pfPass(false)
+                .totalCredits(0)
+                .totalPass(false)
+                .gpa(0)
+                .engMajorCredits(0)
+                .engLiberalCredits(0)
+                .englishPass(false)
+                .gradEnglishPassed(false)
+                .deptExtraPassed(false)
+                .finalPass(false)
+                .rowsJson("[]")
+                .build();
     }
 }

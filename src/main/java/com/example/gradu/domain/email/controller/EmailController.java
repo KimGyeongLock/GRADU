@@ -1,8 +1,6 @@
 package com.example.gradu.domain.email.controller;
 
 import com.example.gradu.domain.email.dto.EmailRequestDto;
-import com.example.gradu.domain.email.dto.VerificationResponseDto;
-import com.example.gradu.domain.email.dto.VerifyRequestDto;
 import com.example.gradu.domain.email.service.EmailVerificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

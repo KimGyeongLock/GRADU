@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    List<Course> findByStudentStudentId(String studentId);
-    // 학생 + 카테고리별 과목
-    List<Course> findByStudent_StudentIdAndCategoryOrderByCreatedAtDesc(
-            String studentId, Category category
+    List<Course> findByStudentId(Long studentId);
+    List<Course> findByStudentIdAndCategoryOrderByCreatedAtDesc(
+            Long studentId, Category category
     );
-    Optional<Course> findByIdAndStudent_StudentId(Long id, String studentId);
+    Optional<Course> findByIdAndStudentId(Long id, Long studentId);
 
-    void deleteByStudentStudentId(String studentId);
+    void deleteByStudentId(Long studentId);
 }

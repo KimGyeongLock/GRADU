@@ -1,10 +1,26 @@
 // src/components/Footer.tsx
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { axiosInstance, clearAuth } from "../lib/axios"; // clearAuth는 accessToken/프로필 제거용 유틸이라고 가정
+import { axiosInstance, clearAuth } from "../lib/axios";
 import s from "./Footer.module.css";
+
+const NOTICE_SEEN_KEY = "gradu_notice_seen_v1"; // 새 공지 나오면 v2, v3로 바꾸면 다시 NEW 표시됨
 
 export default function Footer() {
   const nav = useNavigate();
+  const [showNoticeNew, setShowNoticeNew] = useState(false);
+
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem(NOTICE_SEEN_KEY);
+      if (!seen) {
+        setShowNoticeNew(true);
+      }
+    } catch {
+      // localStorage 접근 불가한 환경이면 그냥 표시
+      setShowNoticeNew(true);
+    }
+  }, []);
 
   const GMAIL_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=gradu.ate0420@gmail.com&su=${encodeURIComponent(
     "GRADU 문의"
@@ -23,9 +39,8 @@ export default function Footer() {
 
       alert("회원탈퇴가 완료되었습니다. 그동안 이용해 주셔서 감사합니다.");
 
-      // 로컬에 저장된 토큰/프로필 제거
       try {
-        clearAuth?.(); // 없으면 아래 개별 삭제
+        clearAuth?.();
       } catch {
         // 무시
       }
@@ -37,6 +52,15 @@ export default function Footer() {
           "회원탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
       );
     }
+  };
+
+  const handleNoticeClick = () => {
+    try {
+      localStorage.setItem(NOTICE_SEEN_KEY, "1");
+    } catch {
+      // 무시
+    }
+    setShowNoticeNew(false);
   };
 
   return (
@@ -66,8 +90,16 @@ export default function Footer() {
               href="https://www.notion.so/gradu0420/2bdd4780dde1809fb930c96e3e7e6fc1?t=new"
               target="_blank"
               rel="noopener noreferrer"
-            >
-              공지사항
+              onClick={handleNoticeClick}
+              className={s.noticeLink}
+            > 
+              <span>공지사항</span>
+              {showNoticeNew && (
+                <span
+                  className={s.noticeNewDot}
+                  aria-label="새로운 공지"
+                />
+              )}
             </a>
           </div>
 
