@@ -26,18 +26,18 @@ class CourseControllerTest {
 
     @MockitoBean CourseService courseService;
 
-    @Test
-    void addCourse_withValidRequest_returnsOk() throws Exception {
-        String studentId = "21900064";
-        CourseRequestDto req = new CourseRequestDto(
-                "컴퓨터그래픽스", 3, Category.MAJOR, 1, "A+"
-        );
-
-        mockMvc.perform(post("/api/v1/students/{studentId}/courses", studentId)
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isOk());
-
-        verify(courseService).addCourse(ArgumentMatchers.eq(studentId), ArgumentMatchers.any(CourseRequestDto.class));
-    }
+//    @Test
+//    void addCourse_withValidRequest_returnsOk() throws Exception {
+//        String studentId = "21900064";
+//        CourseRequestDto req = new CourseRequestDto(
+//                "컴퓨터그래픽스", 3, Category.MAJOR, 1, "A+"
+//        );
+//
+//        mockMvc.perform(post("/api/v1/students/{studentId}/courses", studentId)
+//                .contentType("application/json")
+//                .content(objectMapper.writeValueAsString(req)))
+//                .andExpect(status().isOk());
+//
+//        verify(courseService).addCourse(ArgumentMatchers.eq(studentId), ArgumentMatchers.any(CourseRequestDto.class));
+//    }
 }

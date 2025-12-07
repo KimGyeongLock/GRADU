@@ -14,7 +14,6 @@ import com.example.gradu.global.exception.email.EmailException;
 import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
-import jakarta.validation.Valid;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

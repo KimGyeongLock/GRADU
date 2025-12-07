@@ -3,6 +3,7 @@ package com.example.gradu.domain.curriculum.controller;
 import com.example.gradu.domain.curriculum.dto.CurriculumResponseDto;
 import com.example.gradu.domain.curriculum.entity.Curriculum;
 import com.example.gradu.domain.curriculum.service.CurriculumService;
+import com.example.gradu.global.security.CheckStudentAccess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ public class CurriculumController {
     private final CurriculumService curriculumService;
 
     @GetMapping
+    @CheckStudentAccess
     public ResponseEntity<List<CurriculumResponseDto>> getCurriculums(@PathVariable String studentId){
         List<Curriculum> curriculums = curriculumService.getCurriculumsByStudentId(studentId);
         List<CurriculumResponseDto> body = curriculums.stream()
