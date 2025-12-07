@@ -16,9 +16,9 @@ public class RefreshTokenStore {
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtProperties jwtProperties;
 
-    public void save(String refreshToken, String studentId) {
+    public void save(String refreshToken, Long studentId) {
         redisTemplate.opsForValue()
-                .set(refreshToken, studentId, jwtProperties.getRefreshExpiration(), TimeUnit.MILLISECONDS);
+                .set(refreshToken, String.valueOf(studentId), jwtProperties.getRefreshExpiration(), TimeUnit.MILLISECONDS);
     }
 
     public boolean validate(String refreshToken) {

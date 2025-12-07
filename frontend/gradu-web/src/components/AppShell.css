@@ -11,14 +11,14 @@
 /* Header */
 .appHeader {
   width: 100%;
-  /* 선 싫다고 해서 border-bottom 도 안 줌 */
+  /* 선은 그대로 없이 사용 */
 }
 
 .appHeaderInner {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 12px 24px;       /* 기본(웹) 좌우 여백 */
+  padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -37,34 +37,62 @@
 }
 
 /* Account / Dropdown */
-.account { position: relative; }
+.account {
+  position: relative;
+}
 
 .accountBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   border-radius: 9999px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   font-size: 14px;
   color: #374151;
-  background: transparent;
-  border: none;
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.6); /* gray-300 느낌 */
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.03s ease;
 }
-.accountBtn:hover { background: #f9fafb; }
 
-.accountIcon { font-size: 16px; line-height: 1; }
-.accountName { white-space: nowrap; line-height: 1; }
+.accountBtn:hover {
+  background: #f9fafb;
+  border-color: rgba(129, 140, 248, 0.7); /* 약한 인디고 라인 */
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
 
+.accountBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
+}
+
+.accountIcon {
+  font-size: 16px;
+  line-height: 1;
+  transform: translateY(0.5px); /* 살짝 내려서 시각적 중앙 정렬 */
+}
+
+.accountName {
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* Dropdown */
 .accountMenu {
   position: absolute;
   right: 0;
   top: calc(100% + 6px);
   width: 160px;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.05);
-  border: 1px solid rgba(0,0,0,0.05);
+  background: #ffffff;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.10),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
   overflow: hidden;
   z-index: 10;
 }
@@ -78,10 +106,16 @@
   border: none;
   cursor: pointer;
 }
-.accountMenuItem:hover { background: #f9fafb; }
+
+.accountMenuItem:hover {
+  background: #f9fafb;
+}
 
 /* Main & content container */
-.appMain { flex: 1; width: 100%; }
+.appMain {
+  flex: 1;
+  width: 100%;
+}
 
 .appContent {
   max-width: 1200px;
@@ -90,11 +124,11 @@
   margin: 0 auto;
 }
 
-/* 📱 모바일에서 로고/계정 양 끝 여백 조금 더 주기 */
+/* 📱 모바일에서 헤더 여백 & 버튼 크기 조정 */
 @media (max-width: 480px) {
   .appHeaderInner {
-    padding-left: 30px;
-    padding-right: 10px;
+    padding-left: 18px;
+    padding-right: 14px;
   }
 
   .appTitle {
@@ -102,6 +136,11 @@
   }
 
   .accountBtn {
+    padding: 5px 10px;
     font-size: 13px;
+  }
+
+  .accountIcon {
+    font-size: 15px;
   }
 }

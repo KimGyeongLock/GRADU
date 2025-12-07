@@ -6,8 +6,7 @@ import java.util.Map;
 
 @Service
 public class SummaryPolicyService {
-    // TODO: 나중에 DB/연도별 정책으로 교체
-    public SummaryPolicy getActivePolicyFor(String studentId) {
+    public SummaryPolicy getActivePolicyFor() {
         return SummaryPolicy.builder()
                 .pfRatioMax(0.30)              // "이하" 규정
                 .pfMinTotalForLimit(130)       // PF 한도 산정 최소 총학점

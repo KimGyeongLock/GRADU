@@ -10,7 +10,6 @@ import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.domain.summary.service.SummaryService;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
-import com.example.gradu.global.exception.email.EmailException;
 import com.example.gradu.global.exception.student.StudentException;
 import com.example.gradu.global.security.jwt.JwtTokenProvider;
 import com.example.gradu.global.security.jwt.RefreshTokenStore;
@@ -32,8 +31,9 @@ public class StudentService {
     private final CourseService courseService;
 
     @Transactional
-    public void register(String studentId, String password, String name, String code, String email) {
-        if (studentRepository.findByStudentId(studentId).isPresent())
+    public void register(String email, String password, String code) {
+
+        if (studentRepository.existsByEmail(email))
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
 
         emailVerificationService.verifyCode(email, code);
@@ -41,29 +41,27 @@ public class StudentService {
         String encodedPassword = passwordEncoder.encode(password);
 
         Student student = Student.builder()
-                .studentId(studentId)
                 .password(encodedPassword)
-                .name(name)
                 .email(email)
-                .emailVerified(true)
                 .build();
 
         studentRepository.save(student);
-        curriculumService.initializeForStudent(studentId);
+        curriculumService.initializeForStudent(student.getId());
     }
 
     @Transactional(readOnly = true)
-    public LoginResponseDto login(String studentId, String rawPassword) {
-        Student student = studentRepository.findByStudentId(studentId)
+    public LoginResponseDto login(String email, String rawPassword) {
+        Student student = studentRepository.findByEmail(email)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
         if (!passwordEncoder.matches(rawPassword, student.getPassword()))
             throw new AuthException(ErrorCode.PASSWORD_MISMATCH);
 
-        String accessToken = jwtTokenProvider.generateAccessToken(studentId, student.getName());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(studentId);
+        Long id = student.getId();
+        String accessToken = jwtTokenProvider.generateAccessToken(id);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(id);
 
-        refreshTokenStore.save(refreshToken, studentId);
+        refreshTokenStore.save(refreshToken, id);
         return new LoginResponseDto(accessToken, refreshToken);
     }
 
@@ -72,28 +70,26 @@ public class StudentService {
             throw new AuthException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
 
-        String studentId = jwtTokenProvider.getStudentIdFromToken(refreshToken);
+        Long studentId = jwtTokenProvider.getStudentIdFromToken(refreshToken);
 
         if (!refreshTokenStore.validate(refreshToken)){
             throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
-        Student student = studentRepository.findByStudentId(studentId)
+        studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
-        return jwtTokenProvider.generateAccessToken(studentId, student.getName());
+
+        return jwtTokenProvider.generateAccessToken(studentId);
     }
 
-    public void logout(String accessToken, String refreshToken) {
-        String studentId = jwtTokenProvider.extractStudentIdIgnoringExpiration(accessToken);
-
+    public void logout(String refreshToken) {
         if (!refreshTokenStore.validate(refreshToken)) {
             throw new AuthException(ErrorCode.TOKEN_INVALID);
         }
-
         refreshTokenStore.remove(refreshToken);
     }
 
     @Transactional
-    public void withdraw(String studentId, String refreshToken) {
+    public void withdraw(Long studentId, String refreshToken) {
         if (refreshToken != null && !refreshToken.isBlank()) {
             if (!refreshTokenStore.validate(refreshToken)) {
                 throw new AuthException(ErrorCode.TOKEN_INVALID);
@@ -101,33 +97,27 @@ public class StudentService {
             refreshTokenStore.remove(refreshToken);
         }
 
-        // 2) 학생 엔티티 삭제
-        Student student = studentRepository.findByStudentId(studentId)
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
-        // 필요하다면 커리큘럼 데이터 등도 함께 정리
         curriculumService.removeForStudent(studentId);
         summaryService.removeForStudent(studentId);
         courseService.removeForStudent(studentId);
 
         studentRepository.delete(student);
     }
-  
+
     public void resetPassword(PasswordResetRequestDto req) {
-        // 1) 이메일 OTP 검증 (만료/불일치 예외는 앞에서 만든 EmailVerificationService 사용)
         emailVerificationService.verifyCode(req.getEmail(), req.getCode());
 
-        // 2) 학생 조회
         Student student = studentRepository
-                .findByStudentIdAndEmail(req.getStudentId(), req.getEmail())
+                .findByEmail(req.getEmail())
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
-        // 3) 기존 비밀번호와 동일한지 확인
         if (passwordEncoder.matches(req.getNewPassword(), student.getPassword())) {
             throw new StudentException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
         }
 
-        // 4) 비밀번호 변경 (BCrypt)
         student.changePassword(passwordEncoder.encode(req.getNewPassword()));
     }
 }

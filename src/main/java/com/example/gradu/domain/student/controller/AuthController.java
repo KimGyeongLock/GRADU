@@ -50,13 +50,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody StudentAuthRequestDto request) {
-        studentService.register(request.getStudentId(), request.getPassword(), request.getName(), request.getCode(), request.getEmail());
+        studentService.register(request.getEmail(), request.getPassword(), request.getCode());
         return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AccessTokenResponseDto> login(@Valid @RequestBody StudentAuthRequestDto request, HttpServletResponse response) {
-        LoginResponseDto tokens = studentService.login(request.getStudentId(), request.getPassword());
+        LoginResponseDto tokens = studentService.login(request.getEmail(), request.getPassword());
 
         ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN, tokens.getRefreshToken())
                 .httpOnly(true)
@@ -95,14 +95,11 @@ public class AuthController {
     ) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
-            // 쿠키가 없으면 이미 로그아웃된 상태로 간주: 204로 조용히 성공 처리해도 됨
             return noContentAndDeleteCookie(response);
         }
 
-        // 서버측 저장소(예: Redis)에서 refresh 폐기
-        studentService.logout(null, refreshToken); // access 불필요
+        studentService.logout(refreshToken);
 
-        // 동일 속성으로 삭제 쿠키 내려주기(secure/samesite/path 일치)
         return noContentAndDeleteCookie(response);
     }
     private ResponseEntity<Void> noContentAndDeleteCookie(HttpServletResponse response) {
@@ -112,7 +109,7 @@ public class AuthController {
                 .sameSite(cookieSameSite)
                 .domain(frontendDomain)
                 .path("/")
-                .maxAge(0)          // 삭제
+                .maxAge(0)
                 .build();
         response.addHeader("Set-Cookie", deleteCookie.toString());
         return ResponseEntity.noContent().build();
@@ -121,9 +118,7 @@ public class AuthController {
     private String extractRefreshTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() == null) return null;
         return Arrays.stream(request.getCookies())
-                .filter(c -> REFRESH_TOKEN.equals(c.getName())
-                        || "refresh_token".equalsIgnoreCase(c.getName())
-                        || "refreshtoken".equalsIgnoreCase(c.getName()))
+                .filter(c -> REFRESH_TOKEN.equals(c.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
@@ -135,13 +130,11 @@ public class AuthController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        // JwtAuthenticationFilter 에서 studentId를 principal 로 넣었음
-        String studentId = (String) authentication.getPrincipal();
+        Long studentId = (Long) authentication.getPrincipal();
         String refreshToken = extractRefreshTokenFromCookie(request);
 
         studentService.withdraw(studentId, refreshToken);
 
-        // 쿠키 삭제 + 204
         return noContentAndDeleteCookie(response);
     }
 
