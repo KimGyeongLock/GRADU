@@ -4,6 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../../../lib/axios";
 import Modal from "../../../components/Modal";
 import "../../../components/CourseModal.css";
+import { isGuestMode } from "../../../lib/auth";
+import { addGuestCourse } from "../guest/guestStorage";
+import type { CourseDto } from "../curriculumTypes";
+
 
 type Props = {
   open: boolean;
@@ -67,6 +71,7 @@ export default function AddCourseModal({
   initialYear,
   initialTerm,
 }: Props) {
+  const guest = isGuestMode();
   const defaultYear = new Date().getFullYear();
   const defaultTerm: TermCode = "1";
 
@@ -137,6 +142,22 @@ export default function AddCourseModal({
 
   const addCourse = useMutation({
     mutationFn: async (input: CourseRequest) => {
+      if (guest) {
+        // 게스트 모드: sessionStorage에만 저장
+        addGuestCourse({
+          // CourseDto에서 id만 뺀 형태
+          name: input.name,
+          credit: input.credit,
+          designedCredit: input.designedCredit,
+          category: input.category as any,
+          grade: input.grade,
+          isEnglish: input.isEnglish,
+          academicYear: input.academicYear,
+          term: input.term,
+        } as Omit<CourseDto, "id">);
+        return;
+      }
+
       const url = `/api/v1/students/${encodeURIComponent(sid)}/courses`;
       await axiosInstance.post(url, input, {
         headers: { "Content-Type": "application/json" },
@@ -148,12 +169,18 @@ export default function AddCourseModal({
       onClose();
     },
     onError: (e: any) => {
+      if (guest) {
+        // 게스트 모드는 위에서 throw 안 해서 사실 거의 안 옴
+        setErrMsg("저장 중 오류가 발생했습니다.");
+        return;
+      }
       const status = e?.response?.status;
       const text = e?.response?.data?.message || e?.message || "요청 실패";
       setErrMsg(`저장 실패 (${status ?? "-"}) : ${text}`);
       console.error("[addCourse] error", e);
     },
   });
+
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

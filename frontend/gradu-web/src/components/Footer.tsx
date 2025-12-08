@@ -2,9 +2,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance, clearAuth } from "../lib/axios";
+import { isGuestMode } from "../lib/auth";
 import s from "./Footer.module.css";
 
-const NOTICE_SEEN_KEY = "gradu_notice_seen_v1"; // 새 공지 나오면 v2, v3로 바꾸면 다시 NEW 표시됨
+const NOTICE_SEEN_KEY = "gradu_notice_seen_v2"; // 새 공지 나오면 v2, v3로 바꾸면 다시 NEW 표시됨
 
 export default function Footer() {
   const nav = useNavigate();
@@ -27,6 +28,14 @@ export default function Footer() {
   )}&body=${encodeURIComponent("안녕하세요, GRADU 관련 문의드립니다.\n\n")}`;
 
   const onWithdraw = async () => {
+    // ✅ 게스트 막기
+    if (isGuestMode()) {
+      alert(
+        "게스트 모드에서는 회원탈퇴 기능을 이용할 수 없습니다.\n로그인 후 다시 시도해 주세요."
+      );
+      return;
+    }
+
     const yes = window.confirm(
       "정말 탈퇴하시겠습니까?\n탈퇴 시 저장된 졸업 설계 및 이수 정보가 모두 삭제되며 복구할 수 없습니다."
     );
@@ -92,13 +101,10 @@ export default function Footer() {
               rel="noopener noreferrer"
               onClick={handleNoticeClick}
               className={s.noticeLink}
-            > 
+            >
               <span>공지사항</span>
               {showNoticeNew && (
-                <span
-                  className={s.noticeNewDot}
-                  aria-label="새로운 공지"
-                />
+                <span className={s.noticeNewDot} aria-label="새로운 공지" />
               )}
             </a>
           </div>

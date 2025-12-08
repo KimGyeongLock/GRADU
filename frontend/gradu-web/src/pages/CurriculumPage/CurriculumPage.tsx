@@ -13,29 +13,20 @@ import { SummaryView } from "./SummaryView";
 import { SemesterView } from "./SemesterView";
 import s from "./CurriculumTable.module.css";
 import { AiCaptureModal } from "./modal/AiCaptureModal";
-
-/* confetti util은 그대로 위쪽에 선언 */
-type ConfettiFn = (opts?: any) => void;
-let _confetti: ConfettiFn | null = null;
-async function getConfetti(): Promise<ConfettiFn> {
-  if (_confetti) return _confetti;
-  const mod = await import("canvas-confetti");
-  _confetti = mod.default;
-  return _confetti!;
-}
-async function fireConfetti(duration = 1800) {
-  const confetti = await getConfetti();
-  const end = Date.now() + duration;
-  (function frame() {
-    confetti({ particleCount: 5, angle: 60, spread: 65, origin: { x: 0 } });
-    confetti({ particleCount: 5, angle: 120, spread: 65, origin: { x: 1 } });
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-}
+import { isGuestMode } from "../../lib/auth";
+import {
+  loadGuestCourses,
+  loadGuestToggles,
+  saveGuestToggles,
+} from "./guest/guestStorage";
+import {
+  createEmptySummary,
+  computeGuestSummary,
+} from "./guest/guestSummary";
+import { fireConfetti } from "../../components/confetti";
 
 type View = "summary" | "semester";
 
-// ✅ PlannedGroup도 CourseDto 기반으로 변경
 type PlannedGroup = { key: string; year: number; term: Term; items: CourseDto[] };
 
 function nextSemester(y: number, t: Term): { year: number; term: Term } {
@@ -49,14 +40,48 @@ function nextSemester(y: number, t: Term): { year: number; term: Term } {
 const celebrateKey = (sid: string) => `gradu_celebrated_${sid}`;
 
 export default function CurriculumPage() {
-  const sid = getStudentId() || "";
-  const qc = useQueryClient();
+  const isGuest = isGuestMode();
+  const realSid = getStudentId();
+  const sid = isGuest ? "guest" : realSid || "";
 
+  const qc = useQueryClient();
   const [view, setView] = useState<View>("summary");
 
+  // 게스트용 상태
+  const [guestCourses, setGuestCourses] = useState<CourseDto[]>([]);
+  const [guestSummary, setGuestSummary] =
+    useState<SummaryDto>(createEmptySummary());
+
+  const [gradEnglishPassed, setGradEnglishPassed] = useState(false);
+  const [deptExtraPassed, setDeptExtraPassed] = useState(false);
+
+  // 🔹 게스트 모드 초기 로드
+  useEffect(() => {
+    if (!isGuest) return;
+
+    const cs = loadGuestCourses();
+    setGuestCourses(cs);
+
+    const savedToggles = loadGuestToggles();
+    if (savedToggles) {
+      setGradEnglishPassed(savedToggles.gradEnglishPassed);
+      setDeptExtraPassed(savedToggles.deptExtraPassed);
+    }
+
+    const baseSummary = computeGuestSummary(
+      cs,
+      savedToggles ?? {
+        gradEnglishPassed: false,
+        deptExtraPassed: false,
+      }
+    );
+    setGuestSummary(baseSummary);
+  }, [isGuest]);
+
+  // 🔹 서버 요약(로그인 전용)
   const { data: summary, isLoading, isError } = useQuery<SummaryDto>({
     queryKey: ["summary", sid],
-    enabled: !!sid,
+    enabled: !!sid && !isGuest,
     queryFn: async () => {
       const { data } = await axiosInstance.get<SummaryDto>(
         `/api/v1/students/${encodeURIComponent(sid)}/summary`
@@ -66,13 +91,14 @@ export default function CurriculumPage() {
     refetchOnWindowFocus: false,
   });
 
+  // 🔹 서버 과목 목록(로그인 전용)
   const {
-    data: allCourses = [],
+    data: serverCourses = [],
     isLoading: isLoadingSem,
     isError: isErrorSem,
   } = useQuery<CourseDto[]>({
     queryKey: ["courses-semester", sid],
-    enabled: !!sid && view === "semester",
+    enabled: !!sid && !isGuest,
     queryFn: async () => {
       const { data } = await axiosInstance.get<CourseDto[]>(
         `/api/v1/students/${encodeURIComponent(sid)}/courses/all`
@@ -81,6 +107,15 @@ export default function CurriculumPage() {
     },
   });
 
+  // ✅ 최종 과목 목록 (게스트/로그인 공용)
+  const allCourses: CourseDto[] = isGuest ? guestCourses : serverCourses;
+
+  // ✅ 최종 summary (게스트/로그인 공용)
+  const effectiveSummary: SummaryDto = isGuest
+    ? guestSummary
+    : summary ?? createEmptySummary();
+
+  // 🔹 학기별 그룹 (서버 + planned)
   const serverGroups = useMemo(() => {
     if (!allCourses?.length) return [] as PlannedGroup[];
     const sorted = [...allCourses].sort((a, b) => {
@@ -99,39 +134,75 @@ export default function CurriculumPage() {
   }, [allCourses]);
 
   const [planned, setPlanned] = useState<PlannedGroup[]>([]);
-  const mergedGroups = useMemo(
-    () =>
-      [...serverGroups, ...planned].sort((a, b) =>
-        a.year === b.year
-          ? TERM_ORDER[a.term] - TERM_ORDER[b.term]
-          : a.year - b.year
-      ),
-    [serverGroups, planned]
-  );
 
-  const [gradEnglishPassed, setGradEnglishPassed] = useState(false);
-  const [deptExtraPassed, setDeptExtraPassed] = useState(false);
+  const mergedGroups = useMemo(() => {
+    const map = new Map<
+      string,
+      { key: string; year: number; term: Term; items: CourseDto[] }
+    >();
 
-  useEffect(() => {
-    if (summary) {
-      setGradEnglishPassed(!!summary.gradEnglishPassed);
-      setDeptExtraPassed(!!summary.deptExtraPassed);
+    // 1) 서버 그룹
+    for (const g of serverGroups) {
+      map.set(g.key, { ...g, items: [...g.items] });
     }
-  }, [summary]);
 
+    // 2) 새 학기(planned) 그룹 머지
+    for (const g of planned) {
+      const ex = map.get(g.key);
+      if (!ex) {
+        map.set(g.key, { ...g, items: [...g.items] });
+      } else if (g.items.length) {
+        ex.items = [...ex.items, ...g.items];
+      }
+    }
+
+    return Array.from(map.values()).sort((a, b) =>
+      a.year === b.year
+        ? TERM_ORDER[a.term] - TERM_ORDER[b.term]
+        : a.year - b.year
+    );
+  }, [serverGroups, planned]);
+
+  // 🔹 서버 summary 기준 토글 초기값 (로그인일 때만)
+  useEffect(() => {
+    if (isGuest) return;
+    if (effectiveSummary) {
+      setGradEnglishPassed(!!effectiveSummary.gradEnglishPassed);
+      setDeptExtraPassed(!!effectiveSummary.deptExtraPassed);
+    }
+  }, [isGuest, effectiveSummary]);
+
+  // 🔹 토글 저장 (로그인 전용)
   const saveToggles = useMutation({
     mutationFn: async (payload: {
       gradEnglishPassed: boolean;
       deptExtraPassed: boolean;
     }) => {
+      if (isGuest) return;
       await axiosInstance.patch(
         `/api/v1/students/${sid}/summary/toggles`,
         payload
       );
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["summary", sid] }),
+    onSuccess: () => {
+      if (!isGuest) {
+        qc.invalidateQueries({ queryKey: ["summary", sid] });
+      }
+    },
   });
 
+  const handleSaveToggles = () => {
+    if (isGuest) {
+      const toggles = { gradEnglishPassed, deptExtraPassed };
+      const next = computeGuestSummary(guestCourses, toggles);
+      setGuestSummary(next);
+      saveGuestToggles(toggles);
+    } else {
+      saveToggles.mutate({ gradEnglishPassed, deptExtraPassed });
+    }
+  };
+
+  // 🔹 과목 추가 모달
   const [addOpen, setAddOpen] = useState(false);
   const [prefill, setPrefill] = useState<{ year?: number; term?: Term }>({});
   const openAddFor = (year?: number, term?: Term) => {
@@ -139,12 +210,24 @@ export default function CurriculumPage() {
     setAddOpen(true);
   };
   const closeAdd = () => setAddOpen(false);
+
   const afterAddSaved = () => {
-    qc.invalidateQueries({ queryKey: ["summary", sid] });
-    qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
+    if (isGuest) {
+      const cs = loadGuestCourses();
+      setGuestCourses(cs);
+      const nextSummary = computeGuestSummary(cs, {
+        gradEnglishPassed,
+        deptExtraPassed,
+      });
+      setGuestSummary(nextSummary);
+    } else {
+      qc.invalidateQueries({ queryKey: ["summary", sid] });
+      qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
+    }
     setAddOpen(false);
   };
 
+  // 🔹 새 학기 생성
   const lastOfMerged = useMemo(() => {
     if (mergedGroups.length > 0) return mergedGroups[mergedGroups.length - 1];
     const nowY = new Date().getFullYear();
@@ -158,23 +241,24 @@ export default function CurriculumPage() {
     );
     const key = `${ny}-${nt}`;
     if (mergedGroups.some((g) => g.key === key)) {
+      // 이미 존재하면 그대로 그 학기에 과목 추가만
       openAddFor(ny, nt);
       return;
     }
+    // 없으면 planned에 빈 학기 하나 추가
     setPlanned((prev) => [...prev, { key, year: ny, term: nt, items: [] }]);
     openAddFor(ny, nt);
   };
 
-  // 🎉 축하 배너 & 컨페티 (학번별로 딱 한 번만)
+  // 🎉 축하 배너 & 컨페티 (학번별로 딱 한 번만) — 게스트는 finalPass가 항상 false라 자연스럽게 안 뜸
   const hasCelebratedRef = useRef(false);
   const [showBanner, setShowBanner] = useState(false);
 
   useEffect(() => {
-    if (!summary || !sid) return;
-
+    if (!summary || !realSid) return; // ✅ 실제 로그인 유저만 축하 고려
     if (!summary.finalPass) return;
 
-    const key = celebrateKey(sid);
+    const key = celebrateKey(realSid);
 
     const checkAlreadyCelebrated = (storageKey: string): boolean => {
       try {
@@ -203,22 +287,25 @@ export default function CurriculumPage() {
     setShowBanner(true);
     const t = setTimeout(() => setShowBanner(false), 3000);
     return () => clearTimeout(t);
-  }, [summary?.finalPass, sid]);
+  }, [summary?.finalPass, realSid]);
 
   // ✅ 플로팅 FAB 상태
   const [fabOpen, setFabOpen] = useState(false);
-  const [aiCaptureOpen, setAiCaptureOpen] = useState(false); // AI 캡쳐 모달 열기용
+  const [aiCaptureOpen, setAiCaptureOpen] = useState(false);
 
-  if (!sid)
+  // 🔥 "로그인도 아니고 게스트도 아닐 때만" 오류 메시지
+  if (!sid && !isGuest)
     return (
       <div className="text-center py-14">로그인 정보를 찾을 수 없습니다.</div>
     );
-  if (isLoading)
+
+  // 서버 기반 요약 로딩 상태는 로그인 사용자에게만 의미 있음
+  if (!isGuest && isLoading)
     return <div className="text-center py-14">불러오는 중…</div>;
-  if (isError || !summary)
+  if (!isGuest && (isError || !effectiveSummary))
     return <div className="text-center py-14">조회 실패</div>;
 
-  const pfLimitNote = Math.max(39, summary.pfLimit);
+  const pfLimitNote = Math.max(39, effectiveSummary.pfLimit);
 
   return (
     <div className="relative">
@@ -250,15 +337,13 @@ export default function CurriculumPage() {
       <div className={s.card}>
         {view === "summary" ? (
           <SummaryView
-            summary={summary}
+            summary={effectiveSummary}
             pfLimitNote={pfLimitNote}
             gradEnglishPassed={gradEnglishPassed}
             deptExtraPassed={deptExtraPassed}
             onChangeGradEnglishPassed={setGradEnglishPassed}
             onChangeDeptExtraPassed={setDeptExtraPassed}
-            onClickSaveToggles={() =>
-              saveToggles.mutate({ gradEnglishPassed, deptExtraPassed })
-            }
+            onClickSaveToggles={handleSaveToggles}
             savingToggles={saveToggles.isPending}
           />
         ) : (
@@ -269,6 +354,16 @@ export default function CurriculumPage() {
             view={view}
             onOpenAddFor={openAddFor}
             onCreateNextSemester={handleCreateNextSemester}
+            onGuestChange={() => {
+              if (!isGuest) return;
+              const cs = loadGuestCourses();
+              setGuestCourses(cs);
+              const nextSummary = computeGuestSummary(cs, {
+                gradEnglishPassed,
+                deptExtraPassed,
+              });
+              setGuestSummary(nextSummary);
+            }}
           />
         )}
 
@@ -282,7 +377,7 @@ export default function CurriculumPage() {
                   className={s.fabItem}
                   onClick={() => {
                     setFabOpen(false);
-                    openAddFor(undefined, undefined); // 기존 단일 과목 추가
+                    openAddFor(undefined, undefined); // 단일 과목 추가
                   }}
                 >
                   단일 과목 추가
@@ -292,6 +387,12 @@ export default function CurriculumPage() {
                   className={`${s.fabItem} ${s.fabItemNew}`}
                   onClick={() => {
                     setFabOpen(false);
+                    if (isGuest) {
+                      alert(
+                        "AI 캡쳐 기능은 로그인 후 이용할 수 있어요.\n로그인 후 다시 시도해 주세요."
+                      );
+                      return;
+                    }
                     setAiCaptureOpen(true);
                   }}
                 >

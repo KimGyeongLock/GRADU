@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { axiosInstance, setAccessToken } from "../lib/axios";
+import { setGuestMode } from "../lib/auth";
 import "../styles/auth.css";
 
 const HANDONG_DOMAIN = "@handong.ac.kr";
@@ -35,6 +36,8 @@ export default function LoginPage() {
       const token = data?.accessToken;
       if (!token) throw new Error("accessToken 없음");
 
+      setGuestMode(false);
+
       setAccessToken(token);
       nav("/", { replace: true });
     } catch (e: any) {
@@ -48,6 +51,8 @@ export default function LoginPage() {
     setErr("");
     setLoading(true);
     try {
+      setGuestMode(true);
+
       nav("/curriculum", { replace: true });
     } catch (e: any) {
       setErr("비회원 로그인을 진행할 수 없습니다.");
