@@ -214,6 +214,36 @@ body{
   cursor:not-allowed;
 }
 
+
+/* 버튼 2개를 한 줄에 배치 */
+.auth__buttonRow {
+  display: flex;
+  gap: 10px;
+}
+
+/* 로그인 버튼: 비율 5 */
+.auth__button--primary {
+  flex: 5;
+}
+
+.auth__button--guest {
+  flex: 2;
+  background: #d1d5db;        /* gray-300 */
+  color: #9ca3af;            
+  font-weight: 500;
+}
+
+/* hover 효과: 텍스트는 유지, 배경만 어둡게 */
+.auth__button--guest:hover:not(:disabled) {
+  background: #bfc5cc; /* gray-350 느낌 - 조금 어둡게 */
+}
+
+.auth__button--guest:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
 /* ===========================
    반응형
    =========================== */

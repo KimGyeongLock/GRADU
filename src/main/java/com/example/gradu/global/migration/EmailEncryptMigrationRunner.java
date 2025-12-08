@@ -3,6 +3,7 @@ package com.example.gradu.global.migration;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.global.crypto.AesGcmUtil;
+import com.example.gradu.global.crypto.Sha256;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-@Order(1)  // 필요하면 순서 조정
+@Order(1)
 public class EmailEncryptMigrationRunner implements CommandLineRunner {
 
     private final StudentRepository studentRepository;
@@ -22,30 +23,44 @@ public class EmailEncryptMigrationRunner implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        // 이미 마이그레이션 한 뒤엔 더 이상 돌리고 싶지 않으면
-        // 간단히 조건 걸어도 됨 (예: "이미 암호화된 것 같으면 return")
-
         List<Student> students = studentRepository.findAll();
         if (students.isEmpty()) return;
 
         for (Student s : students) {
-            String email = s.getEmail();
-            if (email == null || email.isBlank()) continue;
+            String stored = s.getEmail();
+            if (stored == null || stored.isBlank()) continue;
 
-            // 이미 암호화된 것인지 간단 체크 (Base64 pattern 정도로):
-            if (looksLikeEncrypted(email)) {
+            // 이미 email_hash 가 세팅된 데이터는 스킵 (재실행 대비)
+            if (s.getEmailHash() != null && !s.getEmailHash().isBlank()) {
                 continue;
             }
 
-            String encrypted = aes.encrypt(email);
-            s.changeEmail(encrypted); // 혹은 setEmail, 또는 직접 필드 수정
+            String plain;      // 실제 평문 이메일
+            String encrypted;  // DB 에 저장할 암호문
+
+            if (looksLikeEncrypted(stored)) {
+                // 이미 암호화된 이메일 → 복호화해서 평문 얻기
+                plain = aes.decrypt(stored);
+                encrypted = stored;   // 그대로 재사용
+            } else {
+                // 아직 평문인 이메일 → 그대로 평문으로 쓰고, 새로 암호화
+                plain = stored;
+                encrypted = aes.encrypt(plain);
+            }
+
+            String hash = Sha256.hash(plain);
+
+            s.changeEmail(encrypted, hash);
         }
-        // @Transactional 이라 여기서 flush 되면서 DB에 암호문이 저장됨
+        // @Transactional 이라 자동 flush
     }
 
     private boolean looksLikeEncrypted(String value) {
-        // 매우 러프하게 "이미 Base64 로 인코딩된 것 같다" 정도 체크
-        // 필요 없으면 그냥 false 리턴해서 무조건 암호화해도 됨(단, 중복 암호화만 조심)
-        return value.length() > 40 && value.matches("^[0-9A-Za-z+/]+=*$");
+        // 이메일 평문은 보통 "@"가 들어가고, AES+Base64 암호문은 긴 [A-Za-z0-9+/=] 형태라
+        // 대충 이렇게 구분 가능
+        if (!value.contains("@") && value.length() > 40 && value.matches("^[0-9A-Za-z+/]+=*$")) {
+            return true;
+        }
+        return false;
     }
 }

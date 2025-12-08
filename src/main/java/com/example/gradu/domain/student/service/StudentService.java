@@ -8,6 +8,7 @@ import com.example.gradu.domain.student.dto.PasswordResetRequestDto;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.domain.summary.service.SummaryService;
+import com.example.gradu.global.crypto.Sha256;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
 import com.example.gradu.global.exception.student.StudentException;
@@ -33,16 +34,20 @@ public class StudentService {
     @Transactional
     public void register(String email, String password, String code) {
 
-        if (studentRepository.existsByEmail(email))
-            throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
-
         emailVerificationService.verifyCode(email, code);
+
+        String emailHash = Sha256.hash(email);
+
+        if (studentRepository.existsByEmailHash(emailHash)) {
+            throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
+        }
 
         String encodedPassword = passwordEncoder.encode(password);
 
         Student student = Student.builder()
                 .password(encodedPassword)
                 .email(email)
+                .emailHash(emailHash)
                 .build();
 
         studentRepository.save(student);
@@ -51,7 +56,8 @@ public class StudentService {
 
     @Transactional(readOnly = true)
     public LoginResponseDto login(String email, String rawPassword) {
-        Student student = studentRepository.findByEmail(email)
+        String emailHash = Sha256.hash(email);
+        Student student = studentRepository.findByEmailHash(emailHash)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
         if (!passwordEncoder.matches(rawPassword, student.getPassword()))
@@ -110,8 +116,10 @@ public class StudentService {
     public void resetPassword(PasswordResetRequestDto req) {
         emailVerificationService.verifyCode(req.getEmail(), req.getCode());
 
+        String emailHash = Sha256.hash(req.getEmail());
+
         Student student = studentRepository
-                .findByEmail(req.getEmail())
+                .findByEmailHash(emailHash)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
         if (passwordEncoder.matches(req.getNewPassword(), student.getPassword())) {

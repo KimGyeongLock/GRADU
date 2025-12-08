@@ -22,9 +22,12 @@ public class Student {
 
     private String password;
 
-//    @Convert(converter = EncryptedStringConverter.class)
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false, unique = true)
     private String email;
+
+    @Column(name = "email_hash", nullable = false, unique = true)
+    private String emailHash;
 
     @CreatedDate
     @Column(updatable = false)
@@ -36,5 +39,5 @@ public class Student {
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
-    public void changeEmail(String newEmail) { this.email = newEmail; }
+    public void changeEmail(String newEmail, String emailHash) { this.email = newEmail; this.emailHash = emailHash; }
 }

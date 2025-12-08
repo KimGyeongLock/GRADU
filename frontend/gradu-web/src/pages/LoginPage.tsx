@@ -1,3 +1,5 @@
+
+
 // src/pages/LoginPage.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -37,6 +39,18 @@ export default function LoginPage() {
       nav("/", { replace: true });
     } catch (e: any) {
       setErr(e?.response?.data?.message || "로그인 실패");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onGuestLogin = async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      nav("/curriculum", { replace: true });
+    } catch (e: any) {
+      setErr("비회원 로그인을 진행할 수 없습니다.");
     } finally {
       setLoading(false);
     }
@@ -95,13 +109,25 @@ export default function LoginPage() {
 
           {err && <div className="auth__error">{err}</div>}
 
-          <button
-            className="auth__button"
-            onClick={onLogin}
-            disabled={loading || !emailLocal || !pw}
-          >
-            {loading ? "로그인 중..." : "로그인"}
-          </button>
+          <div className="auth__buttonRow">
+            <button
+              className="auth__button auth__button--primary"
+              onClick={onLogin}
+              disabled={loading || !emailLocal || !pw}
+            >
+              {loading ? "로그인 중..." : "로그인"}
+            </button>
+
+            <button
+              className="auth__button auth__button--guest"
+              type="button"
+              onClick={onGuestLogin}
+              disabled={loading}
+            >
+              비회원 로그인
+            </button>
+          </div>
+
 
           <div className="auth__footer auth__muted">
             <span>계정이 없나요? </span>
@@ -121,3 +147,4 @@ export default function LoginPage() {
     </main>
   );
 }
+
