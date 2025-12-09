@@ -5,6 +5,8 @@ import { axiosInstance } from "../../../lib/axios";
 import Modal from "../../../components/Modal";
 import type { CourseDto } from "../curriculumTypes";
 import "../../../components/CourseModal.css";
+import { isGuestMode } from "../../../lib/auth";
+import { updateGuestCourse } from "../guest/guestStorage";
 
 const KOR_LABELS: Record<string, string> = {
   FAITH_WORLDVIEW: "신앙및세계관",
@@ -53,6 +55,8 @@ export default function EditCourseModal({
   onClose,
   onSaved,
 }: Props) {
+  const guest = isGuestMode();
+
   const [form, setForm] = useState<FormState>({
     name: "",
     credit: "",
@@ -143,6 +147,22 @@ export default function EditCourseModal({
         throw new Error("학기를 선택하세요.");
       }
 
+      if (guest) {
+        // 게스트 모드: sessionStorage에 직접 반영
+        updateGuestCourse(course.id, {
+          name: form.name.trim(),
+          credit: creditNum ?? course.credit,
+          designedCredit: designedNum,
+          grade:
+            form.grade.trim() === "" ? null : form.grade.trim(),
+          category: form.category,
+          isEnglish: !!form.isEnglish,
+          academicYear: Number(form.academicYear),
+          term: form.term,
+        });
+        return;
+      }
+
       const body: Partial<{
         name: string;
         credit: number | null;
@@ -180,6 +200,7 @@ export default function EditCourseModal({
       console.error("[EditCourse] error", e);
     },
   });
+
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

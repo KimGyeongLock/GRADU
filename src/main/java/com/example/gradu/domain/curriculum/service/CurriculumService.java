@@ -44,7 +44,8 @@ public class CurriculumService {
         return curriculumRepository.findByStudentId(studentId);
     }
 
+    @Transactional
     public void removeForStudent(Long studentId) {
-        curriculumRepository.deleteById(studentId);
+        curriculumRepository.deleteByStudentId(studentId);
     }
 }

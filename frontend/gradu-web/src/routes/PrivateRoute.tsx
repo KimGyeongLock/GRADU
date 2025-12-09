@@ -1,8 +1,12 @@
+// src/routes/PrivateRoute.tsx
 import { Navigate, useLocation } from "react-router-dom";
 import type { ReactNode } from "react";
+import { isGuestMode } from "../lib/auth";
 
 export function isAuthed() {
-  return Boolean(localStorage.getItem("access_token"));
+  const hasToken = Boolean(localStorage.getItem("access_token"));
+  const guest = isGuestMode();
+  return hasToken || guest;
 }
 
 export function PrivateRoute({ children }: { children: ReactNode }) {

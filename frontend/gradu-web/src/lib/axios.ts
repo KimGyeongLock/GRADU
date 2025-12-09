@@ -82,6 +82,7 @@ export async function logoutApi() {
     await axiosInstance.post("/api/v1/auth/logout", {});
   } finally {
     setAccessToken(null);
+    sessionStorage.clear();
   }
 }
 
@@ -136,4 +137,5 @@ axiosInstance.interceptors.response.use(
 // ======================================================
 export function clearAuth() {
   setAccessToken(null);
+  sessionStorage.clear();
 }

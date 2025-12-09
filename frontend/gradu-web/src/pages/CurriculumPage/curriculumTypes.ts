@@ -6,7 +6,7 @@ export type SummaryRow = {
   name: string;
   grad: string;
   earned: number;
-  designedEarned?: number;
+  designedEarned?: number | null;
   status: "PASS" | "FAIL" | string;
 };
 
