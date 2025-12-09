@@ -64,6 +64,7 @@ services:
       APP_FRONTEND_DOMAIN: ${APP_FRONTEND_DOMAIN}
       APP_COOKIE_SECURE: ${APP_COOKIE_SECURE}
       APP_COOKIE_SAMESITE: ${APP_COOKIE_SAMESITE}
+      APP_CRYPTO_EMAIL_KEY: ${APP_CRYPTO_EMAIL_KEY}
     depends_on:
       db:
         condition: service_healthy

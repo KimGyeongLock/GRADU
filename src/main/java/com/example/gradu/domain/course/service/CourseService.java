@@ -56,12 +56,12 @@ public class CourseService {
                 .build();
         courseRepository.save(course);
 
-        Curriculum cur = curriculumRepository.findByIdAndCategory(studentId, request.category())
+        Curriculum cur = curriculumRepository.findByStudentIdAndCategory(studentId, request.category())
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
         cur.addEarnedCredits(toUnits(request.credit()));
 
         if (request.category() == Category.MAJOR) {
-            Curriculum designedCur = curriculumRepository.findByIdAndCategory(studentId, Category.MAJOR_DESIGNED)
+            Curriculum designedCur = curriculumRepository.findByStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
                     .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
             designedCur.addEarnedCredits(Optional.of(request.designedCredit()).orElse(0));
         }
@@ -136,9 +136,9 @@ public class CourseService {
     }
 
     private void applyCategoryChange(Long studentId, UpdateContext ctx) {
-        Curriculum prevCur = curriculumRepository.findByIdAndCategory(studentId, ctx.oldCat)
+        Curriculum prevCur = curriculumRepository.findByStudentIdAndCategory(studentId, ctx.oldCat)
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
-        Curriculum newCur = curriculumRepository.findByIdAndCategory(studentId, ctx.newCat)
+        Curriculum newCur = curriculumRepository.findByStudentIdAndCategory(studentId, ctx.newCat)
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
 
         // 이전 카테고리에서 oldCredit 제거, 새 카테고리에 newCredit 추가 (유닛)
@@ -179,7 +179,7 @@ public class CourseService {
     }
 
     private Curriculum getCurriculum(Long studentId, Category category) {
-        return curriculumRepository.findByIdAndCategory(studentId, category)
+        return curriculumRepository.findByStudentIdAndCategory(studentId, category)
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
     }
 
@@ -188,13 +188,13 @@ public class CourseService {
         Course course = loadCourse(studentId, courseId);
 
         // 해당 카테고리에서 학점 제거(유닛)
-        Curriculum cur = curriculumRepository.findByIdAndCategory(studentId, course.getCategory())
+        Curriculum cur = curriculumRepository.findByStudentIdAndCategory(studentId, course.getCategory())
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
         cur.addEarnedCredits(-toUnits(course.getCredit()));
 
         // 전공 설계 제거(정수)
         if (course.getCategory() == Category.MAJOR) {
-            Curriculum majorDesignedCur = curriculumRepository.findByIdAndCategory(studentId, Category.MAJOR_DESIGNED)
+            Curriculum majorDesignedCur = curriculumRepository.findByStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
                     .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
             majorDesignedCur.addEarnedCredits(-Optional.ofNullable(course.getDesignedCredit()).orElse(0));
         }
@@ -231,7 +231,7 @@ public class CourseService {
                 .collect(Collectors.groupingBy(CourseBulkRequest::getCategory,
                         Collectors.mapping(CourseBulkRequest::getCredit, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
                 .forEach((category, totalCredit) -> {
-                    Curriculum cur = curriculumRepository.findByIdAndCategory(studentId, category)
+                    Curriculum cur = curriculumRepository.findByStudentIdAndCategory(studentId, category)
                             .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
                     cur.addEarnedCredits(toUnits(totalCredit));
                 });
@@ -242,7 +242,7 @@ public class CourseService {
                 .sum();
 
         if (totalDesignedCredit > 0) {
-            Curriculum designedCur = curriculumRepository.findByIdAndCategory(studentId, Category.MAJOR_DESIGNED)
+            Curriculum designedCur = curriculumRepository.findByStudentIdAndCategory(studentId, Category.MAJOR_DESIGNED)
                     .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
             designedCur.addEarnedCredits(totalDesignedCredit);
         }
