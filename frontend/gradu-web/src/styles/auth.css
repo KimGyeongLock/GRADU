@@ -18,7 +18,10 @@ body{
   font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Apple Color Emoji,Segoe UI Emoji;
 }
 
-/* ✅ 전체를 가운데로 */
+/* ===========================
+   레이아웃
+   =========================== */
+
 .auth{
   min-height:100vh;
   display:grid;
@@ -26,33 +29,28 @@ body{
   padding:24px;
 }
 
-/* ✅ 이미지(왼쪽) + 카드(오른쪽) 레이아웃 */
 .auth__layout{
   display:flex;
   align-items:center;
   gap:60px;
 }
 
-/* 540x540 1:1 비율 기반 로고 */
 .auth__logo{
-  width: 370px; 
+  width:370px;
   aspect-ratio:1 / 1;
   object-fit:contain;
   display:block;
   user-select:none;
-  pointer-events: none; /* ✅ 클릭 자체도 무시 (완전 비활성화) */
+  pointer-events:none;
 }
 
-
-/* ⭐ 기존 카드 스타일 그대로 */
 .auth__card{
-  width: 480px; 
+  width:480px;
   background:var(--surface);
   border-radius:18px;
   box-shadow:var(--shadow);
-  padding:32px 28px; /* ✅ 내부 여백도 살짝 증가 */
+  padding:32px 28px;
 }
-
 
 .auth__title{
   margin:0 0 6px;
@@ -65,128 +63,225 @@ body{
   font-size:14px;
 }
 
-/* 폼 */
+/* ===========================
+   폼 공통
+   =========================== */
+
 .auth__field{
-  display:grid;
-  grid-template-columns:28px 1fr;
+  display:flex;
   align-items:center;
-  gap:10px;
   background:#fff;
   border:1px solid #e5e7eb;
   border-radius:12px;
-  padding:12px 12px;
+  padding:12px 20px;
   margin-top:12px;
   transition:border-color .15s, box-shadow .15s;
 }
-.auth__icon{font-size:18px;color:var(--primary)}
+
 .auth__input{
-  width:100%; border:none; outline:none;
-  font-size:15px; background:transparent; color:var(--text);
+  width:100%;
+  border:none;
+  outline:none;
+  font-size:15px;
+  background:transparent;
+  color:var(--text);
+  padding:6px 0;
 }
-.auth__input::placeholder{color:#9ca3af}
+.auth__input::placeholder{
+  color:#9ca3af;
+}
+
 .auth__field:focus-within{
   border-color:var(--ring);
   box-shadow:0 0 0 4px rgba(59,130,246,.15);
 }
 
-/* 버튼/링크 */
+/* ===========================
+   로그인 이메일 전용
+   =========================== */
+
+.auth__field--email{
+  gap:4px;
+}
+
+.auth__input--email{
+  min-width:0;
+}
+
+.auth__emailDomain{
+  align-self:center;
+  font-size:14px;
+  color:var(--muted);
+  white-space:nowrap;
+  user-select:none;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  pointer-events:none;   /* 클릭도 무시 */
+}
+
+/* ===========================
+   버튼/링크
+   =========================== */
+
 .auth__button{
-  width:100%; margin-top:18px;
-  border:none; border-radius:12px;
+  width:100%;
+  margin-top:18px;
+  border:none;
+  border-radius:12px;
   padding:12px 14px;
-  background:var(--primary); color:#fff;
-  font-weight:700; font-size:15px;
-  cursor:pointer; transition:background .15s, transform .02s;
+  background:var(--primary);
+  color:#fff;
+  font-weight:700;
+  font-size:15px;
+  cursor:pointer;
+  transition:background .15s, transform .02s;
 }
 .auth__button:hover{background:var(--primary-hover)}
 .auth__button:active{transform:translateY(1px)}
-.auth__muted{color:var(--muted);font-size:14px}
-.auth__link{color:var(--primary);font-weight:600;text-decoration:none}
-.auth__footer{margin-top:14px;text-align:center}
+.auth__button:disabled{
+  opacity:0.65;
+  cursor:not-allowed;
+}
 
-/* 에러 */
+.auth__muted{
+  color:var(--muted);
+  font-size:14px;
+}
+.auth__link{
+  color:var(--primary);
+  font-weight:600;
+  text-decoration:none;
+}
+.auth__link:hover{
+  text-decoration:underline;
+}
+.auth__footer{
+  margin-top:14px;
+  text-align:center;
+}
+.auth__separator{
+  margin:0 8px;
+}
+
 .auth__error{
   margin:8px 0 0;
-  color:#dc2626; background:#fee2e2; border:1px solid #fecaca;
-  padding:8px 10px; border-radius:10px; font-size:13px;
+  color:#dc2626;
+  background:#fee2e2;
+  border:1px solid #fecaca;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:13px;
 }
 
-/* 이메일 + 인증 버튼 가로 정렬 */
-.auth__emailRow {
+/* ===========================
+   이메일 + OTP 버튼 (회원가입/비번재설정)
+   =========================== */
+
+.auth__emailRow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;     /* 첫 줄 간격 살짝 줄임 */
+  flex-wrap:nowrap;
+}
+
+.auth__emailField{
+  flex:1;
+  margin:0;            /* 기본 auth__field margin-top 제거 */
+}
+
+/* 인증 버튼 */
+.auth__emailBtn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 12px;      
+  height:34px;         /* input 높이와 맞춤 */
+  font-size:13px;
+  border-radius:10px;
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:background-color .15s ease, opacity .15s ease;
+}
+.auth__emailBtn:hover:not(:disabled){
+  background:var(--primary-hover);
+}
+.auth__emailBtn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+
+/* 버튼 2개를 한 줄에 배치 */
+.auth__buttonRow {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: nowrap; /* 줄 바꿈 방지 */
+  gap: 10px;
 }
 
-/* 이메일 입력 필드가 남는 공간 꽉 채우도록 */
-.auth__emailField {
-  flex: 1;
-  margin: 0; /* 기본 auth__field margin-top 제거 */
+/* 로그인 버튼: 비율 5 */
+.auth__button--primary {
+  flex: 5;
 }
 
-/* 인증하기 버튼 공통 스타일 */
-.auth__emailBtn {
-  padding: 8px 12px;
-  font-size: 13px;
-  border-radius: 10px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+.auth__button--guest {
+  flex: 2;
+  background: #d1d5db;        /* gray-300 */
+  color: #9ca3af;            
+  font-weight: 500;
 }
 
-.auth__emailBtn:hover:not(:disabled) {
-  background: var(--primary-hover);
+/* hover 효과: 텍스트는 유지, 배경만 어둡게 */
+.auth__button--guest:hover:not(:disabled) {
+  background: #bfc5cc; /* gray-350 느낌 - 조금 어둡게 */
 }
 
-.auth__emailBtn:disabled {
+.auth__button--guest:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-.auth__separator { margin: 0 8px; }
 
-/* 📱 모바일에서는 세로 배치 + 비율 조정 */
+
+/* ===========================
+   반응형
+   =========================== */
+
 @media (max-width: 768px){
   .auth{
-    padding: 16px;              /* 양 옆 여백 조금 줄이기 */
+    padding:16px;
   }
 
   .auth__layout{
-    flex-direction: column;
-    gap: 20px;
+    flex-direction:column;
+    gap:20px;
   }
 
-  /* 이미지 더 크게 */
   .auth__logo{
-    width: min(260px, 70vw);    /* 화면 폭의 70%까지, 최대 260px */
+    width:min(260px,70vw);
   }
 
-  /* 카드 폭/패딩 줄이기 */
   .auth__card{
-    width: 480px;         /* 고정 480px 덮어쓰기 */
-    max-width: 420px;
-    padding: 22px 18px;
+    width:480px;
+    max-width:420px;
+    padding:22px 18px;
   }
 }
 
-/* 아주 좁은 화면 (아이폰 SE 급) 추가 보정 */
 @media (max-width: 480px){
   .auth{
-    padding: 12px;
+    padding:12px;
   }
 
   .auth__logo{
-    width: min(230px, 72vw);
+    width:min(230px,72vw);
   }
 
   .auth__card{
-    width: 342px;
-    max-width: 380px;
-    margin-top: 10px;
-    padding: 20px 16px;
+    width:342px;
+    max-width:380px;
+    margin-top:10px;
+    padding:20px 16px;
   }
 }

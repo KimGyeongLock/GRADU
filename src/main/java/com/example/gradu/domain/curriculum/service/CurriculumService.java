@@ -22,8 +22,8 @@ public class CurriculumService {
     private final StudentRepository studentRepository;
 
     @Transactional
-    public void initializeForStudent(String studentId) {
-        Student student = studentRepository.findByStudentId(studentId)
+    public void initializeForStudent(Long studentId) {
+        Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
         List<Curriculum> newCurriculums = new ArrayList<>();
@@ -40,11 +40,12 @@ public class CurriculumService {
     }
 
     @Transactional(readOnly = true)
-    public List<Curriculum> getCurriculumsByStudentId(String studentId) {
-        return curriculumRepository.findByStudentStudentId(studentId);
+    public List<Curriculum> getCurriculumsByStudentId(Long studentId) {
+        return curriculumRepository.findByStudentId(studentId);
     }
 
-    public void removeForStudent(String studentId) {
-        curriculumRepository.deleteByStudentStudentId(studentId);
+    @Transactional
+    public void removeForStudent(Long studentId) {
+        curriculumRepository.deleteByStudentId(studentId);
     }
 }

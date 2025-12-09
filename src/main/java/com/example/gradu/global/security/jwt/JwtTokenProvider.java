@@ -24,10 +24,9 @@ public class JwtTokenProvider {
         this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(UTF_8));
     }
 
-    public String generateAccessToken(String studentId, String name) {
+    public String generateAccessToken(Long userId) {
         String token =  Jwts.builder()
-                .setSubject(studentId)
-                .claim("name", name)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getAccessExpiration()))
                 .signWith(signingKey)
@@ -36,18 +35,18 @@ public class JwtTokenProvider {
         return token;
     }
 
-    public String generateRefreshToken(String studentId) {
+    public String generateRefreshToken(Long userId) {
         return Jwts.builder()
-                .setSubject(studentId)
+                .setSubject(String.valueOf(userId))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtProperties.getRefreshExpiration()))
                 .signWith(signingKey)
                 .compact();
     }
 
-    public String getStudentIdFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(signingKey).build()
-                .parseClaimsJws(token).getBody().getSubject();
+    public Long getStudentIdFromToken(String token) {
+        return Long.parseLong(Jwts.parserBuilder().setSigningKey(signingKey).build()
+                .parseClaimsJws(token).getBody().getSubject());
     }
 
     public boolean isTokenValid(String token) {

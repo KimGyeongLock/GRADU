@@ -6,12 +6,11 @@ import "../styles/auth.css";
 
 const HANDONG_DOMAIN = "handong.ac.kr";
 const OTP_LEN = 6;
-const RESEND_SEC = 300; // 5분 쿨다운
+const RESEND_SEC = 300;
 
 export default function ResetPasswordPage() {
   const nav = useNavigate();
 
-  const [studentId, setStudentId] = useState("");
   const [emailLocal, setEmailLocal] = useState("");
   const emailFull = useMemo(
     () => (emailLocal ? `${emailLocal}@${HANDONG_DOMAIN}` : ""),
@@ -29,7 +28,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  // 쿨다운 타이머
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!otpSentAt) return;
@@ -43,20 +41,18 @@ export default function ResetPasswordPage() {
     return left > 0 ? left : 0;
   }, [otpSentAt, tick]);
 
-  // 1) OTP 전송
+  // OTP 전송
   async function sendOtp() {
     setErr(null);
 
-    if (!studentId || !emailLocal) {
-      setErr("학번과 학교 이메일을 먼저 입력하세요.");
+    if (!emailFull) {
+      setErr("학교 이메일을 입력하세요.");
       return;
     }
 
     setSending(true);
     try {
-      await axiosInstance.post("/api/v1/auth/email/otp/send", {
-        email: emailFull,
-      });
+      await axiosInstance.post("/api/v1/auth/email/otp/send", { email: emailFull });
       setOtp("");
       setOtpSentAt(Date.now());
       setShowOtp(true);
@@ -67,24 +63,22 @@ export default function ResetPasswordPage() {
     }
   }
 
-  // 2) 비밀번호 재설정
+  // 비밀번호 재설정
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErr(null);
 
-    if (!studentId || !emailLocal) {
-      setErr("학번과 학교 이메일을 입력하세요.");
+    if (!emailFull) {
+      setErr("학교 이메일을 입력하세요.");
       return;
     }
+
     if (otp.length !== OTP_LEN) {
-      setErr("인증코드 6자리를 정확히 입력하세요.");
+      setErr("인증코드 6자리를 입력하세요.");
       return;
     }
-    if (!newPw) {
-      setErr("새 비밀번호를 입력하세요.");
-      return;
-    }
-    if (newPw !== newPw2) {
+
+    if (!newPw || newPw !== newPw2) {
       setErr("비밀번호가 일치하지 않습니다.");
       return;
     }
@@ -92,21 +86,21 @@ export default function ResetPasswordPage() {
     try {
       setLoading(true);
       await axiosInstance.post("/api/v1/auth/password/reset", {
-        studentId,
         email: emailFull,
         code: otp,
         newPassword: newPw,
       });
-      alert("비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.");
+
+      alert("비밀번호가 변경되었습니다.");
       nav("/login", { replace: true });
     } catch (e: any) {
       const data = e?.response?.data;
-      const firstFieldError =
+      const fieldErr =
         data?.errors && typeof data.errors === "object"
-          ? (Object.values<string>(data.errors)[0] as string)
+          ? Object.values<string>(data.errors)[0]
           : null;
-      const fallbackMessage = data?.message || "비밀번호 재설정에 실패했습니다.";
-      setErr(firstFieldError || fallbackMessage);
+
+      setErr(fieldErr || data?.message || "재설정 실패");
     } finally {
       setLoading(false);
     }
@@ -123,22 +117,11 @@ export default function ResetPasswordPage() {
 
           {err && <div className="auth__error">{err}</div>}
 
-          {/* 학번 */}
-          <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
-            <input
-              className="auth__input"
-              placeholder="학번"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value.trim())}
-              autoComplete="off"
-            />
-          </label>
-
-          {/* 학교 이메일 + OTP 버튼 */}
+          {/* 이메일 입력 */}
           <div className="auth__emailRow">
             <label
-              className="auth__field"
-              style={{ gridTemplateColumns: "1fr", flex: 1, margin: 0 }}
+              className="auth__field auth__emailField"
+              style={{ gridTemplateColumns: "1fr" }}
             >
               <div style={{ display: "flex", width: "100%", gap: 8 }}>
                 <input
@@ -154,14 +137,7 @@ export default function ResetPasswordPage() {
                   autoComplete="off"
                   style={{ flex: 1 }}
                 />
-                <div
-                  style={{
-                    alignSelf: "center",
-                    fontSize: 14,
-                    color: "var(--muted)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
+                <div className="auth__emailDomain">
                   @handong.ac.kr
                 </div>
               </div>
@@ -173,11 +149,12 @@ export default function ResetPasswordPage() {
               disabled={sending || remain > 0}
               className="auth__emailBtn"
             >
-              {remain > 0 ? `인증코드 (${remain}s)` : "코드 발송"}
+              {remain > 0 ? `코드 (${remain}s)` : "코드 발송"}
             </button>
           </div>
 
-          {/* 인증코드 입력 */}
+
+          {/* OTP */}
           {showOtp && (
             <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
               <input
@@ -194,7 +171,7 @@ export default function ResetPasswordPage() {
           )}
 
           {/* 새 비밀번호 */}
-          <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
+          <label className="auth__field">
             <input
               type="password"
               className="auth__input"
@@ -205,7 +182,7 @@ export default function ResetPasswordPage() {
           </label>
 
           {/* 새 비밀번호 확인 */}
-          <label className="auth__field" style={{ gridTemplateColumns: "1fr" }}>
+          <label className="auth__field">
             <input
               type="password"
               className="auth__input"
@@ -215,22 +192,12 @@ export default function ResetPasswordPage() {
             />
           </label>
 
-          <button
-            className="auth__button"
-            disabled={
-              loading ||
-              !studentId ||
-              !emailLocal ||
-              otp.length !== OTP_LEN ||
-              !newPw ||
-              !newPw2
-            }
-          >
+          <button className="auth__button" disabled={loading || otp.length !== OTP_LEN}>
             {loading ? "변경 중..." : "비밀번호 변경"}
           </button>
 
           <div className="auth__footer">
-            <span className="auth__muted">비밀번호가 기억나셨나요? </span>
+            <span className="auth__muted">기억나셨나요? </span>
             <Link className="auth__link" to="/login">
               로그인
             </Link>

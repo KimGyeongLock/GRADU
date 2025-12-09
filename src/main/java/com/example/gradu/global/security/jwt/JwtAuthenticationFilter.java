@@ -52,7 +52,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = bearer.substring(TOKEN_PREFIX.length());
             try {
                 if (jwtTokenProvider.isTokenValid(token)) {
-                    String studentId = jwtTokenProvider.getStudentIdFromToken(token);
+                    Long studentId = jwtTokenProvider.getStudentIdFromToken(token);
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(studentId, null, Collections.emptyList());
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }

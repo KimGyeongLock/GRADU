@@ -16,7 +16,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { PrivateRoute } from "./routes/PrivateRoute";
-import { PublicRoute } from "./routes/PublicRoute";   // ✅ 추가
+import { PublicRoute } from "./routes/PublicRoute";
 
 import "./index.css";
 import "./styles/reset.css";
@@ -32,7 +32,6 @@ const PrivateLayout = () => (
 );
 
 const router = createBrowserRouter([
-  // ✅ 공개 라우트 + PublicRoute 적용
   {
     path: "/login",
     element: (

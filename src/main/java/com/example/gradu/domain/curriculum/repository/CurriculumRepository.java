@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CurriculumRepository extends JpaRepository<Curriculum, Long> {
-    List<Curriculum> findByStudentStudentId(String studentId);
+    List<Curriculum> findByStudentId(Long studentId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Curriculum> findByStudentStudentIdAndCategory(String studentId, Category category);
+    Optional<Curriculum> findByIdAndCategory(Long studentId, Category category);
 
-    void deleteByStudentStudentId(String studentId);
+    void deleteByStudentId(Long studentId);
 }

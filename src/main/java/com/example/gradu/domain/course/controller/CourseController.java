@@ -23,42 +23,42 @@ public class CourseController {
 
     @PostMapping
     @CheckStudentAccess
-    public ResponseEntity<Void> addCourse(@PathVariable String studentId, @RequestBody CourseRequestDto request) {
+    public ResponseEntity<Void> addCourse(@PathVariable Long studentId, @RequestBody CourseRequestDto request) {
         courseService.addCourse(studentId, request);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/categories/{category}")
     @CheckStudentAccess
-    public ResponseEntity<List<CourseResponseDto>> getCoursesByCategory(@PathVariable String studentId, @PathVariable Category category) {
+    public ResponseEntity<List<CourseResponseDto>> getCoursesByCategory(@PathVariable Long studentId, @PathVariable Category category) {
         List<Course> list = courseService.getCoursesByCategory(studentId, category);
         return ResponseEntity.ok(list.stream().map(CourseResponseDto::from).toList());
     }
 
     @GetMapping("/all")
     @CheckStudentAccess
-    public ResponseEntity<List<CourseResponseDto>> getAllCourses(@PathVariable String studentId) {
+    public ResponseEntity<List<CourseResponseDto>> getAllCourses(@PathVariable Long studentId) {
         List<Course> list = courseService.getCoursesAll(studentId);
         return ResponseEntity.ok(list.stream().map(CourseResponseDto::from).toList());
     }
 
     @PatchMapping("/{courseId}")
     @CheckStudentAccess
-    public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable String studentId, @PathVariable Long courseId, @RequestBody CourseUpdateRequestDto requestDto) {
+    public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable Long studentId, @PathVariable Long courseId, @RequestBody CourseUpdateRequestDto requestDto) {
         Course updated = courseService.updateCourse(studentId, courseId, requestDto);
         return ResponseEntity.ok(CourseResponseDto.from(updated));
     }
 
     @DeleteMapping("/{courseId}")
     @CheckStudentAccess
-    public ResponseEntity<Void> deleteCourse(@PathVariable String studentId, @PathVariable Long courseId) {
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
         courseService.deleteCourse(studentId, courseId);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/bulk")
     @CheckStudentAccess
-    public ResponseEntity<Void> saveBulk(@PathVariable String studentId, @RequestBody List<CourseBulkRequest> courses) {
+    public ResponseEntity<Void> saveBulk(@PathVariable Long studentId, @RequestBody List<CourseBulkRequest> courses) {
         courseService.bulkInsert(studentId, courses);
         return ResponseEntity.ok().build();
     }

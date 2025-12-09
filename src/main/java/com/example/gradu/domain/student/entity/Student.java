@@ -1,5 +1,6 @@
 package com.example.gradu.domain.student.entity;
 
+import com.example.gradu.global.crypto.EncryptedStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -19,12 +20,14 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private String studentId;
     private String password;
+
+//    @Convert(converter = EncryptedStringConverter.class)
+    @Column(nullable = false, unique = true)
     private String email;
-    private String name;
-    private boolean emailVerified;
+
+    @Column(name = "email_hash", nullable = false, unique = true)
+    private String emailHash;
 
     @CreatedDate
     @Column(updatable = false)
@@ -36,4 +39,5 @@ public class Student {
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
+    public void changeEmail(String newEmail, String emailHash) { this.email = newEmail; this.emailHash = emailHash; }
 }

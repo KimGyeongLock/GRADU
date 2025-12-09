@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -61,7 +60,7 @@ public class AuthorizationTest {
     }
 
     private void ensureStudentExists(String studentId, String name) {
-        var opt = studentRepository.findByStudentId(studentId);
+        var opt = studentRepository.findById(studentId);
         if (opt.isPresent()) {
             return;
         }

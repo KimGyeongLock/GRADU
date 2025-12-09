@@ -6,97 +6,115 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
+// Access Token key
 const ACCESS_KEY = "access_token";
-const SID_KEY = "student_id";
-const NAME_KEY = "name";
 
-// base64url → JSON
+// ======================================================
+//  JWT payload decode (base64url → json)
+// ======================================================
 function parseJwt(token: string): any {
   try {
     const base64Url = token.split(".")[1];
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const json = decodeURIComponent(
+    const jsonPayload = decodeURIComponent(
       atob(base64)
         .split("")
         .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
         .join("")
     );
-    return JSON.parse(json);
+    return JSON.parse(jsonPayload);
   } catch {
     return null;
   }
 }
 
-export const getStudentId = () => localStorage.getItem(SID_KEY);
-export const setStudentId = (sid: string | null) => {
-  if (sid) localStorage.setItem(SID_KEY, sid);
-  else localStorage.removeItem(SID_KEY);
-};
+// ======================================================
+//  Access Token 저장 / 삭제
+//  → 저장 시 토큰에서 userId 자동 추출
+// ======================================================
+let cachedUserId: string | null = null;
 
-export const getProfileName = () => localStorage.getItem(NAME_KEY);
-export const setProfileName = (name: string | null) => {
-  if (name) localStorage.setItem(NAME_KEY, name);
-  else localStorage.removeItem(NAME_KEY);
-};
+export function setAccessToken(token: string | null) {
+  if (token) {
+    localStorage.setItem(ACCESS_KEY, token);
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-export const setAccessToken = (t: string | null) => {
-  if (t) {
-    localStorage.setItem(ACCESS_KEY, t);
-    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${t}`;
+    const claims = parseJwt(token);
+    const uid = claims?.sub || claims?.userId || claims?.id;
 
-    // 토큰에서 studentId / name 자동 추출
-    const claims = parseJwt(t);
-    const sid =
-      claims?.studentId || claims?.sid || claims?.sub || claims?.userId;
-    const name =
-      claims?.name || claims?.nickname || claims?.userName || claims?.username;
-
-    if (sid) setStudentId(String(sid));
-    if (name) setProfileName(String(name));
+    cachedUserId = uid ? String(uid) : null;
   } else {
     localStorage.removeItem(ACCESS_KEY);
     delete axiosInstance.defaults.headers.common["Authorization"];
-    setStudentId(null);
-    setProfileName(null);
-  }
-};
-
-// 🔸 로그아웃 API + 로컬 정리
-export async function logoutApi() {
-  try {
-    await axiosInstance.post("/api/v1/auth/logout", {}); // Authorization + refresh 쿠키 자동 포함
-  } catch {
-    // 실패해도 로컬 비우고 진행
-  } finally {
-    setAccessToken(null);
-    setStudentId(null);
-    localStorage.removeItem("name");
+    cachedUserId = null;
   }
 }
 
-// 앱 시작 시 헤더 반영
-const bootToken = localStorage.getItem(ACCESS_KEY);
+export function getAccessToken() {
+  return localStorage.getItem(ACCESS_KEY);
+}
+
+// ======================================================
+//  studentId 대신 → 토큰 기반 userId 조회
+// ======================================================
+export function getStudentId(): string | null {
+  if (cachedUserId) return cachedUserId;
+
+  const token = getAccessToken();
+  if (!token) return null;
+
+  const claims = parseJwt(token);
+  const uid = claims?.sub || claims?.userId || claims?.id;
+  cachedUserId = uid ? String(uid) : null;
+
+  return cachedUserId;
+}
+
+// 앱 시작 시 토큰이 있으면 자동 적용
+const bootToken = getAccessToken();
 if (bootToken) setAccessToken(bootToken);
 
-// 401/403 1회 재발급(reissue)
+// ======================================================
+//  로그아웃 API (백엔드 refresh 쿠키 삭제 + 로컬 토큰 삭제)
+// ======================================================
+export async function logoutApi() {
+  try {
+    await axiosInstance.post("/api/v1/auth/logout", {});
+  } finally {
+    setAccessToken(null);
+    sessionStorage.clear();
+  }
+}
+
+// ======================================================
+//  401/403 → reissue 자동 처리 인터셉터
+// ======================================================
 let isRefreshing = false;
-let queue: Array<{ resolve: (v: any) => void; reject: (e: any) => void }> = [];
+let queue: Array<{
+  resolve: (v: any) => void;
+  reject: (e: any) => void;
+}> = [];
 
 axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const { config, response } = error || {};
     const status = response?.status;
+
     if ((status === 401 || status === 403) && !config.__isRetryRequest) {
-      if (isRefreshing) return new Promise((resolve, reject) => queue.push({ resolve, reject }));
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => queue.push({ resolve, reject }));
+      }
+
       isRefreshing = true;
-      (config as any).__isRetryRequest = true;
+      config.__isRetryRequest = true;
+
       try {
         const r = await axiosInstance.post("/api/v1/auth/reissue", {});
         const token = r?.data?.accessToken;
-        const name = r?.data?.name; // 응답에 name이 오면 저장
+
         if (token) setAccessToken(token);
-        if (name) setProfileName(String(name));
+
         queue.forEach((p) => p.resolve(axiosInstance(config)));
         queue = [];
         return axiosInstance(config);
@@ -109,12 +127,15 @@ axiosInstance.interceptors.response.use(
         isRefreshing = false;
       }
     }
+
     throw error;
   }
 );
 
+// ======================================================
+//  전체 인증 정보 초기화 (logout 시 사용 가능)
+// ======================================================
 export function clearAuth() {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("studentId");
-  localStorage.removeItem("profileName");
+  setAccessToken(null);
+  sessionStorage.clear();
 }

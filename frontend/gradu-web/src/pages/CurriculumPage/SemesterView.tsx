@@ -1,16 +1,14 @@
 // src/pages/CurriculumPage/SemesterView.tsx
 import { useState } from "react";
 import type { CourseDto, Term } from "./curriculumTypes";
-import {
-  CATEGORY_LABELS,
-  fmtCred,
-  formatSemester,
-} from "./curriculumTypes";
+import { CATEGORY_LABELS, fmtCred, formatSemester } from "./curriculumTypes";
 import s from "./CurriculumTable.module.css";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { axiosInstance, getStudentId } from "../../lib/axios";
 import EditCourseModal from "./modal/EditCourseModal";
+import { removeGuestCourse } from "./guest/guestStorage";
+import { isGuestMode } from "../../lib/auth";
 
 type Group = { key: string; year: number; term: Term; items: CourseDto[] };
 
@@ -21,6 +19,7 @@ type Props = {
   view: "summary" | "semester";
   onOpenAddFor: (year?: number, term?: Term) => void;
   onCreateNextSemester: () => void;
+  onGuestChange?: () => void;
 };
 
 export function SemesterView({
@@ -30,8 +29,10 @@ export function SemesterView({
   view,
   onOpenAddFor,
   onCreateNextSemester,
+  onGuestChange,
 }: Props) {
   const sid = getStudentId() || "";
+  const isGuest = isGuestMode();
   const qc = useQueryClient();
 
   const [editing, setEditing] = useState<CourseDto | null>(null);
@@ -39,12 +40,17 @@ export function SemesterView({
   const closeEdit = () => setEditing(null);
 
   const handleEdited = () => {
-    qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
-    qc.invalidateQueries({ queryKey: ["summary", sid] });
+    if (isGuest) {
+      // 게스트면 로컬만 갱신
+      onGuestChange?.();
+    } else if (sid) {
+      qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
+      qc.invalidateQueries({ queryKey: ["summary", sid] });
+    }
     closeEdit();
   };
 
-  // 삭제 mutation
+  // 삭제 mutation (로그인 사용자용)
   const deleteMutation = useMutation({
     mutationFn: async (courseId: number) => {
       const url = `/api/v1/students/${encodeURIComponent(
@@ -58,9 +64,19 @@ export function SemesterView({
     },
   });
 
+  const handleEditClick = (course: CourseDto) => {
+    // 게스트/로그인 공통으로 모달 열기
+    setEditing(course);
+  };
+
   const handleDelete = (course: CourseDto) => {
-    if (window.confirm(`"${course.name}" 과목을 삭제할까요?`)) {
-      if (!course.id) return;
+    if (!window.confirm(`"${course.name}" 과목을 삭제할까요?`)) return;
+    if (!course.id) return;
+
+    if (isGuest) {
+      removeGuestCourse(course.id);
+      onGuestChange?.();
+    } else {
       deleteMutation.mutate(course.id);
     }
   };
@@ -135,7 +151,7 @@ export function SemesterView({
                               <div className={s.btnGroup}>
                                 <button
                                   className={s.btnGhost}
-                                  onClick={() => setEditing(c)}
+                                  onClick={() => handleEditClick(c)}
                                 >
                                   수정
                                 </button>
@@ -193,7 +209,7 @@ export function SemesterView({
                             <div className={s.btnGroup}>
                               <button
                                 className={s.btnGhost}
-                                onClick={() => setEditing(c)}
+                                onClick={() => handleEditClick(c)}
                               >
                                 수정
                               </button>
@@ -222,7 +238,6 @@ export function SemesterView({
                     </div>
                   )}
                 </div>
-
               </div>
             ))}
 

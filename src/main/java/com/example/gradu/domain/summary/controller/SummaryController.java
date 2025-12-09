@@ -16,19 +16,19 @@ public class SummaryController {
 
     @GetMapping
     @CheckStudentAccess
-    public SummaryDto get(@PathVariable String sid) {
+    public SummaryDto get(@PathVariable Long sid) {
         return summaryService.getSummary(sid);
     }
 
     @PatchMapping("/toggles")
     @CheckStudentAccess
-    public void patchToggles(@PathVariable String sid, @RequestBody TogglesDto dto) {
+    public void patchToggles(@PathVariable Long sid, @RequestBody TogglesDto dto) {
         summaryService.updateTogglesAndRecompute(sid, dto);
     }
 
     @PostMapping("/rebuild")
     @CheckStudentAccess
-    public void rebuild(@PathVariable String sid) {
+    public void rebuild(@PathVariable Long sid) {
         summaryService.recomputeAndSave(sid);
     }
 }
