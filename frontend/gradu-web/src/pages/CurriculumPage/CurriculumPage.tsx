@@ -211,15 +211,20 @@ export default function CurriculumPage() {
   };
   const closeAdd = () => setAddOpen(false);
 
+  const reloadGuestData = () => {
+    if (!isGuest) return;
+    const cs = loadGuestCourses();
+    setGuestCourses(cs);
+    const nextSummary = computeGuestSummary(cs, {
+      gradEnglishPassed,
+      deptExtraPassed,
+    });
+    setGuestSummary(nextSummary);
+  };
+
   const afterAddSaved = () => {
     if (isGuest) {
-      const cs = loadGuestCourses();
-      setGuestCourses(cs);
-      const nextSummary = computeGuestSummary(cs, {
-        gradEnglishPassed,
-        deptExtraPassed,
-      });
-      setGuestSummary(nextSummary);
+      reloadGuestData();
     } else {
       qc.invalidateQueries({ queryKey: ["summary", sid] });
       qc.invalidateQueries({ queryKey: ["courses-semester", sid] });
@@ -317,17 +322,15 @@ export default function CurriculumPage() {
 
       <div className={s.ribbonWrap}>
         <button
-          className={`${s.ribbon} ${s.ribbonLeft} ${
-            view === "summary" ? s.ribbonActive : ""
-          }`}
+          className={`${s.ribbon} ${s.ribbonLeft} ${view === "summary" ? s.ribbonActive : ""
+            }`}
           onClick={() => setView("summary")}
         >
           종합 보기
         </button>
         <button
-          className={`${s.ribbon} ${s.ribbonLeft2} ${
-            view === "semester" ? s.ribbonActive : ""
-          }`}
+          className={`${s.ribbon} ${s.ribbonLeft2} ${view === "semester" ? s.ribbonActive : ""
+            }`}
           onClick={() => setView("semester")}
         >
           학기별 보기
@@ -354,16 +357,7 @@ export default function CurriculumPage() {
             view={view}
             onOpenAddFor={openAddFor}
             onCreateNextSemester={handleCreateNextSemester}
-            onGuestChange={() => {
-              if (!isGuest) return;
-              const cs = loadGuestCourses();
-              setGuestCourses(cs);
-              const nextSummary = computeGuestSummary(cs, {
-                gradEnglishPassed,
-                deptExtraPassed,
-              });
-              setGuestSummary(nextSummary);
-            }}
+            onGuestChange={reloadGuestData}
           />
         )}
 

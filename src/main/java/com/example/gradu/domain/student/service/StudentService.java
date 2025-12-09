@@ -34,13 +34,13 @@ public class StudentService {
     @Transactional
     public void register(String email, String password, String code) {
 
-        emailVerificationService.verifyCode(email, code);
-
         String emailHash = Sha256.hash(email);
 
         if (studentRepository.existsByEmailHash(emailHash)) {
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
         }
+
+        emailVerificationService.verifyCode(email, code);
 
         String encodedPassword = passwordEncoder.encode(password);
 

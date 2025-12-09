@@ -188,7 +188,7 @@ export function createEmptySummary(): SummaryDto {
   return {
     rows: ROW_ORDER.map((key) => {
       if (key === "MAJOR") {
-        const reqMajor = SUMMARY_POLICY.required["MAJOR"] ?? 60;
+        const reqMajor = SUMMARY_POLICY.required["MAJOR"];
         const reqDesigned = SUMMARY_POLICY.majorDesignedRequired;
         return {
           key: "MAJOR",
@@ -210,7 +210,7 @@ export function createEmptySummary(): SummaryDto {
       };
     }),
     pfCredits: 0,
-    pfLimit: 39,
+    pfLimit: SUMMARY_POLICY.pfMinTotalForLimit * SUMMARY_POLICY.pfRatioMax,
     pfPass: true,
     totalCredits: 0,
     totalPass: false,
@@ -270,7 +270,7 @@ export function computeGuestSummary(
 
       if (c.isEnglish) {
         const cat = c.category;
-        if (cat === "MAJOR" || cat === "MAJOR_DESIGNED") eMajorU += u;
+        if (cat === "MAJOR") eMajorU += u;
         else eLibU += u;
       }
     }

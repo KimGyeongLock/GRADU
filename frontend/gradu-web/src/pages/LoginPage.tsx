@@ -1,6 +1,3 @@
-
-
-// src/pages/LoginPage.tsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { axiosInstance, setAccessToken } from "../lib/axios";
@@ -152,4 +149,3 @@ export default function LoginPage() {
     </main>
   );
 }
-

@@ -22,7 +22,7 @@ public class Student {
 
     private String password;
 
-    @Convert(converter = EncryptedStringConverter.class)
+//    @Convert(converter = EncryptedStringConverter.class)
     @Column(nullable = false, unique = true)
     private String email;
 

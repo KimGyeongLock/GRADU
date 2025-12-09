@@ -1,5 +1,5 @@
 // src/pages/CurriculumPage/guestStorage.ts
-import type { CourseDto } from "./curriculumTypes";
+import type { CourseDto } from "../curriculumTypes";
 
 const COURSES_KEY = "gradu_guest_courses_v1";
 const TOGGLES_KEY = "gradu_guest_toggles_v1";

@@ -193,7 +193,7 @@ export function SemesterView({
                   {g.items.length ? (
                     <div className={s.mobileCourseList}>
                       {g.items.map((c) => (
-                        <div key={c.id ?? c.name} className={s.mobileCourseCard}>
+                        <div key={c.id} className={s.mobileCourseCard}>
                           <div className={s.mobileCourseTitleRow}>
                             <span className={s.mobileCourseName}>{c.name}</span>
                             {c.isEnglish && <span className={s.badgeEng}>ENG</span>}

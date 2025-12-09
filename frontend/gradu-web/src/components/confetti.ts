@@ -1,4 +1,4 @@
-type ConfettiFn = (opts?: any) => void;
+type ConfettiFn = (opts?: import("canvas-confetti").Options) => void;
 
 let _confetti: ConfettiFn | null = null;
 
