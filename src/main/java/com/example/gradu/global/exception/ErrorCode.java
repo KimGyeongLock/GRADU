@@ -23,6 +23,7 @@ public enum ErrorCode {
 
     CURRICULUM_NOT_FOUND("C001", HttpStatus.NOT_FOUND, "구분을 찾을 수 없습니다."),
     COURSE_NOT_FOUND("C002", HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다."),
+    COURSE_DUPLICATE_EXCEPTION("C003", HttpStatus.CONFLICT, "이미 동일한 과목이 존재합니다. 덮어쓰시겠습니까?"),
 
     SUMMARY_JSON_PROCESSING_ERROR("E001", HttpStatus.BAD_REQUEST, "JSON 직렬화 실패"),
 

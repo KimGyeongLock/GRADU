@@ -6,6 +6,7 @@ import s from "./AiCaptureModal.module.css";
 import { AiLoadingModal } from "./AiLoadingModal";
 import { AiResultModal } from "./AiResultModal";
 import type { AiCourseResult } from "./AiResultModal";
+import { CourseOverwriteModal } from "./CourseOverwriteModal";
 
 interface AiCaptureModalProps {
   open: boolean;
@@ -34,11 +35,24 @@ export function AiCaptureModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // 🔽 중복 과목 안내 모달 상태
+  const [dupModalOpen, setDupModalOpen] = useState(false);
+  const [dupNames, setDupNames] = useState<string[]>([]);
+  const [dupFrom, setDupFrom] = useState<"selected" | "all">("selected");
+
+  const isCourseDuplicateCode = (code?: string) => {
+  if (!code) return false;
+  const c = code.trim().toUpperCase();
+  return c === "C003" || c === "COURSE_DUPLICATE_EXCEPTION";
+};
+
+
+
   // 공통 파일 추가 함수 (input + 클립보드에서 같이 사용)
   const appendFiles = (incoming: File[]) => {
     if (!incoming.length) return;
 
-    setFiles(prev => {
+    setFiles((prev) => {
       const merged = [...prev, ...incoming];
       return merged.slice(0, 5); // 최대 5장
     });
@@ -65,6 +79,8 @@ export function AiCaptureModal({
       setShowResult(false);
       setIsAnalyzing(false);
       setIsSaving(false);
+      setDupModalOpen(false);
+      setDupNames([]);
     }
   }, [open]);
 
@@ -131,7 +147,7 @@ export function AiCaptureModal({
   };
 
   const handleRemoveFile = (index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   /** 1단계: 분석 요청 */
@@ -143,11 +159,11 @@ export function AiCaptureModal({
 
     try {
       const formData = new FormData();
-      files.forEach(file => formData.append("images", file));
+      files.forEach((file) => formData.append("images", file));
 
       const { data } = await axiosInstance.post(
         "/api/v1/ai/course-capture",
-        formData,
+        formData
       );
 
       let list: AiCourseResult[] = [];
@@ -184,11 +200,44 @@ export function AiCaptureModal({
 
   /** 결과 체크 토글 */
   const toggleChecked = (idx: number) => {
-    setChecked(prev => {
+    setChecked((prev) => {
       const copy = [...prev];
       copy[idx] = !copy[idx];
       return copy;
     });
+  };
+
+  // 🔽 백엔드 에러에서 중복 과목명 리스트 추출
+  const extractDuplicateNames = (e: any): string[] => {
+    const data = e?.response?.data;
+    if (!data) return [];
+
+    // 1) data.duplicates 가 배열인 경우
+    if (Array.isArray(data.duplicates)) {
+      return data.duplicates.filter((x: string) => typeof x === "string");
+    }
+
+    // 2) 문자열 하나로 온 경우: 콤마/줄바꿈 기준으로 분리
+    if (typeof data.duplicates === "string") {
+      return data.duplicates
+        .split(/[\n,]/)
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+    }
+
+    // 3) 혹시 다른 키로 올 수도 있어서 message에서 대충 뽑는 fallback (선택)
+    if (typeof data.message === "string") {
+      // 예: "중복 과목: A, B, C"
+      const match = data.message.match(/[:：](.+)$/);
+      if (match) {
+        return match[1]
+          .split(/[\n,]/)
+          .map((s: string) => s.trim())
+          .filter(Boolean);
+      }
+    }
+
+    return [];
   };
 
   /** 선택 저장 */
@@ -201,37 +250,66 @@ export function AiCaptureModal({
 
     setIsSaving(true);
     try {
-      await axiosInstance.post(`/api/v1/students/${sid}/courses/bulk`, payload);
+      await axiosInstance.post(
+        `/api/v1/students/${sid}/courses/bulk`,
+        payload
+      );
 
       alert(`선택한 ${payload.length}개 과목을 저장했습니다.`);
       onSaved();
       onClose();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("저장 중 오류가 발생했습니다.");
+      const code = e?.response?.data?.code;
+
+      // 🔽 여기
+      if (isCourseDuplicateCode(code)) {
+        const names = extractDuplicateNames(e);
+        setDupNames(names);
+        setDupFrom("selected");
+        setDupModalOpen(true);
+      } else {
+        alert("저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
+
+  /** 전체 저장 */
   /** 전체 저장 */
   const handleSaveAll = async () => {
     if (!aiResult.length) return;
 
     setIsSaving(true);
     try {
-      await axiosInstance.post(`/api/v1/students/${sid}/courses/bulk`, aiResult);
+      await axiosInstance.post(
+        `/api/v1/students/${sid}/courses/bulk`,
+        aiResult
+      );
 
       alert(`총 ${aiResult.length}개 과목을 저장했습니다.`);
       onSaved();
       onClose();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("저장 중 오류가 발생했습니다.");
+      const code = e?.response?.data?.code;
+
+      // 🔽 여기
+      if (isCourseDuplicateCode(code)) {
+        const names = extractDuplicateNames(e);
+        setDupNames(names);
+        setDupFrom("all");
+        setDupModalOpen(true);
+      } else {
+        alert("저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+      }
     } finally {
       setIsSaving(false);
     }
   };
+
 
   const handleResultClose = () => {
     if (isSaving) return;
@@ -248,7 +326,8 @@ export function AiCaptureModal({
             <div className={s.aiHeader}>
               <h2>AI 캡쳐로 과목 한꺼번에 추가</h2>
               <p className={s.aiSub}>
-                학사 시스템 화면을 캡쳐해서 올려주면, 과목/학점/성적을 자동으로 추출해 드려요.
+                학사 시스템 화면을 캡쳐해서 올려주면, 과목/학점/성적을 자동으로 추출해
+                드려요.
               </p>
             </div>
 
@@ -273,7 +352,9 @@ export function AiCaptureModal({
                   <div className={s.aiExampleMockRow} />
                   <div className={s.aiExampleMockRow} />
                   <div className={s.aiExampleMockRowShort} />
-                  <span className={s.aiExampleLabel}>예시 이미지가 들어갈 자리</span>
+                  <span className={s.aiExampleLabel}>
+                    예시 이미지가 들어갈 자리
+                  </span>
                 </div>
               )}
             </div>
@@ -284,7 +365,9 @@ export function AiCaptureModal({
               <p className={s.aiHintText}>
                 Hisnet <span>&gt;</span> 학사정보 <span>&gt;</span> 졸업 탭{" "}
                 <span>&gt;</span> 졸업심사결과조회 <span>&gt;</span> 졸업심사 결과보기 화면에서{" "}
-                <strong>카테고리(ex 신앙및세계관) / 연도 / 학기 / 과목명 / 학점(설계) / 성적</strong>
+                <strong>
+                  카테고리(ex 신앙및세계관) / 연도 / 학기 / 과목명 / 학점(설계) / 성적
+                </strong>
                 이 모두 보이도록 예시 이미지처럼 캡쳐해 주세요.
               </p>
             </div>
@@ -304,7 +387,9 @@ export function AiCaptureModal({
               </label>
 
               <span className={s.aiUploadInfo}>
-                학사 페이지 캡쳐 이미지를 <strong>최대 5장</strong>까지 업로드할 수 있어요.<br/>복사/붙여놓기로도 가능해요.
+                학사 페이지 캡쳐 이미지를 <strong>최대 5장</strong>까지 업로드할 수 있어요.
+                <br />
+                복사/붙여놓기로도 가능해요.
               </span>
             </div>
 
@@ -370,6 +455,64 @@ export function AiCaptureModal({
         onSaveAll={handleSaveAll}
         onClose={handleResultClose}
       />
+
+      {/* 중복 과목 안내 모달 */}
+      <CourseOverwriteModal
+        open={dupModalOpen}
+        title="중복 과목 안내"
+        description={
+          <>
+            {dupNames.length > 0 ? (
+              <>
+                <p style={{ margin: 0, marginBottom: 8 }}>
+                  AI 인식 결과 중 아래 과목들은 이미 등록되어 있어 저장하지 못했습니다.
+                </p>
+
+                {/* 🔹 중복 과목 리스트 뱃지 스타일 */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 8,
+                    marginBottom: 12,
+                  }}
+                >
+                  {dupNames.map(name => (
+                    <span
+                      key={name}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: 9999,
+                        background: "#eff6ff",
+                        color: "#1d4ed8",
+                        fontSize: 13,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+
+                <p style={{ margin: 0 }}>
+                  중복 과목을 제외하거나 과목명을 수정한 뒤{" "}
+                  {dupFrom === "selected"
+                    ? "선택 항목 저장을 다시 시도해 주세요."
+                    : "전체 저장을 다시 시도해 주세요."}
+                </p>
+              </>
+            ) : (
+              <p style={{ margin: 0 }}>
+                AI 인식 결과 중 이미 등록된 과목명이 포함되어 있어 일부 과목을 저장하지
+                못했습니다. 중복 과목을 제외하거나 이름을 변경한 뒤 다시 시도해 주세요.
+              </p>
+            )}
+          </>
+        }
+        confirmLabel="확인"
+        onConfirm={() => setDupModalOpen(false)}
+      />
+
     </>
   );
 }

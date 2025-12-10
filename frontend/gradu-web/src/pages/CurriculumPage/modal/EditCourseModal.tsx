@@ -7,6 +7,7 @@ import type { CourseDto } from "../curriculumTypes";
 import "../../../components/CourseModal.css";
 import { isGuestMode } from "../../../lib/auth";
 import { updateGuestCourse } from "../guest/guestStorage";
+import { CourseOverwriteModal } from "./CourseOverwriteModal"; // 경로는 실제 위치에 맞게 조정 필요
 
 const KOR_LABELS: Record<string, string> = {
   FAITH_WORLDVIEW: "신앙및세계관",
@@ -68,12 +69,14 @@ export default function EditCourseModal({
     term: "1",
   });
   const [errMsg, setErrMsg] = useState("");
+  const [showNameConflictModal, setShowNameConflictModal] = useState(false);
 
   const isMajor = useMemo(() => form.category === "MAJOR", [form.category]);
 
   useEffect(() => {
     if (open && course) {
       setErrMsg("");
+      setShowNameConflictModal(false);
       setForm({
         name: course.name ?? "",
         credit: String(course.credit ?? ""),
@@ -148,7 +151,6 @@ export default function EditCourseModal({
       }
 
       if (guest) {
-        // 게스트 모드: sessionStorage에 직접 반영
         updateGuestCourse(course.id, {
           name: form.name.trim(),
           credit: creditNum ?? course.credit,
@@ -190,17 +192,33 @@ export default function EditCourseModal({
     },
     onSuccess: () => onSaved(),
     onError: (e: any) => {
+      const data = e?.response?.data;
+      const status = e?.response?.status;
+      const code =
+        data?.code || data?.errorCode || data?.error || null;
+      const text = data?.message || e?.message || "요청 실패";
+
+      const isDuplicateByCode = code === "COURSE_DUPLICATE_EXCEPTION";
+      const isDuplicateByStatusAndMsg =
+        status === 409 &&
+        typeof text === "string" &&
+        text.includes("이미 동일한 과목이 존재합니다");
+
+      if (isDuplicateByCode || isDuplicateByStatusAndMsg) {
+        // 이름 중복: 배너는 숨기고 안내 모달만 띄움
+        setErrMsg("");
+        setShowNameConflictModal(true);
+        return;
+      }
+
       const msg = e?.message || e?.response?.data?.message;
       if (msg) setErrMsg(String(msg));
       else {
-        const status = e?.response?.status;
-        const text = e?.response?.data?.message || e?.message || "요청 실패";
         setErrMsg(`저장 실패 (${status ?? "-"}) : ${text}`);
       }
       console.error("[EditCourse] error", e);
     },
   });
-
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -212,147 +230,165 @@ export default function EditCourseModal({
   };
 
   return (
-    <Modal
-      open={open}
-      onClose={() => !patchMutation.isPending && onClose()}
-      title="과목 수정"
-      footer={
-        <>
-          <button
-            type="button"
-            className="cm-btn cm-btn-ghost"
-            disabled={patchMutation.isPending}
-            onClick={onClose}
-          >
-            취소
-          </button>
-          <button
-            form="edit-course-form"
-            type="submit"
-            className="cm-btn cm-btn-primary"
-            disabled={patchMutation.isPending}
-          >
-            {patchMutation.isPending ? "저장 중…" : "저장"}
-          </button>
-        </>
-      }
-    >
-      <form
-        id="edit-course-form"
-        onSubmit={onSubmit}
-        className="cm-form"
+    <>
+      <Modal
+        open={open}
+        onClose={() => !patchMutation.isPending && onClose()}
+        title="과목 수정"
+        footer={
+          <>
+            <button
+              type="button"
+              className="cm-btn cm-btn-ghost"
+              disabled={patchMutation.isPending}
+              onClick={onClose}
+            >
+              취소
+            </button>
+            <button
+              form="edit-course-form"
+              type="submit"
+              className="cm-btn cm-btn-primary"
+              disabled={patchMutation.isPending}
+            >
+              {patchMutation.isPending ? "저장 중…" : "저장"}
+            </button>
+          </>
+        }
       >
-        {errMsg && <div className="cm-error">{errMsg}</div>}
+        <form
+          id="edit-course-form"
+          onSubmit={onSubmit}
+          className="cm-form"
+        >
+          {errMsg && <div className="cm-error">{errMsg}</div>}
 
-        <div className="cm-field">
-          <label className="cm-label">과목명</label>
-          <input
-            className="cm-input"
-            value={form.name}
-            onChange={(e) => onChange("name", e.target.value)}
-            placeholder="예: 자료구조"
-          />
-        </div>
-
-        <div className="cm-grid2">
           <div className="cm-field">
-            <label className="cm-label">학점</label>
+            <label className="cm-label">과목명</label>
             <input
               className="cm-input"
-              type="text"
-              inputMode="decimal"
-              value={form.credit}
-              onChange={(e) => onChange("credit", e.target.value)}
-              placeholder="예: 3 / 3.5"
+              value={form.name}
+              onChange={(e) => onChange("name", e.target.value)}
+              placeholder="예: 자료구조"
             />
           </div>
 
-          <div className="cm-field">
-            <label className="cm-label">카테고리</label>
-            <select
-              className="cm-input"
-              value={form.category}
-              onChange={(e) => onChange("category", e.target.value)}
-            >
-              {CATEGORY_ORDER.map((key) => (
-                <option key={key} value={key}>
-                  {KOR_LABELS[key]}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {isMajor && (
-          <div className="cm-field">
-            <label className="cm-label">설계학점</label>
-            <input
-              className="cm-input"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              value={form.designedCredit}
-              onChange={(e) => onChange("designedCredit", e.target.value)}
-              placeholder="예: 2"
-            />
-          </div>
-        )}
-
-        <div className="cm-grid2">
-          <div className="cm-field">
-            <label className="cm-label">연도</label>
-            <input
-              className="cm-input"
-              inputMode="numeric"
-              pattern="\d{4}"
-              value={form.academicYear}
-              onChange={(e) => onChange("academicYear", e.target.value)}
-              placeholder="예: 2025"
-            />
-          </div>
-
-          <div className="cm-field">
-            <label className="cm-label">학기</label>
-            <select
-              className="cm-input"
-              value={form.term}
-              onChange={(e) => onChange("term", e.target.value as TermCode)}
-            >
-              {TERM_OPTIONS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="cm-field">
-          <label className="cm-label">성적</label>
-          <input
-            className="cm-input"
-            value={form.grade}
-            onChange={(e) => onChange("grade", e.target.value)}
-            placeholder="예: A+"
-          />
-        </div>
-
-        <div className="cm-field">
-          <label className="cm-label">영어강의 여부</label>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <label className="cm-toggle">
+          <div className="cm-grid2">
+            <div className="cm-field">
+              <label className="cm-label">학점</label>
               <input
-                type="checkbox"
-                checked={form.isEnglish}
-                onChange={(e) => onChange("isEnglish", e.target.checked)}
+                className="cm-input"
+                type="text"
+                inputMode="decimal"
+                value={form.credit}
+                onChange={(e) => onChange("credit", e.target.value)}
+                placeholder="예: 3 / 3.5"
               />
-              <span />
-            </label>
-            <span>{form.isEnglish ? "영어강의" : "일반강의"}</span>
-          </div>
-        </div>
+            </div>
 
-      </form>
-    </Modal>
+            <div className="cm-field">
+              <label className="cm-label">카테고리</label>
+              <select
+                className="cm-input"
+                value={form.category}
+                onChange={(e) => onChange("category", e.target.value)}
+              >
+                {CATEGORY_ORDER.map((key) => (
+                  <option key={key} value={key}>
+                    {KOR_LABELS[key]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {isMajor && (
+            <div className="cm-field">
+              <label className="cm-label">설계학점</label>
+              <input
+                className="cm-input"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={form.designedCredit}
+                onChange={(e) => onChange("designedCredit", e.target.value)}
+                placeholder="예: 2"
+              />
+            </div>
+          )}
+
+          <div className="cm-grid2">
+            <div className="cm-field">
+              <label className="cm-label">연도</label>
+              <input
+                className="cm-input"
+                inputMode="numeric"
+                pattern="\d{4}"
+                value={form.academicYear}
+                onChange={(e) => onChange("academicYear", e.target.value)}
+                placeholder="예: 2025"
+              />
+            </div>
+
+            <div className="cm-field">
+              <label className="cm-label">학기</label>
+              <select
+                className="cm-input"
+                value={form.term}
+                onChange={(e) => onChange("term", e.target.value as TermCode)}
+              >
+                {TERM_OPTIONS.map((t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="cm-field">
+            <label className="cm-label">성적</label>
+            <input
+              className="cm-input"
+              value={form.grade}
+              onChange={(e) => onChange("grade", e.target.value)}
+              placeholder="예: A+"
+            />
+          </div>
+
+          <div className="cm-field">
+            <label className="cm-label">영어강의 여부</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <label className="cm-toggle">
+                <input
+                  type="checkbox"
+                  checked={form.isEnglish}
+                  onChange={(e) => onChange("isEnglish", e.target.checked)}
+                />
+                <span />
+              </label>
+              <span>{form.isEnglish ? "영어강의" : "일반강의"}</span>
+            </div>
+          </div>
+        </form>
+      </Modal>
+
+      {/* 과목명 중복 안내 모달 */}
+      <CourseOverwriteModal
+        open={showNameConflictModal}
+        title="과목명 중복"
+        description={
+          <>
+            이미{" "}
+            <strong>{form.name.trim() || "해당 이름"}</strong> 과목이
+            존재합니다.
+            <br />
+            다른 이름으로 변경한 뒤 다시 저장해 주세요.
+          </>
+        }
+        confirmLabel="확인"
+        onConfirm={() => setShowNameConflictModal(false)}
+      />
+    </>
   );
 }
