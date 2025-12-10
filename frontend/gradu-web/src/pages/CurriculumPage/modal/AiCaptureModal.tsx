@@ -41,12 +41,10 @@ export function AiCaptureModal({
   const [dupFrom, setDupFrom] = useState<"selected" | "all">("selected");
 
   const isCourseDuplicateCode = (code?: string) => {
-  if (!code) return false;
-  const c = code.trim().toUpperCase();
-  return c === "C003" || c === "COURSE_DUPLICATE_EXCEPTION";
-};
-
-
+    if (!code) return false;
+    const c = code.trim().toUpperCase();
+    return c === "C003" || c === "COURSE_DUPLICATE_EXCEPTION";
+  };
 
   // 공통 파일 추가 함수 (input + 클립보드에서 같이 사용)
   const appendFiles = (incoming: File[]) => {

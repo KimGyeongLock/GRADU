@@ -47,7 +47,7 @@ public class CourseService {
         Optional<Course> existingOpt = courseRepository.findByStudentIdAndNameAndCategoryAndAcademicYearAndTerm(studentId, request.name(), request.category(), request.academicYear(), Term.fromCode(request.term()));
 
         if (existingOpt.isPresent() && !overwrite) {
-            throw new CurriculumException(ErrorCode.COURSE_DUPLICATE_EXCEPTION);
+            throw new CourseException(ErrorCode.COURSE_DUPLICATE_EXCEPTION);
         }
 
         if (existingOpt.isPresent() && overwrite) {
@@ -106,7 +106,7 @@ public class CourseService {
         if (request.getName() != null && !request.getName().equals(course.getName())) {
             boolean nameExists = courseRepository.existsByStudentIdAndNameAndCategoryAndAcademicYearAndTermAndIdNot(studentId, request.getName(), course.getCategory(), course.getAcademicYear(), course.getTerm(), courseId);
             if (nameExists) {
-                throw new CurriculumException(ErrorCode.COURSE_DUPLICATE_EXCEPTION);
+                throw new CourseException(ErrorCode.COURSE_DUPLICATE_EXCEPTION);
             }
         }
 
