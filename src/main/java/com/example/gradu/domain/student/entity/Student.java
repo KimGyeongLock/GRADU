@@ -39,5 +39,4 @@ public class Student {
     public void changePassword(String encodedPassword) {
         this.password = encodedPassword;
     }
-    public void changeEmail(String newEmail, String emailHash) { this.email = newEmail; this.emailHash = emailHash; }
 }

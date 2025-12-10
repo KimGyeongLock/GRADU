@@ -1,21 +1,18 @@
 package com.example.gradu.global.exception;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
-@RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class ErrorResponse {
     private final String code;
     private final String message;
-    private Map<String, String> errors;
-
-    public ErrorResponse(String code, String message, Map<String, String> errors) {
-        this.code = code;
-        this.message = message;
-        this.errors = errors;
-    }
-
+    private final Map<String, String> errors;   // Validation errors
+    private final List<String> duplicates;      // Bulk 중복 과목명 용
 }
