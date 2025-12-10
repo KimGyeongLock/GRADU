@@ -23,8 +23,12 @@ public class CourseController {
 
     @PostMapping
     @CheckStudentAccess
-    public ResponseEntity<Void> addCourse(@PathVariable Long studentId, @RequestBody CourseRequestDto request) {
-        courseService.addCourse(studentId, request);
+    public ResponseEntity<Void> addCourse(
+            @PathVariable Long studentId,
+            @RequestBody CourseRequestDto request,
+            @RequestParam(name = "overwrite", defaultValue = "false") boolean overwrite
+    ) {
+        courseService.addCourse(studentId, request, overwrite);
         return ResponseEntity.ok().build();
     }
 

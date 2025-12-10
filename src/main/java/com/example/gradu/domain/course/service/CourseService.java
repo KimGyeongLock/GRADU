@@ -13,6 +13,7 @@ import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.domain.summary.service.SummaryService;
 import com.example.gradu.global.exception.ErrorCode;
+import com.example.gradu.global.exception.course.CourseException;
 import com.example.gradu.global.exception.curriculum.CurriculumException;
 import com.example.gradu.global.exception.student.StudentException;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +40,33 @@ public class CourseService {
     }
 
     @Transactional
-    public void addCourse(Long studentId, CourseRequestDto request) {
+    public void addCourse(Long studentId, CourseRequestDto request, boolean overwrite) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
+
+        Optional<Course> existingOpt = courseRepository.findByStudentIdAndNameAndCategoryAndAcademicYearAndTerm(studentId, request.name(), request.category(), request.academicYear(), Term.fromCode(request.term()));
+
+        if (existingOpt.isPresent() && !overwrite) {
+            throw new CourseException(ErrorCode.COURSE_DUPLICATE_EXCEPTION);
+        }
+
+        if (existingOpt.isPresent() && overwrite) {
+            Course existing = existingOpt.get();
+
+            CourseUpdateRequestDto dto = new CourseUpdateRequestDto(
+                    request.name(),
+                    request.credit(),
+                    request.designedCredit(),
+                    request.grade(),
+                    request.category(),
+                    request.isEnglish(),
+                    request.academicYear(),
+                    request.term()
+            );
+
+            updateCourse(studentId, existing.getId(), dto);
+            return;
+        }
 
         Course course = Course.builder()
                 .student(student)
@@ -77,6 +102,13 @@ public class CourseService {
     @Transactional
     public Course updateCourse(Long studentId, Long courseId, CourseUpdateRequestDto request) {
         Course course = loadCourse(studentId, courseId);
+
+        if (request.getName() != null && !request.getName().equals(course.getName())) {
+            boolean nameExists = courseRepository.existsByStudentIdAndNameAndCategoryAndAcademicYearAndTermAndIdNot(studentId, request.getName(), course.getCategory(), course.getAcademicYear(), course.getTerm(), courseId);
+            if (nameExists) {
+                throw new CourseException(ErrorCode.COURSE_DUPLICATE_EXCEPTION);
+            }
+        }
 
         UpdateContext ctx = computedNewValues(course, request);
         if (ctx.categoryChanged) {
@@ -207,11 +239,42 @@ public class CourseService {
         return courseRepository.findByStudentId(studentId);
     }
 
+    private String buildKey(String name, Category category, Short year, Term term) {
+        return name + "|" + category.name() + "|" + year + "|" + term.name();
+    }
+
+    private String buildKey(CourseBulkRequest req) {
+        return buildKey(
+                req.getName(),
+                req.getCategory(),
+                req.getAcademicYear(),
+                Term.fromCode(req.getTerm())
+        );
+    }
+
     @Transactional
     public void bulkInsert(Long studentId, List<CourseBulkRequest> courses) {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
+        // 현재 학생이 가진 과목 이름들
+        List<Course> existingCourses = courseRepository.findByStudentId(studentId);
+        var existingKeys = existingCourses.stream()
+                .map(c -> buildKey(c.getName(), c.getCategory(), c.getAcademicYear(), c.getTerm()))
+                .collect(Collectors.toSet());
+
+        // 이번에 넣으려는 것 중에서 이미 존재하는 이름들
+        List<String> dupNames = courses.stream()
+                .filter(req -> existingKeys.contains(buildKey(req)))
+                .map(CourseBulkRequest::getName)
+                .distinct()
+                .toList();
+
+        if (!dupNames.isEmpty()) {
+            throw new CourseException(ErrorCode.COURSE_DUPLICATE_EXCEPTION, dupNames);
+        }
+
+        // 🔽 기존 bulkInsert 그대로
         List<Course> entities = courses.stream()
                 .map(req -> Course.builder()
                         .student(student)
@@ -229,7 +292,8 @@ public class CourseService {
 
         courses.stream()
                 .collect(Collectors.groupingBy(CourseBulkRequest::getCategory,
-                        Collectors.mapping(CourseBulkRequest::getCredit, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
+                        Collectors.mapping(CourseBulkRequest::getCredit,
+                                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))))
                 .forEach((category, totalCredit) -> {
                     Curriculum cur = curriculumRepository.findByStudentIdAndCategory(studentId, category)
                             .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
@@ -249,6 +313,7 @@ public class CourseService {
 
         summaryService.recomputeAndSave(studentId);
     }
+
 
     public void removeForStudent(Long studentId) {
         courseRepository.deleteByStudentId(studentId);

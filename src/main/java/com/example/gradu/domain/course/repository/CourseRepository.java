@@ -1,6 +1,7 @@
 package com.example.gradu.domain.course.repository;
 
 import com.example.gradu.domain.course.entity.Course;
+import com.example.gradu.domain.course.entity.Term;
 import com.example.gradu.domain.curriculum.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,4 +16,21 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     Optional<Course> findByIdAndStudentId(Long id, Long studentId);
 
     void deleteByStudentId(Long studentId);
+
+    Optional<Course> findByStudentIdAndNameAndCategoryAndAcademicYearAndTerm(
+            Long studentId,
+            String name,
+            Category category,
+            Short academicYear,
+            Term term
+    );
+
+    boolean existsByStudentIdAndNameAndCategoryAndAcademicYearAndTermAndIdNot(
+            Long studentId,
+            String name,
+            Category category,
+            Short academicYear,
+            Term term,
+            Long id
+    );
 }
