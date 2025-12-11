@@ -53,7 +53,6 @@ export default function CurriculumPage() {
     useState<SummaryDto>(createEmptySummary());
 
   const [gradEnglishPassed, setGradEnglishPassed] = useState(false);
-  const [deptExtraPassed, setDeptExtraPassed] = useState(false);
 
   // 🔹 게스트 모드 초기 로드
   useEffect(() => {
@@ -65,14 +64,12 @@ export default function CurriculumPage() {
     const savedToggles = loadGuestToggles();
     if (savedToggles) {
       setGradEnglishPassed(savedToggles.gradEnglishPassed);
-      setDeptExtraPassed(savedToggles.deptExtraPassed);
     }
 
     const baseSummary = computeGuestSummary(
       cs,
       savedToggles ?? {
         gradEnglishPassed: false,
-        deptExtraPassed: false,
       }
     );
     setGuestSummary(baseSummary);
@@ -168,16 +165,12 @@ export default function CurriculumPage() {
     if (isGuest) return;
     if (effectiveSummary) {
       setGradEnglishPassed(!!effectiveSummary.gradEnglishPassed);
-      setDeptExtraPassed(!!effectiveSummary.deptExtraPassed);
     }
   }, [isGuest, effectiveSummary]);
 
   // 🔹 토글 저장 (로그인 전용)
   const saveToggles = useMutation({
-    mutationFn: async (payload: {
-      gradEnglishPassed: boolean;
-      deptExtraPassed: boolean;
-    }) => {
+    mutationFn: async (payload: { gradEnglishPassed: boolean }) => {
       if (isGuest) return;
       await axiosInstance.patch(
         `/api/v1/students/${sid}/summary/toggles`,
@@ -193,12 +186,12 @@ export default function CurriculumPage() {
 
   const handleSaveToggles = () => {
     if (isGuest) {
-      const toggles = { gradEnglishPassed, deptExtraPassed };
+      const toggles = { gradEnglishPassed };
       const next = computeGuestSummary(guestCourses, toggles);
       setGuestSummary(next);
       saveGuestToggles(toggles);
     } else {
-      saveToggles.mutate({ gradEnglishPassed, deptExtraPassed });
+      saveToggles.mutate({ gradEnglishPassed });
     }
   };
 
@@ -217,10 +210,10 @@ export default function CurriculumPage() {
     setGuestCourses(cs);
     const nextSummary = computeGuestSummary(cs, {
       gradEnglishPassed,
-      deptExtraPassed,
     });
     setGuestSummary(nextSummary);
   };
+
 
   const afterAddSaved = () => {
     if (isGuest) {
@@ -343,9 +336,7 @@ export default function CurriculumPage() {
             summary={effectiveSummary}
             pfLimitNote={pfLimitNote}
             gradEnglishPassed={gradEnglishPassed}
-            deptExtraPassed={deptExtraPassed}
             onChangeGradEnglishPassed={setGradEnglishPassed}
-            onChangeDeptExtraPassed={setDeptExtraPassed}
             onClickSaveToggles={handleSaveToggles}
             savingToggles={saveToggles.isPending}
           />

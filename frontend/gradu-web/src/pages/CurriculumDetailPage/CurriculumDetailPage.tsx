@@ -6,26 +6,61 @@ import { axiosInstance, getStudentId } from "../../lib/axios";
 import EditCourseModal from "../CurriculumPage/modal/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
 import type { CourseDto } from "../CurriculumPage/curriculumTypes";
-import { formatSemester } from "../CurriculumPage/curriculumTypes";
+import { formatSemester, CATEGORY_LABELS } from "../CurriculumPage/curriculumTypes";
 import { isGuestMode } from "../../lib/auth";
 import {
   loadGuestCourses,
   removeGuestCourse,
 } from "../CurriculumPage/guest/guestStorage";
 
-export const KOR_LABELS: Record<string, string> = {
-  FAITH_WORLDVIEW: "신앙및세계관",
-  PERSONALITY_LEADERSHIP: "인성및리더십",
-  PRACTICAL_ENGLISH: "실무영어",
-  GENERAL_EDU: "전문교양",
-  BSM: "BSM",
-  ICT_INTRO: "ICT융합기초",
-  FREE_ELECTIVE_BASIC: "자유선택(교양)",
-  FREE_ELECTIVE_MJR: "자유선택(교양또는비교양)",
-  MAJOR: "전공",
-};
-export const CATEGORY_ORDER = Object.keys(KOR_LABELS);
+export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
+
+export const GENERAL_EDU_COURSES: string[] = [
+  "창의적문제해결리더십",
+  "기독교세계관",
+  "공학윤리",
+  "현대과학과 기술의 철학",
+  "Cross-Cultural Global Perspectives",
+  "이공계글쓰기",
+  "철학개론",
+  "한국사(근현대사)",
+  "사회학개론",
+  "경영학입문",
+  "경제학입문",
+  "심리학개론",
+];
+export const BSM_MATH_COURSES: string[] = [
+  "Calculus1",
+  "Calculus2",
+  "Calculus3",
+  "미분방정식과 응용",
+  "공학수학",
+  "정수론",
+  "통계학",
+  "선형대수학",
+  "이산수학",
+  "실해석학개론",
+];
+export const MAJOR_REQUIRED_COURSES = [
+  "공학설계입문",
+  "데이타구조",
+  "컴퓨터구조",
+  "운영체제",
+  "캡스톤디자인 1",
+  "캡스톤디자인 2",
+  "오픈소스 스튜디오",
+  "AI 개론",
+];
+
+export const MAJOR_ELECTIVE_REQUIRED = [
+  "프로그래밍언어론",
+  "알고리듬분석",
+  "데이타베이스",
+  "컴퓨터네트워크",
+  "소프트웨어공학",
+];
+
 
 export default function CurriculumDetailPage() {
   const { category = "" } = useParams();
@@ -41,8 +76,15 @@ export default function CurriculumDetailPage() {
     [category]
   );
   const isValid = ALLOWED.has(categoryEnum);
-  const label = isValid ? KOR_LABELS[categoryEnum] : categoryEnum;
+  const label = isValid ? CATEGORY_LABELS[categoryEnum] : categoryEnum;
   const isMajor = categoryEnum === "MAJOR";
+  const isGeneralEdu = categoryEnum === "GENERAL_EDU";
+  const isBSM = categoryEnum === "BSM";
+
+  const [showGeneralEdu, setShowGeneralEdu] = useState(false);
+  const [showBsmMath, setShowBsmMath] = useState(false);
+  const [showMajorInfo, setShowMajorInfo] = useState(false); // 전공 전용 토글
+
 
   // 🔹 게스트용 로컬 과목 목록
   const [guestCourses, setGuestCourses] = useState<CourseDto[]>([]);
@@ -79,6 +121,28 @@ export default function CurriculumDetailPage() {
     }
     return serverCourses;
   }, [isGuest, guestCourses, serverCourses, categoryEnum, isValid]);
+
+  // ✅ 전문교양 칩 하이라이트용: 이미 이수한 과목 이름 Set
+  const normalize = (str: string) => str.trim().replace(/\s+/g, "");
+  const takenGeneralEduSet = useMemo(() => {
+    if (!isGeneralEdu) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isGeneralEdu, list]);
+  const takenBsmMathSet = useMemo(() => {
+    if (!isBSM) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isBSM, list]);
+  const takenMajorSet = useMemo(() => {
+    if (!isMajor) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isMajor, list]);
+
+  const majorElectiveTakenCount = useMemo(() => {
+    return MAJOR_ELECTIVE_REQUIRED.filter((name) =>
+      takenMajorSet.has(normalize(name))
+    ).length;
+  }, [takenMajorSet]);
+
 
   // 삭제 (로그인 사용자)
   const deleteMutation = useMutation({
@@ -160,6 +224,155 @@ export default function CurriculumDetailPage() {
           뒤로
         </button>
       </div>
+
+
+      {/* 전문교양 안내 */}
+      {isGeneralEdu && (
+        <div className={s.noticeBox}>
+          <div
+            className={s.noticeToggle}
+            onClick={() => setShowGeneralEdu((v) => !v)}
+          >
+            <span className={s.noticeTitle}>전문교양 이수 안내</span>
+            <span className={s.noticeArrow}>
+              {showGeneralEdu ? "▲" : "▼"}
+            </span>
+          </div>
+
+          {showGeneralEdu && (
+            <div className={s.noticeContent}>
+              <p className={s.noticeText}>
+                전문교양은 아래 과목들 중에서 선택하여 이수하시면 됩니다.
+              </p>
+
+              <div className={s.noticeChips}>
+                {GENERAL_EDU_COURSES.map((name) => {
+                  const taken = takenGeneralEduSet.has(normalize(name));
+                  return (
+                    <span
+                      key={name}
+                      className={`${s.noticeChip} ${taken ? s.noticeChipActive : ""
+                        }`}
+                    >
+                      {name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* BSM 수학 과목군 안내 */}
+      {isBSM && (
+        <div className={s.noticeBox}>
+          <div
+            className={s.noticeToggle}
+            onClick={() => setShowBsmMath((v) => !v)}
+          >
+            <span className={s.noticeTitle}>BSM 이수 안내</span>
+            <span className={s.noticeArrow}>
+              {showBsmMath ? "▲" : "▼"}
+            </span>
+          </div>
+
+          {showBsmMath && (
+            <div className={s.noticeContent}>
+              <p className={s.noticeText}>
+                BSM은 아래 과목들 중에서 선택하여 이수하시면 됩니다.
+              </p>
+
+              <div className={s.noticeChips}>
+                {BSM_MATH_COURSES.map((name) => {
+                  const taken = takenBsmMathSet.has(normalize(name));
+                  return (
+                    <span
+                      key={name}
+                      className={`${s.noticeChip} ${taken ? s.noticeChipActive : ""
+                        }`}
+                    >
+                      {name}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {/* 전공 안내 (전공필수 + 선택필수) */}
+      {isMajor && (
+        <div className={s.noticeBox}>
+          <div
+            className={s.noticeToggle}
+            onClick={() => setShowMajorInfo((v) => !v)}
+          >
+            <span className={s.noticeTitle}>전공 이수 안내</span>
+            <span className={s.noticeArrow}>
+              {showMajorInfo ? "▲" : "▼"}
+            </span>
+          </div>
+
+          {showMajorInfo && (
+            <div className={s.noticeContent}>
+              {/* 전공필수 */}
+              <div className={s.noticeSection}>
+                <div className={s.noticeRow}>
+                  <div className={s.noticeSectionTitle}>전공필수</div>
+                  <p className={s.noticeTextInline}>
+                    아래 과목들은 모든 학생이 <b>반드시 이수해야 하는 전공필수</b>입니다.
+                  </p>
+                </div>
+                <div className={s.noticeChips}>
+                  {MAJOR_REQUIRED_COURSES.map((name) => {
+                    const taken = takenMajorSet.has(normalize(name));
+                    return (
+                      <span
+                        key={name}
+                        className={`${s.noticeChip} ${taken ? s.noticeChipActive : ""
+                          }`}
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 선택필수 */}
+              <div className={s.noticeSection}>
+                <div className={s.noticeRow}>
+                  <div className={s.noticeSectionTitle}>선택필수</div>
+                  <p className={s.noticeText}>
+                    아래 과목 중 최소 <b>2과목</b>을 이수해야 합니다.{" "}
+                    <span className={s.noticeBadgeSmall}>
+                      현재 {majorElectiveTakenCount}과목 이수
+                    </span>
+                  </p>
+                </div>
+                <div className={s.noticeChips}>
+                  {MAJOR_ELECTIVE_REQUIRED.map((name) => {
+                    const taken = takenMajorSet.has(normalize(name));
+                    return (
+                      <span
+                        key={name}
+                        className={`${s.noticeChip} ${taken ? s.noticeChipActive : ""
+                          }`}
+                      >
+                        {name}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+
+
 
       {/* 본문 카드 */}
       <div className={s.card}>

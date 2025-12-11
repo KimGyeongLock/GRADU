@@ -79,7 +79,6 @@ export function clearGuestCourses() {
 
 export type GuestToggles = {
   gradEnglishPassed: boolean;
-  deptExtraPassed: boolean;
 };
 
 export function loadGuestToggles(): GuestToggles | null {
@@ -89,7 +88,6 @@ export function loadGuestToggles(): GuestToggles | null {
     const obj = JSON.parse(raw);
     return {
       gradEnglishPassed: !!obj.gradEnglishPassed,
-      deptExtraPassed: !!obj.deptExtraPassed,
     };
   } catch {
     return null;
