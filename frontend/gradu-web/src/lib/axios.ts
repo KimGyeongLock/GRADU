@@ -95,13 +95,26 @@ let queue: Array<{
   reject: (e: any) => void;
 }> = [];
 
+const PUBLIC_PATHS = [
+  "/api/v1/auth/login",
+  "/api/v1/auth/register",
+  "/api/v1/auth/reissue",
+  "/api/v1/auth/email/otp/send",
+  "/api/v1/auth/password/reset",
+];
+
 axiosInstance.interceptors.response.use(
   (res) => res,
   async (error) => {
     const { config, response } = error || {};
     const status = response?.status;
+    const url = config?.url ?? "";
 
-    if ((status === 401 || status === 403) && !config.__isRetryRequest) {
+    const isPublic = PUBLIC_PATHS.some((p) => url.includes(p));
+    const hasAuthHeader = !!config?.headers?.Authorization; // 요청이 토큰 기반인지
+
+    // ✅ 401만 처리 + public 요청 제외 + 토큰 기반 요청만 + 무한루프 방지
+    if (status === 401 && !isPublic && hasAuthHeader && !config.__isRetryRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => queue.push({ resolve, reject }));
       }
@@ -110,13 +123,18 @@ axiosInstance.interceptors.response.use(
       config.__isRetryRequest = true;
 
       try {
-        const r = await axiosInstance.post("/api/v1/auth/reissue", {});
-        const token = r?.data?.accessToken;
+        // ✅ reissue는 public이므로 여기서만 실행 (다른 재시도 방지용 플래그도 붙여도 됨)
+        const r = await axiosInstance.post("/api/v1/auth/reissue", {}, {
+          // 혹시 모르니 명시
+          withCredentials: true,
+        });
 
+        const token = r?.data?.accessToken;
         if (token) setAccessToken(token);
 
         queue.forEach((p) => p.resolve(axiosInstance(config)));
         queue = [];
+
         return axiosInstance(config);
       } catch (e) {
         queue.forEach((p) => p.reject(e));
@@ -131,6 +149,7 @@ axiosInstance.interceptors.response.use(
     throw error;
   }
 );
+
 
 // ======================================================
 //  전체 인증 정보 초기화 (logout 시 사용 가능)

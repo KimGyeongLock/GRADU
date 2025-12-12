@@ -57,10 +57,8 @@ public class SummaryService {
 
         // 3) 계산 (기존 토글값은 유지해서 전달)
         SummaryDto calc = SummaryCalculator.compute(
-                courses,
-                policy,
-                summary.isGradEnglishPassed(),
-                summary.isDeptExtraPassed()
+                courses, policy,
+                summary.isGradEnglishPassed()
         );
 
         // 4) rowsJson 변환
@@ -92,7 +90,7 @@ public class SummaryService {
                 .orElseThrow(() -> new IllegalStateException("Summary not found for studentId=" + studentId));
 
         // 1) 토글 값 반영
-        summary.updateToggles(toggles.gradEnglishPassed(), toggles.deptExtraPassed());
+        summary.updateToggles(toggles.gradEnglishPassed());
 
         // 2) 토글이 반영된 상태로 다시 계산
         recomputeAndSave(studentId);
