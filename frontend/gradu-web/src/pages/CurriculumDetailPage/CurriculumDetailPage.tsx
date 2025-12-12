@@ -13,12 +13,14 @@ import {
 } from "../CurriculumPage/guest/guestStorage";
 import { CourseInfoBox } from "./components/CourseInfoBox";
 import { MajorInfoBox } from "./components/MajorInfoBox";
+import { FaithInfoBox } from "./components/FaithInfoBox";
+import { PersonalityInfoBox } from "./components/PersonalityInfoBox";
 
 import { GENERAL_EDU_COURSES } from "./constants/generalEdu";
 import { BSM_MATH_COURSES } from "./constants/bsm";
-import {
-  MAJOR_ELECTIVE_REQUIRED,
-} from "./constants/major";
+import { MAJOR_ELECTIVE_REQUIRED } from "./constants/major";
+import { PRACTICAL_ENGLISH_COURSES } from "./constants/practicalEnglish";
+import { ICT_INTRO_COURSES } from "./constants/ictIntro";
 
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
@@ -42,6 +44,11 @@ export default function CurriculumDetailPage() {
   const isMajor = categoryEnum === "MAJOR";
   const isGeneralEdu = categoryEnum === "GENERAL_EDU";
   const isBSM = categoryEnum === "BSM";
+  const isFaith = categoryEnum === "FAITH_WORLDVIEW";
+  const isPersonality = categoryEnum === "PERSONALITY_LEADERSHIP";
+  const isPracticalEnglish = categoryEnum === "PRACTICAL_ENGLISH";
+  const isIctIntro = categoryEnum === "ICT_INTRO";
+
 
   // 🔹 게스트용 로컬 과목 목록
   const [guestCourses, setGuestCourses] = useState<CourseDto[]>([]);
@@ -93,14 +100,24 @@ export default function CurriculumDetailPage() {
     if (!isMajor) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
   }, [isMajor, list]);
-
+  const takenPersonalitySet = useMemo(() => {
+    if (!isPersonality) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isPersonality, list]);
   const majorElectiveTakenCount = useMemo(() => {
     return MAJOR_ELECTIVE_REQUIRED.filter((name) =>
       takenMajorSet.has(normalize(name))
     ).length;
   }, [takenMajorSet]);
+  const takenPracticalEnglishSet = useMemo(() => {
+    if (!isPracticalEnglish) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isPracticalEnglish, list]);
 
-
+  const takenIctIntroSet = useMemo(() => {
+    if (!isIctIntro) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isIctIntro, list]);
   // 삭제 (로그인 사용자)
   const deleteMutation = useMutation({
     mutationFn: async (courseId: number) => {
@@ -192,14 +209,27 @@ export default function CurriculumDetailPage() {
         />
       )}
       {isBSM && (
-        <CourseInfoBox
-          title="BSM 이수 안내"
-          description="BSM은 아래 과목들 중에서 선택하여 이수하시면 됩니다."
-          courses={BSM_MATH_COURSES}
-          takenSet={takenBsmMathSet}
-          normalize={normalize}
-        />
-      )}
+  <CourseInfoBox
+    title="BSM 이수 안내"
+    description={
+      <>
+        <p>
+          BSM은 아래 과목들 중에서 선택하여 이수하시면 됩니다.
+        </p>
+        <p>
+          <b>- (물리학개론 + 물리학실험1)</b> 또는 <b>(물리학1 + 물리학실험1)</b> 또는 <b>(물리학2 + 물리학실험1)</b> 또는 <b>(일반화학 + 일반화학실험)</b> 중 <b>하나 이상 필수 이수</b>
+        </p>
+        <p>
+          <b>- 이산수학 필수 이수</b>
+        </p>
+      </>
+    }
+    courses={BSM_MATH_COURSES}
+    takenSet={takenBsmMathSet}
+    normalize={normalize}
+  />
+)}
+
       {isMajor && (
         <MajorInfoBox
           takenSet={takenMajorSet}
@@ -207,6 +237,37 @@ export default function CurriculumDetailPage() {
           electiveTakenCount={majorElectiveTakenCount}
         />
       )}
+      {isFaith && (
+        <FaithInfoBox
+          takenSet={new Set(list.map((c) => normalize(c.name)))}
+          normalize={normalize}
+        />
+      )}
+      {categoryEnum === "PERSONALITY_LEADERSHIP" && (
+        <PersonalityInfoBox
+          takenSet={takenPersonalitySet}
+          normalize={normalize}
+        />
+      )}
+      {isPracticalEnglish && (
+        <CourseInfoBox
+          title="실무영어 이수 안내"
+          description="실무영어는 아래 과목들을 순서대로 이수하시면 됩니다.  ※ EAP 필수"
+          courses={PRACTICAL_ENGLISH_COURSES}
+          takenSet={takenPracticalEnglishSet}
+          normalize={normalize}
+        />
+      )}
+      {isIctIntro && (
+        <CourseInfoBox
+          title="ICT융합기초 이수 안내"
+          description="ICT융합기초는 아래 과목들 중에서 선택하여 이수하시면 됩니다."
+          courses={ICT_INTRO_COURSES}
+          takenSet={takenIctIntroSet}
+          normalize={normalize}
+        />
+      )}
+
 
       {/* 본문 카드 */}
       <div className={s.card}>

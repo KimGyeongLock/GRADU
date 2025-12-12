@@ -93,8 +93,12 @@ public class SummaryCalculator {
                 // 영어강의 합(전공/교양) – 총합에서 1회만
                 if (Boolean.TRUE.equals(c.getIsEnglish())) {
                     String cat = c.getCategory().name();
-                    if ("MAJOR".equals(cat) || "MAJOR_DESIGNED".equals(cat)) eMajorU += u;
-                    else eLibU += u;
+
+                    if ("MAJOR".equals(cat)) {
+                        eMajorU += u;
+                    } else if (!"PRACTICAL_ENGLISH".equals(cat)) {
+                        eLibU += u;
+                    }
                 }
             }
 

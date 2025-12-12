@@ -3,24 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "../../../lib/axios";
 import Modal from "../../../components/Modal";
-import type { CourseDto } from "../curriculumTypes";
+import type { CourseDto, GradeCode } from "../curriculumTypes";
+import { GRADE_OPTIONS, CATEGORY_LABELS } from "../curriculumTypes";
 import "../../../components/CourseModal.css";
 import { isGuestMode } from "../../../lib/auth";
 import { updateGuestCourse } from "../guest/guestStorage";
-import { CourseOverwriteModal } from "./CourseOverwriteModal"; // 경로는 실제 위치에 맞게 조정 필요
+import { CourseOverwriteModal } from "./CourseOverwriteModal";
 
-const KOR_LABELS: Record<string, string> = {
-  FAITH_WORLDVIEW: "신앙및세계관",
-  PERSONALITY_LEADERSHIP: "인성및리더십",
-  PRACTICAL_ENGLISH: "실무영어",
-  GENERAL_EDU: "전문교양",
-  BSM: "BSM",
-  ICT_INTRO: "ICT융합기초",
-  FREE_ELECTIVE_BASIC: "자유선택(교양)",
-  FREE_ELECTIVE_MJR: "자유선택(교양또는비교양)",
-  MAJOR: "전공",
-};
-const CATEGORY_ORDER = Object.keys(KOR_LABELS);
+const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
 
 const TERM_OPTIONS = [
   { value: "1", label: "1학기" },
@@ -42,7 +32,7 @@ type FormState = {
   name: string;
   credit: string;
   designedCredit: string;
-  grade: string;
+  grade: GradeCode;
   category: string;
   isEnglish: boolean;
   academicYear: string;
@@ -84,7 +74,7 @@ export default function EditCourseModal({
           course.category === "MAJOR" && course.designedCredit != null
             ? String(course.designedCredit)
             : "",
-        grade: course.grade ?? "",
+        grade: (course.grade ?? "") as GradeCode,
         category: course.category ?? "MAJOR",
         isEnglish: !!course.isEnglish,
         academicYear: String(
@@ -155,8 +145,7 @@ export default function EditCourseModal({
           name: form.name.trim(),
           credit: creditNum ?? course.credit,
           designedCredit: designedNum,
-          grade:
-            form.grade.trim() === "" ? null : form.grade.trim(),
+          grade: form.grade === "" ? null : form.grade,
           category: form.category,
           isEnglish: !!form.isEnglish,
           academicYear: Number(form.academicYear),
@@ -178,7 +167,7 @@ export default function EditCourseModal({
         name: form.name.trim() === "" ? undefined : form.name.trim(),
         credit: creditNum,
         designedCredit: designedNum,
-        grade: form.grade.trim() === "" ? null : form.grade.trim(),
+        grade: form.grade === "" ? null : form.grade,
         category: form.category,
         isEnglish: !!form.isEnglish,
         academicYear: Number(form.academicYear),
@@ -295,7 +284,7 @@ export default function EditCourseModal({
               >
                 {CATEGORY_ORDER.map((key) => (
                   <option key={key} value={key}>
-                    {KOR_LABELS[key]}
+                    {CATEGORY_LABELS[key]}
                   </option>
                 ))}
               </select>
@@ -348,13 +337,19 @@ export default function EditCourseModal({
 
           <div className="cm-field">
             <label className="cm-label">성적</label>
-            <input
+            <select
               className="cm-input"
               value={form.grade}
-              onChange={(e) => onChange("grade", e.target.value)}
-              placeholder="예: A+"
-            />
+              onChange={(e) => onChange("grade", e.target.value as GradeCode)}
+            >
+              {GRADE_OPTIONS.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
           </div>
+
 
           <div className="cm-field">
             <label className="cm-label">영어강의 여부</label>
