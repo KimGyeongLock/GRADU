@@ -95,6 +95,7 @@ export const GRADE_OPTIONS = [
   { value: "D0", label: "D0" },
   { value: "F",  label: "F" },
   { value: "P",  label: "P" },
+  { value: "PD",  label: "PD" },
 ] as const;
 
 export type GradeCode = (typeof GRADE_OPTIONS)[number]["value"];
