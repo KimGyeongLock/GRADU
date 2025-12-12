@@ -8,9 +8,7 @@ type Props = {
   summary: SummaryDto;
   pfLimitNote: number;
   gradEnglishPassed: boolean;
-  deptExtraPassed: boolean;
   onChangeGradEnglishPassed: (v: boolean) => void;
-  onChangeDeptExtraPassed: (v: boolean) => void;
   onClickSaveToggles: () => void;
   savingToggles: boolean;
 };
@@ -21,9 +19,7 @@ export function SummaryView({
   summary,
   pfLimitNote,
   gradEnglishPassed,
-  deptExtraPassed,
   onChangeGradEnglishPassed,
-  onChangeDeptExtraPassed,
   onClickSaveToggles,
   savingToggles,
 }: Props) {
@@ -66,9 +62,8 @@ export function SummaryView({
                     : fmtCred(row.earned)}
                 </td>
                 <td
-                  className={`${s.td} ${
-                    row.status === "PASS" ? s.statusPass : s.statusFail
-                  }`}
+                  className={`${s.td} ${row.status === "PASS" ? s.statusPass : s.statusFail
+                    }`}
                 >
                   {statusText(row.status)}
                 </td>
@@ -95,9 +90,8 @@ export function SummaryView({
               </td>
               <td className={s.tdValue}>{fmtCred(summary.pfCredits)}</td>
               <td
-                className={`${s.td} ${
-                  summary.pfPass ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.td} ${summary.pfPass ? s.statusPass : s.statusFail
+                  }`}
               >
                 {summary.pfPass ? "합격" : "불합격"}
               </td>
@@ -109,9 +103,8 @@ export function SummaryView({
               <td className={s.tdNote}>130학점 이상</td>
               <td className={s.tdValue}>{fmtCred(summary.totalCredits)}</td>
               <td
-                className={`${s.td} ${
-                  summary.totalPass ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.td} ${summary.totalPass ? s.statusPass : s.statusFail
+                  }`}
               >
                 {summary.totalPass ? "합격" : "불합격"}
               </td>
@@ -123,9 +116,8 @@ export function SummaryView({
               <td className={s.tdNote}>2.0 이상</td>
               <td className={s.tdValue}>{(summary.gpa ?? 0).toFixed(2)}</td>
               <td
-                className={`${s.td} ${
-                  (summary.gpa ?? 0) >= 2.0 ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.td} ${(summary.gpa ?? 0) >= 2.0 ? s.statusPass : s.statusFail
+                  }`}
               >
                 {(summary.gpa ?? 0) >= 2.0 ? "합격" : "불합격"}
               </td>
@@ -140,9 +132,8 @@ export function SummaryView({
               </td>
               <td className={s.tdValue}></td>
               <td
-                className={`${s.td} ${
-                  summary.englishPass ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.td} ${summary.englishPass ? s.statusPass : s.statusFail
+                  }`}
               >
                 {summary.englishPass ? "합격" : "불합격"}
               </td>
@@ -177,31 +168,14 @@ export function SummaryView({
             </tr>
 
             <tr>
-              <td className={s.tdLabel}>학부추가졸업요건</td>
-              <td className={s.tdNote}></td>
-              <td className={s.tdValue}>
-                <label className={s.toggle}>
-                  <input
-                    type="checkbox"
-                    checked={deptExtraPassed}
-                    onChange={(e) => onChangeDeptExtraPassed(e.target.checked)}
-                  />
-                  <span />
-                </label>
+              <td className={s.tdLabel}>비교과 졸업요건</td>
+                            <td className={s.tdNote}>산학프로젝트 1회 수행<br/>+ 캡스톤 결과물을 특허<br/>·논문·SW 중 1건 제출</td>
+
+              <td className={s.tdValue}></td>
+              <td className={`${s.td} ${statusClass(summary.deptExtraPassed)}`}>
+                {summary.deptExtraPassed ? "합격" : "불합격"}
               </td>
-              <td className={`${s.td} ${statusClass(deptExtraPassed)}`}>
-                {deptExtraPassed ? "합격" : "불합격"}
-              </td>
-              <td className={s.td}>
-                <button
-                  type="button"
-                  className={s.saveBtn}
-                  onClick={onClickSaveToggles}
-                  disabled={savingToggles}
-                >
-                  저장
-                </button>
-              </td>
+              <td className={s.td} />
             </tr>
 
             <tr className={s.summaryFinal}>
@@ -226,9 +200,8 @@ export function SummaryView({
               <div className={s.mobileCardHeader}>
                 <span className={s.mobileCategory}>{row.name}</span>
                 <span
-                  className={`${s.mobileStatusBadge} ${
-                    row.status === "PASS" ? s.statusPass : s.statusFail
-                  }`}
+                  className={`${s.mobileStatusBadge} ${row.status === "PASS" ? s.statusPass : s.statusFail
+                    }`}
                 >
                   {statusText(row.status)}
                 </span>
@@ -265,9 +238,8 @@ export function SummaryView({
             <div className={s.mobileCardHeader}>
               <span className={s.mobileCategory}>P/F 과목</span>
               <span
-                className={`${s.mobileStatusBadge} ${
-                  summary.pfPass ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.mobileStatusBadge} ${summary.pfPass ? s.statusPass : s.statusFail
+                  }`}
               >
                 {summary.pfPass ? "합격" : "불합격"}
               </span>
@@ -293,9 +265,8 @@ export function SummaryView({
             <div className={s.mobileCardHeader}>
               <span className={s.mobileCategory}>총 취득학점</span>
               <span
-                className={`${s.mobileStatusBadge} ${
-                  summary.totalPass ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.mobileStatusBadge} ${summary.totalPass ? s.statusPass : s.statusFail
+                  }`}
               >
                 {summary.totalPass ? "합격" : "불합격"}
               </span>
@@ -319,9 +290,8 @@ export function SummaryView({
             <div className={s.mobileCardHeader}>
               <span className={s.mobileCategory}>평점 평균</span>
               <span
-                className={`${s.mobileStatusBadge} ${
-                  (summary.gpa ?? 0) >= 2.0 ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.mobileStatusBadge} ${(summary.gpa ?? 0) >= 2.0 ? s.statusPass : s.statusFail
+                  }`}
               >
                 {(summary.gpa ?? 0) >= 2.0 ? "합격" : "불합격"}
               </span>
@@ -345,9 +315,8 @@ export function SummaryView({
             <div className={s.mobileCardHeader}>
               <span className={s.mobileCategory}>영어강의 과목이수</span>
               <span
-                className={`${s.mobileStatusBadge} ${
-                  summary.englishPass ? s.statusPass : s.statusFail
-                }`}
+                className={`${s.mobileStatusBadge} ${summary.englishPass ? s.statusPass : s.statusFail
+                  }`}
               >
                 {summary.englishPass ? "합격" : "불합격"}
               </span>
@@ -408,45 +377,27 @@ export function SummaryView({
             </div>
           </div>
 
-          {/* 학부추가졸업요건 */}
           <div className={s.mobileCard}>
             <div className={s.mobileCardHeader}>
-              <span className={s.mobileCategory}>학부추가졸업요건</span>
+              <span className={s.mobileCategory}>비교과 졸업요건</span>
               <span
                 className={`${s.mobileStatusBadge} ${statusClass(
-                  deptExtraPassed
+                  summary.deptExtraPassed
                 )}`}
               >
-                {deptExtraPassed ? "합격" : "불합격"}
+                {summary.deptExtraPassed ? "합격" : "불합격"}
               </span>
             </div>
             <div className={s.mobileCardBody}>
               <div className={s.mobileRow}>
-                <span className={s.mobileLabel}>상태</span>
+                <span className={s.mobileLabel}>기준</span>
                 <span className={s.mobileValue}>
-                  <label className={s.toggle}>
-                    <input
-                      type="checkbox"
-                      checked={deptExtraPassed}
-                      onChange={(e) =>
-                        onChangeDeptExtraPassed(e.target.checked)
-                      }
-                    />
-                    <span />
-                  </label>
+                  산학프로젝트 1회 수행 + 캡스톤 <br/>결과물을 특허·논문·SW 중 1건 제출
                 </span>
               </div>
             </div>
-            <div className={s.mobileCardFooter}>
-              <button
-                className={s.saveBtn}
-                onClick={onClickSaveToggles}
-                disabled={savingToggles}
-              >
-                저장
-              </button>
-            </div>
           </div>
+
 
           {/* 최종 졸업판정 */}
           <div className={s.mobileCard}>

@@ -31,6 +31,7 @@
   font-size: 14px;
   cursor: pointer;
 }
+
 .backBtn:hover {
   background: #f9fafb;
 }
@@ -115,6 +116,7 @@
   text-align: center;
   color: #dc2626;
 }
+
 .errorSub {
   margin-top: 8px;
   font-size: 13px;
@@ -137,6 +139,7 @@
   cursor: pointer;
   font-size: 14px;
 }
+
 .btnGhost:hover {
   background: #f9fafb;
 }
@@ -150,6 +153,7 @@
   cursor: pointer;
   font-size: 14px;
 }
+
 .btnDanger:disabled {
   opacity: 0.7;
   cursor: default;
@@ -240,7 +244,8 @@
 
   .card {
     border-radius: 16px;
-    overflow-x: hidden; /* 카드에서는 가로 스크롤 숨김 */
+    overflow-x: hidden;
+    /* 카드에서는 가로 스크롤 숨김 */
   }
 
   .mobileList {
@@ -313,4 +318,111 @@
     font-size: 13px;
     padding: 5px 10px;
   }
+}
+
+.noticeBox {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background-color: #f5f7ff;
+}
+
+
+.noticeHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.noticeTitle {
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.noticeBadge {
+  font-size: 0.78rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: #e0e4ff;
+  color: #4b4f80;
+}
+
+.noticeText {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: #353945;
+}
+
+.noticeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.noticeChip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: white;
+  border: 1px solid #d9dff7;
+  font-size: 0.82rem;
+  color: #353945;
+  white-space: nowrap;
+}
+
+.noticeChipActive {
+  background-color: #e3e8ff;
+  border-color: #6c7aff;
+  color: #20274f;
+  font-weight: 500;
+}
+
+.noticeToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.noticeArrow {
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+
+.noticeContent {
+  margin-top: 10px;
+}
+
+.noticeSection {
+  margin-top: 10px;
+}
+
+.noticeSectionTitle {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.noticeBadgeSmall {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background-color: #eef0ff;
+  color: #3b4170;
+}
+
+.noticeRow {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  flex-wrap: wrap; /* 화면 좁을 때 줄바꿈 자연스럽게 */
+  margin-bottom: 6px;
+}
+
+.noticeTextInline {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #4a4a4a;
 }
