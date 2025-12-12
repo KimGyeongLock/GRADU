@@ -1,4 +1,3 @@
-// src/pages/CurriculumDetailPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,26 +5,24 @@ import { axiosInstance, getStudentId } from "../../lib/axios";
 import EditCourseModal from "../CurriculumPage/modal/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
 import type { CourseDto } from "../CurriculumPage/curriculumTypes";
-import { formatSemester } from "../CurriculumPage/curriculumTypes";
+import { formatSemester, CATEGORY_LABELS } from "../CurriculumPage/curriculumTypes";
 import { isGuestMode } from "../../lib/auth";
 import {
   loadGuestCourses,
   removeGuestCourse,
 } from "../CurriculumPage/guest/guestStorage";
+import { CourseInfoBox } from "./components/CourseInfoBox";
+import { MajorInfoBox } from "./components/MajorInfoBox";
 
-export const KOR_LABELS: Record<string, string> = {
-  FAITH_WORLDVIEW: "신앙및세계관",
-  PERSONALITY_LEADERSHIP: "인성및리더십",
-  PRACTICAL_ENGLISH: "실무영어",
-  GENERAL_EDU: "전문교양",
-  BSM: "BSM",
-  ICT_INTRO: "ICT융합기초",
-  FREE_ELECTIVE_BASIC: "자유선택(교양)",
-  FREE_ELECTIVE_MJR: "자유선택(교양또는비교양)",
-  MAJOR: "전공",
-};
-export const CATEGORY_ORDER = Object.keys(KOR_LABELS);
+import { GENERAL_EDU_COURSES } from "./constants/generalEdu";
+import { BSM_MATH_COURSES } from "./constants/bsm";
+import {
+  MAJOR_ELECTIVE_REQUIRED,
+} from "./constants/major";
+
+export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
+
 
 export default function CurriculumDetailPage() {
   const { category = "" } = useParams();
@@ -41,8 +38,10 @@ export default function CurriculumDetailPage() {
     [category]
   );
   const isValid = ALLOWED.has(categoryEnum);
-  const label = isValid ? KOR_LABELS[categoryEnum] : categoryEnum;
+  const label = isValid ? CATEGORY_LABELS[categoryEnum] : categoryEnum;
   const isMajor = categoryEnum === "MAJOR";
+  const isGeneralEdu = categoryEnum === "GENERAL_EDU";
+  const isBSM = categoryEnum === "BSM";
 
   // 🔹 게스트용 로컬 과목 목록
   const [guestCourses, setGuestCourses] = useState<CourseDto[]>([]);
@@ -79,6 +78,28 @@ export default function CurriculumDetailPage() {
     }
     return serverCourses;
   }, [isGuest, guestCourses, serverCourses, categoryEnum, isValid]);
+
+  // ✅ 전문교양 칩 하이라이트용: 이미 이수한 과목 이름 Set
+  const normalize = (str: string) => str.trim().replace(/\s+/g, "").toUpperCase();
+  const takenGeneralEduSet = useMemo(() => {
+    if (!isGeneralEdu) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isGeneralEdu, list]);
+  const takenBsmMathSet = useMemo(() => {
+    if (!isBSM) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isBSM, list]);
+  const takenMajorSet = useMemo(() => {
+    if (!isMajor) return new Set<string>();
+    return new Set(list.map((c) => normalize(c.name)));
+  }, [isMajor, list]);
+
+  const majorElectiveTakenCount = useMemo(() => {
+    return MAJOR_ELECTIVE_REQUIRED.filter((name) =>
+      takenMajorSet.has(normalize(name))
+    ).length;
+  }, [takenMajorSet]);
+
 
   // 삭제 (로그인 사용자)
   const deleteMutation = useMutation({
@@ -160,6 +181,32 @@ export default function CurriculumDetailPage() {
           뒤로
         </button>
       </div>
+
+      {isGeneralEdu && (
+        <CourseInfoBox
+          title="전문교양 이수 안내"
+          description="전문교양은 아래 과목들 중에서 선택하여 이수하시면 됩니다."
+          courses={GENERAL_EDU_COURSES}
+          takenSet={takenGeneralEduSet}
+          normalize={normalize}
+        />
+      )}
+      {isBSM && (
+        <CourseInfoBox
+          title="BSM 이수 안내"
+          description="BSM은 아래 과목들 중에서 선택하여 이수하시면 됩니다."
+          courses={BSM_MATH_COURSES}
+          takenSet={takenBsmMathSet}
+          normalize={normalize}
+        />
+      )}
+      {isMajor && (
+        <MajorInfoBox
+          takenSet={takenMajorSet}
+          normalize={normalize}
+          electiveTakenCount={majorElectiveTakenCount}
+        />
+      )}
 
       {/* 본문 카드 */}
       <div className={s.card}>

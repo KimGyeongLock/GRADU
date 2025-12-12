@@ -227,7 +227,7 @@ export function createEmptySummary(): SummaryDto {
 // 게스트 Summary 계산 (백엔드 SummaryCalculator 포팅)
 export function computeGuestSummary(
   courses: CourseDto[],
-  toggles?: { gradEnglishPassed: boolean; deptExtraPassed: boolean }
+  toggles?: { gradEnglishPassed: boolean }
 ): SummaryDto {
   const policy = SUMMARY_POLICY;
 
@@ -297,7 +297,19 @@ export function computeGuestSummary(
   const allCatPass = rows.every((r) => r.status === "PASS");
 
   const gradEnglishPassed = toggles?.gradEnglishPassed ?? false;
-  const deptExtraPassed = toggles?.deptExtraPassed ?? false;
+  const CAP1 = normName("캡스톤디자인1");
+  const CAP2 = normName("캡스톤디자인2");
+
+  let cap1Passed = false;
+  let cap2Passed = false;
+
+  for (const c of courses) {
+    if (!isPassGrade(c.grade)) continue;
+    const nm = normName(c.name);
+    if (nm === CAP1) cap1Passed = true;
+    if (nm === CAP2) cap2Passed = true;
+  }
+  const deptExtraPassed = cap1Passed && cap2Passed;
 
   const finalPass =
     allCatPass &&
