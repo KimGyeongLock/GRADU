@@ -426,3 +426,56 @@
   font-size: 0.85rem;
   color: #4a4a4a;
 }
+
+/* FaithInfoBox */
+.noticeCount {
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* === FaithInfoBox (MajorInfoBox 톤에 맞춤) === */
+.faithGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faithGroupHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.faithGroupTitle {
+  font-weight: 600;
+  font-size: 0.9rem; /* noticeSectionTitle과 톤 맞춤 */
+  color: #111827;
+}
+
+.faithGroupTitleActive {
+  color: #20274f; /* 전공 active 톤과 비슷 */
+}
+
+.faithGroupNote {
+  font-size: 0.82rem;
+  color: #4a4a4a;
+}
+
+/* (선택) noticeBadgeSmall이 noticeTitle 옆에서 너무 커 보이면 살짝 줄이기 */
+.noticeBadgeSmall {
+  font-size: 0.74rem;
+  padding: 2px 6px;
+}
+
+.noticeChipsSpaced {
+  margin-bottom: 14px;
+}
+
+.noticeList {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  line-height: 1.6;
+}
