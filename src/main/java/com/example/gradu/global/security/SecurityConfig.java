@@ -40,7 +40,8 @@ public class SecurityConfig {
             "/api/v1/auth/register",
             "/api/v1/auth/email/otp/send",
             "/api/v1/auth/reissue",
-            "/api/v1/auth/logout"
+            "/api/v1/auth/logout",
+            "/api/v1/auth/password/reset"
     };
 
     @Bean

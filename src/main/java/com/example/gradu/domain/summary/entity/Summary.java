@@ -81,9 +81,8 @@ public class Summary {
     }
 
     /** 토글만 갱신 */
-    public void updateToggles(boolean gradEnglishPassed, boolean deptExtraPassed) {
+    public void updateToggles(boolean gradEnglishPassed) {
         this.gradEnglishPassed = gradEnglishPassed;
-        this.deptExtraPassed = deptExtraPassed;
     }
 
     /** 팩토리: sid로 빈 스냅샷 생성 */

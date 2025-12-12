@@ -30,7 +30,7 @@ public final class RowAssembler {
     );
 
     /** F가 아니면 이수로 간주(P/F의 P도 포함) */
-    private static boolean isPassGrade(String grade) {
+    public static boolean isPassGrade(String grade) {
         if (grade == null) return false;
         return !"F".equalsIgnoreCase(grade.trim());
     }

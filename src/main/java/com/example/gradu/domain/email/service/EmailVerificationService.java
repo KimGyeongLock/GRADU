@@ -56,19 +56,15 @@ public class EmailVerificationService {
                 """.formatted(code, ttlMinutes));
     }
 
-    public void verifyCode(String email, String rawCode) {
+    public void verifyCodeOnly(String email, String rawCode) {
         String key = KEY_PREFIX + email;
         String storedHash = redis.opsForValue().get(key);
+        if (storedHash == null) throw new EmailException(ErrorCode.EMAIL_OTP_EXPIRED);
+        if (!isCodeValid(storedHash, rawCode)) throw new EmailException(ErrorCode.EMAIL_OTP_INVALID);
+    }
 
-        if (storedHash == null) {
-            throw new EmailException(ErrorCode.EMAIL_OTP_EXPIRED);
-        }
-
-        if (!isCodeValid(storedHash, rawCode)) {
-            throw new EmailException(ErrorCode.EMAIL_OTP_INVALID);
-        }
-
-        redis.delete(key);
+    public void consumeCode(String email) {
+        redis.delete(KEY_PREFIX + email);
     }
 
     private static String sha256Base64(String s) {

@@ -40,7 +40,7 @@ public class StudentService {
             throw new StudentException(ErrorCode.STUDENT_ALREADY_EXISTS);
         }
 
-        emailVerificationService.verifyCode(email, code);
+        emailVerificationService.verifyCodeOnly(email, code);
 
         String encodedPassword = passwordEncoder.encode(password);
 
@@ -51,7 +51,10 @@ public class StudentService {
                 .build();
 
         studentRepository.save(student);
+
         curriculumService.initializeForStudent(student.getId());
+
+        emailVerificationService.consumeCode(email);
     }
 
     @Transactional(readOnly = true)
@@ -113,13 +116,11 @@ public class StudentService {
         studentRepository.delete(student);
     }
 
+    @Transactional
     public void resetPassword(PasswordResetRequestDto req) {
-        emailVerificationService.verifyCode(req.getEmail(), req.getCode());
+        emailVerificationService.verifyCodeOnly(req.getEmail(), req.getCode());
 
-        String emailHash = Sha256.hash(req.getEmail());
-
-        Student student = studentRepository
-                .findByEmailHash(emailHash)
+        Student student = studentRepository.findByEmailHash(Sha256.hash(req.getEmail()))
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
         if (passwordEncoder.matches(req.getNewPassword(), student.getPassword())) {
@@ -127,5 +128,7 @@ public class StudentService {
         }
 
         student.changePassword(passwordEncoder.encode(req.getNewPassword()));
+
+        emailVerificationService.consumeCode(req.getEmail());
     }
 }

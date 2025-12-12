@@ -7,9 +7,6 @@ import lombok.Data;
 
 @Data
 public class PasswordResetRequestDto {
-    @NotBlank
-    private String studentId;
-
     @Email(message = "유효한 이메일 주소여야 합니다.")
     private String email;
 
