@@ -5,7 +5,7 @@ import { axiosInstance, clearAuth } from "../lib/axios";
 import { isGuestMode } from "../lib/auth";
 import s from "./Footer.module.css";
 
-const NOTICE_SEEN_KEY = "gradu_notice_seen_v2"; // 새 공지 나오면 v2, v3로 바꾸면 다시 NEW 표시됨
+const NOTICE_SEEN_KEY = "gradu_notice_seen_v3"; // 새 공지 나오면 v2, v3로 바꾸면 다시 NEW 표시됨
 
 export default function Footer() {
   const nav = useNavigate();
