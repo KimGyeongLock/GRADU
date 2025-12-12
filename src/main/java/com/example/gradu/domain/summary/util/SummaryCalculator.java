@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
+import static com.example.gradu.domain.summary.util.RowAssembler.isPassGrade;
+
 public class SummaryCalculator {
     private SummaryCalculator(){}
 
@@ -50,7 +52,7 @@ public class SummaryCalculator {
     }
 
     public static SummaryDto compute(List<Course> courses, SummaryPolicy policy,
-                                     boolean gradEnglishPassed, boolean deptExtraPassed) {
+                                     boolean gradEnglishPassed) {
         int totU = 0, pfU = 0, eMajorU = 0, eLibU = 0;
 
         // GPA는 유닛 기준으로 누적 → 분자는 BigDecimal, 분모는 유닛 int
@@ -124,9 +126,31 @@ public class SummaryCalculator {
         List<SummaryRowDto> rows = RowAssembler.buildRows(courses, policy);
         boolean allCatPass = rows.stream().allMatch(r -> "PASS".equals(r.getStatus()));
 
-        boolean finalPass = allCatPass && englishPass && pfPass && totalPass
-                && gradEnglishPassed && deptExtraPassed
-                && gpa >= policy.getGpaMin();
+        // 캡스톤 수강 여부 판정
+        boolean cap1 = false;
+        boolean cap2 = false;
+
+        for (Course c : courses) {
+            if (!isPassGrade(c.getGrade())) continue;
+
+            String name = normName(c.getName());
+            if (name.equals(normName("캡스톤디자인1")) || name.equals(normName("캡스톤디자인 1"))) {
+                cap1 = true;
+            }
+            if (name.equals(normName("캡스톤디자인2")) || name.equals(normName("캡스톤디자인 2"))) {
+                cap2 = true;
+            }
+        }
+
+        boolean deptExtraPassed = cap1 && cap2;
+
+
+        boolean finalPass =
+                allCatPass && englishPass && pfPass && totalPass
+                        && gradEnglishPassed
+                        && deptExtraPassed // ← 이제 자동 계산됨
+                        && gpa >= policy.getGpaMin();
+
 
         // 표시용(소수 지원)
         double pfCredits    = pfU      / 2.0;
