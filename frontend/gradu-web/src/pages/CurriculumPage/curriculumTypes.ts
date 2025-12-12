@@ -82,3 +82,19 @@ export function formatSemester(year?: number, term?: Term): string {
       : "winter";
   return `${yy}-${t}`;
 }
+
+export const GRADE_OPTIONS = [
+  { value: "", label: "미입력" },   // null로 보내기
+  { value: "A+", label: "A+" },
+  { value: "A0", label: "A0" },
+  { value: "B+", label: "B+" },
+  { value: "B0", label: "B0" },
+  { value: "C+", label: "C+" },
+  { value: "C0", label: "C0" },
+  { value: "D+", label: "D+" },
+  { value: "D0", label: "D0" },
+  { value: "F",  label: "F" },
+  { value: "P",  label: "P" },
+] as const;
+
+export type GradeCode = (typeof GRADE_OPTIONS)[number]["value"];

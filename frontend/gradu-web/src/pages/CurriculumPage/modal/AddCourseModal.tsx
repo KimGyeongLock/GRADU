@@ -6,7 +6,8 @@ import Modal from "../../../components/Modal";
 import "../../../components/CourseModal.css";
 import { isGuestMode } from "../../../lib/auth";
 import { addGuestCourse } from "../guest/guestStorage";
-import type { CourseDto } from "../curriculumTypes";
+import type { CourseDto, GradeCode } from "../curriculumTypes";
+import { GRADE_OPTIONS, CATEGORY_LABELS } from "../curriculumTypes";
 import { CourseOverwriteModal } from "./CourseOverwriteModal";
 
 type Props = {
@@ -19,19 +20,7 @@ type Props = {
   initialTerm?: "1" | "2" | "sum" | "win";
 };
 
-const KOR_LABELS = {
-  FAITH_WORLDVIEW: "신앙및세계관",
-  PERSONALITY_LEADERSHIP: "인성및리더십",
-  PRACTICAL_ENGLISH: "실무영어",
-  GENERAL_EDU: "전문교양",
-  BSM: "BSM",
-  ICT_INTRO: "ICT융합기초",
-  FREE_ELECTIVE_BASIC: "자유선택(교양)",
-  FREE_ELECTIVE_MJR: "자유선택(교양또는비교양)",
-  MAJOR: "전공",
-} as const;
-
-const ORDER = Object.keys(KOR_LABELS) as Array<keyof typeof KOR_LABELS>;
+const ORDER = Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>;
 
 const TERM_OPTIONS = [
   { value: "1", label: "1학기" },
@@ -45,8 +34,8 @@ type CourseInput = {
   name: string;
   credit: string;
   designedCredit: string;
-  category: keyof typeof KOR_LABELS;
-  grade: string;
+  category: keyof typeof CATEGORY_LABELS;
+  grade: GradeCode;
   isEnglish: boolean;
   academicYear: string;
   term: TermCode;
@@ -56,7 +45,7 @@ type CourseRequest = {
   name: string;
   credit: number;
   designedCredit: number | null;
-  category: keyof typeof KOR_LABELS;
+  category: keyof typeof CATEGORY_LABELS;
   grade: string | null;
   isEnglish: boolean;
   academicYear: number;
@@ -177,36 +166,36 @@ export default function AddCourseModal({
       onClose();
     },
     onError: (e: any) => {
-  if (guest) {
-    setErrMsg("저장 중 오류가 발생했습니다.");
-    return;
-  }
+      if (guest) {
+        setErrMsg("저장 중 오류가 발생했습니다.");
+        return;
+      }
 
-  const status = e?.response?.status;
-  const data = e?.response?.data;
-  const code =
-    data?.code || data?.errorCode || data?.error || null; // 혹시 다른 키를 쓰고 있을 수도 있어서
-  const text = data?.message || e?.message || "요청 실패";
+      const status = e?.response?.status;
+      const data = e?.response?.data;
+      const code =
+        data?.code || data?.errorCode || data?.error || null; // 혹시 다른 키를 쓰고 있을 수도 있어서
+      const text = data?.message || e?.message || "요청 실패";
 
-  // ✅ 1) 명시적인 code 로 체크
-  const isDuplicateByCode = code === "COURSE_DUPLICATE_EXCEPTION";
+      // ✅ 1) 명시적인 code 로 체크
+      const isDuplicateByCode = code === "COURSE_DUPLICATE_EXCEPTION";
 
-  // ✅ 2) code 가 없더라도, 409 + 메시지 내용으로 중복 판정
-  const isDuplicateByStatusAndMsg =
-    status === 409 && typeof text === "string" &&
-    text.includes("이미 동일한 과목이 존재합니다");
+      // ✅ 2) code 가 없더라도, 409 + 메시지 내용으로 중복 판정
+      const isDuplicateByStatusAndMsg =
+        status === 409 && typeof text === "string" &&
+        text.includes("이미 동일한 과목이 존재합니다");
 
-  if (isDuplicateByCode || isDuplicateByStatusAndMsg) {
-    // 중복 과목 → 덮어쓰기 모달만 띄우고, 배너는 감춤
-    setErrMsg("");
-    setShowOverwriteModal(true);
-    return;
-  }
+      if (isDuplicateByCode || isDuplicateByStatusAndMsg) {
+        // 중복 과목 → 덮어쓰기 모달만 띄우고, 배너는 감춤
+        setErrMsg("");
+        setShowOverwriteModal(true);
+        return;
+      }
 
-  // 그 외 일반 에러
-  setErrMsg(`저장 실패 (${status ?? "-"}) : ${text}`);
-  console.error("[addCourse] error", e);
-},
+      // 그 외 일반 에러
+      setErrMsg(`저장 실패 (${status ?? "-"}) : ${text}`);
+      console.error("[addCourse] error", e);
+    },
 
   });
 
@@ -238,7 +227,7 @@ export default function AddCourseModal({
       credit: creditNum,
       designedCredit: designedNum,
       category: form.category,
-      grade: form.grade.trim() === "" ? null : form.grade.trim(),
+      grade: form.grade === "" ? null : form.grade,
       isEnglish: !!form.isEnglish,
       academicYear: Number(form.academicYear),
       term: form.term,
@@ -390,7 +379,7 @@ export default function AddCourseModal({
             >
               {ORDER.map((key) => (
                 <option key={key} value={key}>
-                  {KOR_LABELS[key]}
+                  {CATEGORY_LABELS[key]}
                 </option>
               ))}
             </select>
@@ -431,15 +420,21 @@ export default function AddCourseModal({
           {/* 성적 */}
           <div className="cm-field">
             <label className="cm-label">
-              성적 <span className="cm-hint">(예: A+, A0, B+, P 등)</span>
+              성적 <span className="cm-hint">(선택)</span>
             </label>
-            <input
+            <select
               className="cm-input"
-              placeholder="예: A+, B0, P"
               value={form.grade}
-              onChange={(e) => onChange("grade", e.target.value)}
-            />
+              onChange={(e) => onChange("grade", e.target.value as GradeCode)}
+            >
+              {GRADE_OPTIONS.map((g) => (
+                <option key={g.value} value={g.value}>
+                  {g.label}
+                </option>
+              ))}
+            </select>
           </div>
+
 
           {/* 영어강의 여부 */}
           <div className="cm-field">
@@ -462,23 +457,23 @@ export default function AddCourseModal({
       {/* 덮어쓰기 확인 모달 */}
       {showOverwriteModal && (
         <CourseOverwriteModal
-        open={showOverwriteModal}
-        title="과목 덮어쓰기"
-        description={
-          <>
-            이미 <strong>{form.name.trim() || "해당 이름"}</strong> 과목이
-            등록되어 있습니다.
-            <br />
-            현재 입력한 내용으로 기존 과목 정보를{" "}
-            <strong>덮어쓰기</strong> 하시겠어요?
-          </>
-        }
-        confirmLabel={isOverwriteSaving ? "덮어쓰는 중..." : "덮어쓰기"}
-        onConfirm={handleOverwriteConfirm}
-        confirmDisabled={isOverwriteSaving}
-        cancelLabel="취소"
-        onCancel={handleOverwriteCancel}
-      />
+          open={showOverwriteModal}
+          title="과목 덮어쓰기"
+          description={
+            <>
+              이미 <strong>{form.name.trim() || "해당 이름"}</strong> 과목이
+              등록되어 있습니다.
+              <br />
+              현재 입력한 내용으로 기존 과목 정보를{" "}
+              <strong>덮어쓰기</strong> 하시겠어요?
+            </>
+          }
+          confirmLabel={isOverwriteSaving ? "덮어쓰는 중..." : "덮어쓰기"}
+          onConfirm={handleOverwriteConfirm}
+          confirmDisabled={isOverwriteSaving}
+          cancelLabel="취소"
+          onCancel={handleOverwriteCancel}
+        />
       )}
     </>
   );
