@@ -1,4 +1,4 @@
-package com.example.gradu.domain.captureAI.dto;
+package com.example.gradu.domain.capture_ai.dto;
 
 // OpenAiResponseDto.java
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

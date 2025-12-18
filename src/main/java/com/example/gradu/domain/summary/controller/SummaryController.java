@@ -2,6 +2,7 @@ package com.example.gradu.domain.summary.controller;
 
 import com.example.gradu.domain.summary.dto.SummaryDto;
 import com.example.gradu.domain.summary.dto.TogglesDto;
+import com.example.gradu.domain.summary.service.SummaryCommandService;
 import com.example.gradu.domain.summary.service.SummaryService;
 import com.example.gradu.global.security.CheckStudentAccess;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class SummaryController {
 
     private final SummaryService summaryService;
+    private final SummaryCommandService summaryCommandService;
 
     @GetMapping
     @CheckStudentAccess
@@ -29,6 +31,6 @@ public class SummaryController {
     @PostMapping("/rebuild")
     @CheckStudentAccess
     public void rebuild(@PathVariable Long sid) {
-        summaryService.recomputeAndSave(sid);
+        summaryCommandService.recomputeAndSave(sid);
     }
 }

@@ -35,7 +35,9 @@ public enum ErrorCode {
     EMAIL_OTP_INVALID("EM006", HttpStatus.BAD_REQUEST, "인증코드가 일치하지 않습니다."),
 
     AI_IMAGE_CONVERSION_FAILED("AI001", HttpStatus.INTERNAL_SERVER_ERROR, "이미지 변환에 실패했습니다."),
-    AI_RESPONSE_PARSING_FAILED("AI002", HttpStatus.INTERNAL_SERVER_ERROR, "AI 응답을 파싱하는 데 실패했습니다.");
+    AI_RESPONSE_PARSING_FAILED("AI002", HttpStatus.INTERNAL_SERVER_ERROR, "AI 응답을 파싱하는 데 실패했습니다."),
+
+    SHA_256_HASH_FAILED("CR001", HttpStatus.INTERNAL_SERVER_ERROR, "SHA-256 해시 생성에 실패했습니다.");
 
     private final String code;
     private final HttpStatus httpStatus;

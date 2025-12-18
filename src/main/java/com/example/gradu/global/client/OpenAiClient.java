@@ -1,8 +1,6 @@
 package com.example.gradu.global.client;
 
-import com.example.gradu.domain.captureAI.dto.OpenAiResponseDto;
-import com.fasterxml.jackson.databind.JsonNode;
-import lombok.RequiredArgsConstructor;
+import com.example.gradu.domain.capture_ai.dto.OpenAiResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;

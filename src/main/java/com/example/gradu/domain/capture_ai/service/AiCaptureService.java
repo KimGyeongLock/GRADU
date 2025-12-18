@@ -1,7 +1,6 @@
-package com.example.gradu.domain.captureAI.service;
+package com.example.gradu.domain.capture_ai.service;
 
-import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
-import com.example.gradu.domain.course.service.CourseService;
+import com.example.gradu.domain.capture_ai.dto.CourseBulkRequest;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.global.client.OpenAiClient;
 import com.example.gradu.global.exception.ErrorCode;
