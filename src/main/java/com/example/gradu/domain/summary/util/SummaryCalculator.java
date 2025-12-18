@@ -72,21 +72,22 @@ public class SummaryCalculator {
                 && deptExtraPassed
                 && gpa >= policy.getGpaMin();
 
-        return SummaryDto.builder()
-                .rows(rows)
-                .pfCredits(agg.pfU / 2.0)
-                .pfLimit(pfLimitU / 2.0)
-                .pfPass(pfPass)
-                .totalCredits(agg.totU / 2.0)
-                .totalPass(totalPass)
-                .gpa(gpa)
-                .engMajorCredits(engMajorCredits)
-                .engLiberalCredits(engLiberalCredits)
-                .englishPass(englishPass)
-                .gradEnglishPassed(gradEnglishPassed)
-                .deptExtraPassed(deptExtraPassed)
-                .finalPass(finalPass)
-                .build();
+        return new SummaryDto(
+                rows,
+                agg.pfU / 2.0,
+                pfLimitU / 2.0,
+                pfPass,
+                agg.totU / 2.0,
+                totalPass,
+                gpa,
+                engMajorCredits,
+                engLiberalCredits,
+                englishPass,
+                gradEnglishPassed,
+                deptExtraPassed,
+                finalPass
+        );
+
     }
 
     private static Agg aggregateCourses(List<Course> courses) {

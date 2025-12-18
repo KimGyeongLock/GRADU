@@ -12,12 +12,10 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
 
-import static com.example.gradu.global.security.SecurityConfig.PUBLIC_WHITELIST;
-import static com.example.gradu.global.security.SecurityConfig.SWAGGER_WHITELIST;
+import static com.example.gradu.global.security.SecurityConfig.*;
 
 @Component
 @RequiredArgsConstructor
@@ -35,11 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean isWhitelisted(String uri) {
         return Stream.concat(
-                Arrays.stream(PUBLIC_WHITELIST),
-                Arrays.stream(SWAGGER_WHITELIST)
-        )
-                .anyMatch(pattern -> PATH_MATCH.match(pattern, uri));
+                PUBLIC_WHITELIST.stream(),
+                SWAGGER_WHITELIST.stream()
+        ).anyMatch(pattern -> PATH_MATCH.match(pattern, uri));
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

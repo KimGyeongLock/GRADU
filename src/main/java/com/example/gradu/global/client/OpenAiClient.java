@@ -146,14 +146,14 @@ public class OpenAiClient {
 
         OpenAiResponseDto body = response.getBody();
 
-        if (body == null || body.getChoices().isEmpty()) {
+        if (body == null || body.choices().isEmpty()) {
             throw new IllegalStateException("OpenAI 응답이 비어 있습니다.");
         }
 
-        return body.getChoices()
+        return body.choices()
                 .get(0)
-                .getMessage()
-                .getContent();
+                .message()
+                .content();
     }
 
     private List<Map<String, Object>> createImageBlocks(List<String> base64Images) {

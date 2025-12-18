@@ -48,6 +48,8 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    compileOnly "com.github.spotbugs:spotbugs-annotations:4.8.6"
 }
 
 tasks.named('test') {
@@ -94,3 +96,10 @@ spotbugsMain {
     }
 }
 
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+    }
+    excludeFilter.set(file("config/spotbugs/spotbugs-exclude.xml"))
+}

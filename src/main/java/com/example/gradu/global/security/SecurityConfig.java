@@ -28,22 +28,22 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @SuppressWarnings("java:S2386")
-    public static final String[] SWAGGER_WHITELIST = {
+//    @SuppressWarnings("java:S2386")
+    public static final List<String> SWAGGER_WHITELIST = List.of(
             "/v3/api-docs/**",
             "/swagger-ui/**",
             "/swagger-ui.html"
-    };
+    );
 
-    @SuppressWarnings("java:S2386")
-    public static final String[] PUBLIC_WHITELIST = {
+//    @SuppressWarnings("java:S2386")
+    public static final List<String> PUBLIC_WHITELIST = List.of(
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/auth/email/otp/send",
             "/api/v1/auth/reissue",
             "/api/v1/auth/logout",
             "/api/v1/auth/password/reset"
-    };
+    );
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -55,8 +55,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // 스웨거 & 공개 엔드포인트 허용
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(SWAGGER_WHITELIST).permitAll()
-                        .requestMatchers(PUBLIC_WHITELIST).permitAll()
+                        .requestMatchers(SWAGGER_WHITELIST.toArray(String[]::new)).permitAll()
+                        .requestMatchers(PUBLIC_WHITELIST.toArray(String[]::new)).permitAll()
                         // 그 외는 인증 필요
                         .anyRequest().authenticated()
                 )

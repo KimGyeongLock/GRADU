@@ -8,6 +8,7 @@ import com.example.gradu.domain.summary.entity.Summary;
 import com.example.gradu.domain.summary.repository.SummaryRepository;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.json.SummaryJsonProcessingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -43,25 +44,27 @@ public class SummaryService {
         try {
             List<SummaryRowDto> rows = om.readValue(
                     e.getRowsJson() == null ? "[]" : e.getRowsJson(),
-                    new TypeReference<List<SummaryRowDto>>() {}
+                    new TypeReference<>() {
+                    }
             );
 
-            return SummaryDto.builder()
-                    .rows(rows)
-                    .pfCredits(e.getPfCredits())
-                    .pfLimit(e.getPfLimit())
-                    .pfPass(e.isPfPass())
-                    .totalCredits(e.getTotalCredits())
-                    .totalPass(e.isTotalPass())
-                    .gpa(e.getGpa())
-                    .engMajorCredits(e.getEngMajorCredits())
-                    .engLiberalCredits(e.getEngLiberalCredits())
-                    .englishPass(e.isEnglishPass())
-                    .gradEnglishPassed(e.isGradEnglishPassed())
-                    .deptExtraPassed(e.isDeptExtraPassed())
-                    .finalPass(e.isFinalPass())
-                    .build();
-        } catch (Exception ex) {
+            return new SummaryDto(
+                    rows,
+                    e.getPfCredits(),
+                    e.getPfLimit(),
+                    e.isPfPass(),
+                    e.getTotalCredits(),
+                    e.isTotalPass(),
+                    e.getGpa(),
+                    e.getEngMajorCredits(),
+                    e.getEngLiberalCredits(),
+                    e.isEnglishPass(),
+                    e.isGradEnglishPassed(),
+                    e.isDeptExtraPassed(),
+                    e.isFinalPass()
+            );
+
+        } catch (JsonProcessingException | IllegalArgumentException ex) {
             throw new SummaryJsonProcessingException(ErrorCode.SUMMARY_JSON_PROCESSING_ERROR);
         }
     }

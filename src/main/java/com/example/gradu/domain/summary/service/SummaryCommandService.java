@@ -55,18 +55,18 @@ public class SummaryCommandService {
         // 4) rowsJson 변환
         String rowsJson;
         try {
-            rowsJson = om.writeValueAsString(calc.getRows());
+            rowsJson = om.writeValueAsString(calc.rows());
         } catch (Exception e) {
             throw new SummaryJsonProcessingException(ErrorCode.SUMMARY_JSON_PROCESSING_ERROR);
         }
 
         // 5) 결과 객체로 묶기
         SummaryCalcResult result = new SummaryCalcResult(
-                calc.getPfCredits(), calc.getPfLimit(), calc.isPfPass(),
-                calc.getTotalCredits(), calc.isTotalPass(),
-                calc.getGpa(),
-                calc.getEngMajorCredits(), calc.getEngLiberalCredits(), calc.isEnglishPass(),
-                calc.isGradEnglishPassed(), calc.isDeptExtraPassed(), calc.isFinalPass(),
+                calc.pfCredits(), calc.pfLimit(), calc.pfPass(),
+                calc.totalCredits(), calc.totalPass(),
+                calc.gpa(),
+                calc.engMajorCredits(), calc.engLiberalCredits(), calc.englishPass(),
+                calc.gradEnglishPassed(), calc.deptExtraPassed(), calc.finalPass(),
                 rowsJson
         );
 
