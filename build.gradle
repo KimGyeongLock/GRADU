@@ -1,3 +1,5 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
@@ -92,11 +94,11 @@ spotbugs {
 spotbugsMain {
     reports {
         html.required = true
-        xml.required = false
+        xml.required = true
     }
 }
 
-tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+tasks.withType(SpotBugsTask).configureEach {
     reports {
         html.required.set(true)
         xml.required.set(false)

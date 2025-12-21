@@ -1,7 +1,6 @@
 package com.example.gradu.domain.summary.util;
 
 import com.example.gradu.domain.course.entity.Course;
-import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.summary.dto.SummaryRowDto;
 import com.example.gradu.domain.summary.policy.SummaryPolicy;
 

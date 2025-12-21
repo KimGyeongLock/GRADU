@@ -54,7 +54,7 @@ public class CourseCommandService {
 
     private Course loadCourse(Long studentId, Long courseId) {
         return courseRepository.findByIdAndStudentId(courseId, studentId)
-                .orElseThrow(() -> new CurriculumException(ErrorCode.COURSE_NOT_FOUND));
+                .orElseThrow(() -> new CourseException(ErrorCode.COURSE_NOT_FOUND));
     }
 
     /** 변경 전/후 값을 계산 (credit은 BigDecimal, 커리큘럼 반영은 유닛 int) */
