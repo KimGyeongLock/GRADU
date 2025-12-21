@@ -1,5 +1,8 @@
 .env
 .gitleaks.toml
+gitleaks-report.json
+build/reports/
+
 *.pem
 *.jks
 *.p12
