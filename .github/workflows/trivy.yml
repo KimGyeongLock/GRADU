@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   trivy:
+    name: trivy-sca
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
