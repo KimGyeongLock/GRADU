@@ -73,12 +73,7 @@ public class AuthController {
     @PostMapping("/reissue")
     public ResponseEntity<AccessTokenResponseDto> reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
-        if (refreshToken == null) {
-            String auth = request.getHeader("Authorization");
-            if (auth != null && auth.startsWith(JwtAuthenticationFilter.TOKEN_PREFIX)) {
-                refreshToken = auth.substring(JwtAuthenticationFilter.TOKEN_PREFIX.length());
-            }
-        }
+
         if (refreshToken == null || refreshToken.isBlank()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }

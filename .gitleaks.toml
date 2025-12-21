@@ -1,0 +1,7 @@
+title = "GRADU gitleaks config"
+
+[allowlist]
+description = "Ignore test fixtures and dummy tokens"
+paths = [
+    '''src/test/java/.*'''
+]

@@ -1,7 +1,12 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.3'
     id 'io.spring.dependency-management' version '1.1.7'
+    id "jacoco"
+    id "org.sonarqube" version "6.0.1.5171"
+    id "com.github.spotbugs" version "6.1.7"
 }
 
 group = 'com.example'
@@ -45,8 +50,58 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    compileOnly "com.github.spotbugs:spotbugs-annotations:4.8.6"
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "gradu-backend"
+        property "sonar.projectName", "GRADU Backend"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.java.binaries", "build/classes"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+spotbugs {
+    ignoreFailures = true
+    showProgress = true
+    toolVersion = "4.8.6"
+}
+
+spotbugsMain {
+    reports {
+        html.required = true
+        xml.required = true
+    }
+}
+
+tasks.withType(SpotBugsTask).configureEach {
+    reports {
+        html.required.set(true)
+        xml.required.set(false)
+    }
+    excludeFilter.set(file("config/spotbugs/spotbugs-exclude.xml"))
 }

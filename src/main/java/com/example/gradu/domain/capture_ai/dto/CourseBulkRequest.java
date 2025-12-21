@@ -1,4 +1,4 @@
-package com.example.gradu.domain.captureAI.dto;
+package com.example.gradu.domain.capture_ai.dto;
 
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.fasterxml.jackson.annotation.JsonProperty;

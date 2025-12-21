@@ -1,9 +1,15 @@
 package com.example.gradu.global.crypto;
 
+import com.example.gradu.global.exception.crypto.CryptoException;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
+import static com.example.gradu.global.exception.ErrorCode.SHA_256_HASH_FAILED;
 
 public class Sha256 {
+    private Sha256() {}
 
     public static String hash(String input) {
         java.util.Objects.requireNonNull(input, "Input for hashing cannot be null.");
@@ -18,8 +24,8 @@ public class Sha256 {
             }
             return hexString.toString();
 
-        } catch (Exception e) {
-            throw new RuntimeException("SHA-256 hashing failed", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new CryptoException(SHA_256_HASH_FAILED);
         }
     }
 }

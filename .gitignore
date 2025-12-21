@@ -1,4 +1,8 @@
 .env
+.gitleaks.toml
+gitleaks-report.json
+build/reports/
+
 *.pem
 *.jks
 *.p12
@@ -72,6 +76,10 @@ bin/
 application-*.yml
 application-*.properties
 secrets/
+
+# ✅ 테스트/로컬 샘플은 예외로 추적
+!src/test/resources/application-test.yml
+
 
 # ========================
 # 기타 OS/툴 캐시

@@ -1,8 +1,6 @@
 package com.example.gradu.global.client;
 
-import com.example.gradu.domain.captureAI.dto.OpenAiResponseDto;
-import com.fasterxml.jackson.databind.JsonNode;
-import lombok.RequiredArgsConstructor;
+import com.example.gradu.domain.capture_ai.dto.OpenAiResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -148,14 +146,14 @@ public class OpenAiClient {
 
         OpenAiResponseDto body = response.getBody();
 
-        if (body == null || body.getChoices().isEmpty()) {
+        if (body == null || body.choices().isEmpty()) {
             throw new IllegalStateException("OpenAI 응답이 비어 있습니다.");
         }
 
-        return body.getChoices()
+        return body.choices()
                 .get(0)
-                .getMessage()
-                .getContent();
+                .message()
+                .content();
     }
 
     private List<Map<String, Object>> createImageBlocks(List<String> base64Images) {

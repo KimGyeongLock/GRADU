@@ -92,8 +92,8 @@ public class Course {
         this.isEnglish = (english != null && english);
     }
 
-    public Boolean getIsEnglish() {
-        return isEnglish != null ? isEnglish : false;
+    public boolean getIsEnglish() {
+        return Boolean.TRUE.equals(isEnglish);
     }
 
     public String getDisplaySemester() {
