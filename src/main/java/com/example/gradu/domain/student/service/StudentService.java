@@ -118,17 +118,17 @@ public class StudentService {
 
     @Transactional
     public void resetPassword(PasswordResetRequestDto req) {
-        emailVerificationService.verifyCodeOnly(req.getEmail(), req.getCode());
+        emailVerificationService.verifyCodeOnly(req.email(), req.code());
 
-        Student student = studentRepository.findByEmailHash(Sha256.hash(req.getEmail()))
+        Student student = studentRepository.findByEmailHash(Sha256.hash(req.email()))
                 .orElseThrow(() -> new StudentException(ErrorCode.STUDENT_NOT_FOUND));
 
-        if (passwordEncoder.matches(req.getNewPassword(), student.getPassword())) {
+        if (passwordEncoder.matches(req.newPassword(), student.getPassword())) {
             throw new StudentException(ErrorCode.SAME_PASSWORD_NOT_ALLOWED);
         }
 
-        student.changePassword(passwordEncoder.encode(req.getNewPassword()));
+        student.changePassword(passwordEncoder.encode(req.newPassword()));
 
-        emailVerificationService.consumeCode(req.getEmail());
+        emailVerificationService.consumeCode(req.email());
     }
 }

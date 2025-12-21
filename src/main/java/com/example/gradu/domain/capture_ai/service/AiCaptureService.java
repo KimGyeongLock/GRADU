@@ -1,11 +1,11 @@
-package com.example.gradu.domain.captureAI.service;
+package com.example.gradu.domain.capture_ai.service;
 
-import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
-import com.example.gradu.domain.course.service.CourseService;
+import com.example.gradu.domain.capture_ai.dto.CourseBulkRequest;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.global.client.OpenAiClient;
 import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.ai.AIException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -53,7 +53,7 @@ public class AiCaptureService {
             }
 
             return list;
-        } catch (Exception e) {
+        } catch (JsonProcessingException | IllegalArgumentException ex) {
             throw new AIException(ErrorCode.AI_RESPONSE_PARSING_FAILED);
         }
     }

@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -53,7 +52,7 @@ public class EmailVerificationService {
                 <p>아래 코드를 회원가입 화면에 입력하세요.</p>
                 <div style="font-size:24px;font-weight:700;letter-spacing:6px;">%s</div>
                 <p>유효시간: %d분</p>
-                """.formatted(code, ttlMinutes));
+                """.stripIndent().formatted(code, ttlMinutes));
     }
 
     public void verifyCodeOnly(String email, String rawCode) {

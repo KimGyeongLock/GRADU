@@ -1,6 +1,7 @@
 package com.example.gradu.domain.summary.entity;
 
 import com.example.gradu.domain.student.entity.Student;
+import com.example.gradu.domain.summary.dto.SummaryCalcResult;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,34 +52,22 @@ public class Summary {
     // ===== 도메인 메서드들 =====
 
     /** 요약 계산 결과를 한 번에 반영 */
-    public void applyCalc(
-            double pfCredits, double pfLimit, boolean pfPass,
-            double totalCredits, boolean totalPass,
-            double gpa,
-            int engMajorCredits, int engLiberalCredits, boolean englishPass,
-            boolean gradEnglishPassed, boolean deptExtraPassed, boolean finalPass,
-            String rowsJson
-    ) {
-        this.pfCredits = pfCredits;
-        this.pfLimit = pfLimit;
-        this.pfPass = pfPass;
-
-        this.totalCredits = totalCredits;
-        this.totalPass = totalPass;
-
-        this.gpa = gpa;
-
-        this.engMajorCredits = engMajorCredits;
-        this.engLiberalCredits = engLiberalCredits;
-        this.englishPass = englishPass;
-
-        this.gradEnglishPassed = gradEnglishPassed;
-        this.deptExtraPassed = deptExtraPassed;
-
-        this.finalPass = finalPass;
-
-        this.rowsJson = rowsJson;
+    public void applyCalc(SummaryCalcResult r) {
+        this.pfCredits = r.pfCredits();
+        this.pfLimit = r.pfLimit();
+        this.pfPass = r.pfPass();
+        this.totalCredits = r.totalCredits();
+        this.totalPass = r.totalPass();
+        this.gpa = r.gpa();
+        this.engMajorCredits = r.engMajorCredits();
+        this.engLiberalCredits = r.engLiberalCredits();
+        this.englishPass = r.englishPass();
+        this.gradEnglishPassed = r.gradEnglishPassed();
+        this.deptExtraPassed = r.deptExtraPassed();
+        this.finalPass = r.finalPass();
+        this.rowsJson = r.rowsJson();
     }
+
 
     /** 토글만 갱신 */
     public void updateToggles(boolean gradEnglishPassed) {

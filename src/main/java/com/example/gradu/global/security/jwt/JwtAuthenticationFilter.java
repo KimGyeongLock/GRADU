@@ -12,12 +12,10 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
 
-import static com.example.gradu.global.security.SecurityConfig.PUBLIC_WHITELIST;
-import static com.example.gradu.global.security.SecurityConfig.SWAGGER_WHITELIST;
+import static com.example.gradu.global.security.SecurityConfig.*;
 
 @Component
 @RequiredArgsConstructor
@@ -35,11 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private boolean isWhitelisted(String uri) {
         return Stream.concat(
-                Arrays.stream(PUBLIC_WHITELIST),
-                Arrays.stream(SWAGGER_WHITELIST)
-        )
-                .anyMatch(pattern -> PATH_MATCH.match(pattern, uri));
+                PUBLIC_WHITELIST.stream(),
+                SWAGGER_WHITELIST.stream()
+        ).anyMatch(pattern -> PATH_MATCH.match(pattern, uri));
     }
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -56,11 +54,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(studentId, null, Collections.emptyList());
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
-            } catch (io.jsonwebtoken.ExpiredJwtException ex) {
-                // ★ 만료된 access 토큰: 여기서 막지 말고 조용히 통과
-                //    (/api는 401/403이 날 수 있고, 프론트가 /auth/refresh를 호출함)
-            } catch (io.jsonwebtoken.JwtException | IllegalArgumentException ex) {
-                // 잘못된 토큰: 무시하고 다음 필터로
+            } catch (io.jsonwebtoken.JwtException
+                     | IllegalArgumentException ex) {
+                // 만료/위조/잘못된 토큰 모두 조용히 통과
             }
         }
         filterChain.doFilter(request, response);

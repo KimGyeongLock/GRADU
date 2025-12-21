@@ -1,7 +1,7 @@
-package com.example.gradu.domain.captureAI.controller;
+package com.example.gradu.domain.capture_ai.controller;
 
-import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
-import com.example.gradu.domain.captureAI.service.AiCaptureService;
+import com.example.gradu.domain.capture_ai.dto.CourseBulkRequest;
+import com.example.gradu.domain.capture_ai.service.AiCaptureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

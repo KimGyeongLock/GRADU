@@ -1,10 +1,11 @@
 package com.example.gradu.domain.course.controller;
 
-import com.example.gradu.domain.captureAI.dto.CourseBulkRequest;
+import com.example.gradu.domain.capture_ai.dto.CourseBulkRequest;
 import com.example.gradu.domain.course.dto.CourseRequestDto;
 import com.example.gradu.domain.course.dto.CourseResponseDto;
 import com.example.gradu.domain.course.dto.CourseUpdateRequestDto;
 import com.example.gradu.domain.course.entity.Course;
+import com.example.gradu.domain.course.service.CourseCommandService;
 import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.global.security.CheckStudentAccess;
@@ -20,6 +21,7 @@ import java.util.List;
 public class CourseController {
 
     private final CourseService courseService;
+    private final CourseCommandService courseCommandService;
 
     @PostMapping
     @CheckStudentAccess
@@ -49,14 +51,14 @@ public class CourseController {
     @PatchMapping("/{courseId}")
     @CheckStudentAccess
     public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable Long studentId, @PathVariable Long courseId, @RequestBody CourseUpdateRequestDto requestDto) {
-        Course updated = courseService.updateCourse(studentId, courseId, requestDto);
+        Course updated = courseCommandService.updateCourse(studentId, courseId, requestDto);
         return ResponseEntity.ok(CourseResponseDto.from(updated));
     }
 
     @DeleteMapping("/{courseId}")
     @CheckStudentAccess
     public ResponseEntity<Void> deleteCourse(@PathVariable Long studentId, @PathVariable Long courseId) {
-        courseService.deleteCourse(studentId, courseId);
+        courseCommandService.deleteCourse(studentId, courseId);
         return ResponseEntity.noContent().build();
     }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <!-- Spring DI(Controller/Service/Repository/Component/Config) 생성자 주입 필드 저장 EI2는 오탐으로 제외 -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <Class name="~com\.example\.gradu\..*Controller"/>
+            <Class name="~com\.example\.gradu\..*Service"/>
+            <Class name="~com\.example\.gradu\..*Repository"/>
+            <Class name="~com\.example\.gradu\..*Config"/>
+            <Class name="~com\.example\.gradu\..*Client"/>
+            <Class name="~com\.example\.gradu\..*Filter"/>
+            <Class name="~com\.example\.gradu\..*JwtTokenProvider"/>
+            <Class name="~com\.example\.gradu\..*RefreshTokenStore"/>
+        </Or>
+    </Match>
+
+</FindBugsFilter>

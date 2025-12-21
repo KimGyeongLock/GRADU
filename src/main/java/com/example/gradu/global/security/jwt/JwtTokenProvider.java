@@ -4,6 +4,7 @@ import com.example.gradu.global.exception.ErrorCode;
 import com.example.gradu.global.exception.auth.AuthException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +18,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class JwtTokenProvider {
 
     private final JwtProperties jwtProperties;
-    private final Key signingKey;
+    private Key signingKey;
 
     public JwtTokenProvider(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
+    }
+
+    @PostConstruct
+    void init() {
         this.signingKey = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(UTF_8));
     }
 
