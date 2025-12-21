@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -52,7 +51,7 @@ class CurriculumControllerTest {
         Curriculum c1 = stubCurriculum(Category.MAJOR, Curriculum.Status.PASS);
         Curriculum c2 = stubCurriculum(Category.GENERAL_EDU, Curriculum.Status.PASS);
 
-        when(curriculumService.getCurriculumsByStudentId(eq(studentId)))
+        when(curriculumService.getCurriculumsByStudentId(studentId))
                 .thenReturn(List.of(c1, c2));
 
         // when & then

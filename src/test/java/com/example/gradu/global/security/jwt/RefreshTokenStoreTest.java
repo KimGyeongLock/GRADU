@@ -33,7 +33,7 @@ class RefreshTokenStoreTest {
     void save_setsValueWithTtl() {
         store.save("rt", 10L);
 
-        verify(valueOps).set(eq("rt"), eq("10"), eq(120_000L), eq(TimeUnit.MILLISECONDS));
+        verify(valueOps).set("rt", "10", 120_000L, TimeUnit.MILLISECONDS);
     }
 
     @Test

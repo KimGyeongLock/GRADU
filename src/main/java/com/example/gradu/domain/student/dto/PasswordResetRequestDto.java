@@ -3,9 +3,6 @@ package com.example.gradu.domain.student.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-
 
 public record PasswordResetRequestDto(
         @Email(message = "유효한 이메일 주소여야 합니다.") String email,

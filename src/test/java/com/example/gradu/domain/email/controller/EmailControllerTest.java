@@ -16,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,7 +48,7 @@ class EmailControllerTest {
                         .content(body))
                 .andExpect(status().isNoContent());
 
-        verify(service).sendCode(eq("a@handong.ac.kr"));
+        verify(service).sendCode("a@handong.ac.kr");
     }
 
     @Test

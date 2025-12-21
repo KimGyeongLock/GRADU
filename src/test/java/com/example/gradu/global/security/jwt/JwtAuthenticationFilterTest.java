@@ -12,7 +12,7 @@ import static com.example.gradu.global.security.jwt.JwtAuthenticationFilter.TOKE
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class JwtAuthenticationFilterTest {
+class JwtAuthenticationFilterTest {
 
     @AfterEach
     void tearDown() {

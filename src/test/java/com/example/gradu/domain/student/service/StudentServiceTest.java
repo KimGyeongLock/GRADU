@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class StudentServiceTest {
+class StudentServiceTest {
 
     @Mock StudentRepository studentRepository;
     @Mock PasswordEncoder passwordEncoder;

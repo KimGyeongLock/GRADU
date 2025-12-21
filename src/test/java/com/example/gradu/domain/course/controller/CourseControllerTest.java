@@ -7,7 +7,6 @@ import com.example.gradu.domain.course.entity.Term;
 import com.example.gradu.domain.course.service.CourseCommandService;
 import com.example.gradu.domain.course.service.CourseService;
 import com.example.gradu.domain.curriculum.entity.Category;
-import com.example.gradu.domain.student.controller.AuthController;
 import com.example.gradu.global.config.JpaAuditingConfig;
 import com.example.gradu.global.security.SecurityConfig;
 import com.example.gradu.global.security.jwt.JwtAuthenticationFilter;

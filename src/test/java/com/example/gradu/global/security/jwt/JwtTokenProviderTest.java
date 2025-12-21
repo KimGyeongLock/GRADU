@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-public class JwtTokenProviderTest {
+class JwtTokenProviderTest {
 
     JwtProperties props;
     JwtTokenProvider provider;
@@ -23,7 +23,7 @@ public class JwtTokenProviderTest {
     }
 
     @Test
-    void isTokenValid_expiredToken_returnsFalse() throws Exception {
+    void isTokenValid_expiredToken_returnsFalse() {
         // given: access 만료 시간을 1ms로 주고 토큰 생성
         props.setAccessExpiration(1);
         provider = new JwtTokenProvider(props);
@@ -55,7 +55,7 @@ public class JwtTokenProviderTest {
     }
 
     @Test
-    void extractStudentIdIgnoringExpiration_expiredToken_returnsSubject() throws Exception {
+    void extractStudentIdIgnoringExpiration_expiredToken_returnsSubject() {
         // given
         props.setAccessExpiration(1);
         provider = new JwtTokenProvider(props);

@@ -11,7 +11,7 @@ import java.util.Map;
 import static com.example.gradu.domain.summary.util.TestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SummaryCalculatorTest {
+class SummaryCalculatorTest {
 
     private SummaryPolicy basePolicy() {
         return SummaryPolicy.builder()
@@ -78,7 +78,7 @@ public class SummaryCalculatorTest {
         SummaryDto dto = SummaryCalculator.compute(courses, policy, true);
 
         // then
-        assertThat(dto.engMajorCredits()).isEqualTo(0);
+        assertThat(dto.engMajorCredits()).isZero();
         assertThat(dto.engLiberalCredits()).isEqualTo(3);
     }
 

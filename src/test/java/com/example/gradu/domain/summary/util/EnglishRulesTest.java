@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EnglishRulesTest {
+class EnglishRulesTest {
 
     private SummaryPolicy originalPolicy() {
         return SummaryPolicy.builder()

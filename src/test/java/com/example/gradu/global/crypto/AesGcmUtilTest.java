@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @TestPropertySource(properties = {
         "app.crypto.email-key=00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
 })
-public class AesGcmUtilTest {
+class AesGcmUtilTest {
 
     @Autowired
     AesGcmUtil aes;
@@ -49,14 +49,14 @@ public class AesGcmUtilTest {
     @Test
     void encrypt_nullOrBlank_returnsAsIs() {
         assertThat(aes.encrypt(null)).isNull();
-        assertThat(aes.encrypt("")).isEqualTo("");
+        assertThat(aes.encrypt("")).isEmpty();
         assertThat(aes.encrypt("    ")).isEqualTo("    ");
     }
 
     @Test
     void decrypt_nullOrBlank_returnsAsIs() {
         assertThat(aes.decrypt(null)).isNull();
-        assertThat(aes.decrypt("")).isEqualTo("");
+        assertThat(aes.decrypt("")).isEmpty();
         assertThat(aes.decrypt("    ")).isEqualTo("    ");
     }
 

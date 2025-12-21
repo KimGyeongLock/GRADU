@@ -13,7 +13,7 @@ import java.util.Map;
 import static com.example.gradu.domain.summary.util.TestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RowAssemblerTest {
+class RowAssemblerTest {
 
     private SummaryPolicy policyWithRequired(Map<String, Integer> requiredCreditsByCategory) {
         return SummaryPolicy.builder()

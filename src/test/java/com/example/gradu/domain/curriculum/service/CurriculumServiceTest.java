@@ -57,19 +57,14 @@ class CurriculumServiceTest {
 
         // then
         verify(curriculumRepository).saveAll(curriculumListCaptor.capture());
-        List<Curriculum> saved = curriculumListCaptor.getValue();
 
-        // Category 전체 개수만큼 생성됐는지
-        assertThat(saved).hasSize(Category.values().length);
-
-        // 전부 같은 학생을 참조하는지 + earnedCredits=0 인지
-        assertThat(saved).allSatisfy(cur -> {
-            assertThat(cur.getStudent()).isSameAs(student);
-            assertThat(cur.getEarnedCredits()).isEqualTo(0);
-            assertThat(cur.getCategory()).isNotNull();
-            // recalcStatus() 내부 로직은 여기서 단정하기 애매하니
-            // 최소한 호출로 인해 예외 없이 생성됐다는 것만 확인하는 정도로 충분
-        });
+        assertThat(curriculumListCaptor.getValue())
+                .hasSize(Category.values().length)
+                .allSatisfy(cur -> {
+                    assertThat(cur.getStudent()).isSameAs(student);
+                    assertThat(cur.getEarnedCredits()).isZero();   // ← isZero()
+                    assertThat(cur.getCategory()).isNotNull();
+                });
     }
 
     @Test

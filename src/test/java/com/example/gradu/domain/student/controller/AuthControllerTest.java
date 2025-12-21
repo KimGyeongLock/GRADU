@@ -68,14 +68,14 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.message").value("회원가입 성공"));
 
         // then
-        verify(studentService).register(eq("a@handong.ac.kr"), eq("pw1234!!"), eq("123456"));
+        verify(studentService).register("a@handong.ac.kr", "pw1234!!", "123456");
     }
 
     @Test
     void login_ok_setsRefreshCookie_andReturnsAccessToken() throws Exception {
         // given
         when(jwtProperties.getRefreshExpiration()).thenReturn(120_000L);
-        when(studentService.login(eq("a@handong.ac.kr"), eq("pw1234!!")))
+        when(studentService.login("a@handong.ac.kr", "pw1234!!"))
                 .thenReturn(new LoginResponseDto("ACCESS", "REFRESH"));
 
         StudentAuthRequestDto req = new StudentAuthRequestDto("a@handong.ac.kr", "pw1234!!", "123456");
@@ -96,7 +96,7 @@ class AuthControllerTest {
                 .andExpect(header().string("Set-Cookie", org.hamcrest.Matchers.containsString("Path=/")));
 
         // then
-        verify(studentService).login(eq("a@handong.ac.kr"), eq("pw1234!!"));
+        verify(studentService).login("a@handong.ac.kr", "pw1234!!");
     }
 
     @Test

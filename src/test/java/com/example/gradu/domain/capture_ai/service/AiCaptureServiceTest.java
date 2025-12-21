@@ -64,8 +64,11 @@ class AiCaptureServiceTest {
         MultipartFile img = new MockMultipartFile("f", "a.png", "image/png", "X".getBytes());
         when(openAiClient.analyzeCourseImages(anyList())).thenReturn("not-json");
 
-        // when & then
-        assertThatThrownBy(() -> service.analyzeCapture(List.of(img)))
+        // when
+        Throwable thrown = catchThrowable(() -> service.analyzeCapture(List.of(img)));
+
+        // then
+        assertThat(thrown)
                 .isInstanceOf(AIException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.AI_RESPONSE_PARSING_FAILED);
@@ -83,8 +86,11 @@ class AiCaptureServiceTest {
                 """;
         when(openAiClient.analyzeCourseImages(anyList())).thenReturn(aiJson);
 
-        // when & then
-        assertThatThrownBy(() -> service.analyzeCapture(List.of(img)))
+        // when
+        Throwable thrown = catchThrowable(() -> service.analyzeCapture(List.of(img)));
+
+        // then
+        assertThat(thrown)
                 .isInstanceOf(AIException.class)
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.AI_RESPONSE_PARSING_FAILED);

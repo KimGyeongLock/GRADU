@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class Sha256Test {
+class Sha256Test {
 
     @Test
     void hash_knownValue_hello_matchesExpected() {
@@ -27,8 +27,10 @@ public class Sha256Test {
     @Test
     void hash_outputIs64LowerHex() {
         String out = Sha256.hash("test");
-        assertThat(out).hasSize(64);
-        assertThat(out).matches("^[0-9a-f]{64}$");
+
+        assertThat(out)
+                .hasSize(64)
+                .matches("^[0-9a-f]{64}$");
     }
 
     @Test

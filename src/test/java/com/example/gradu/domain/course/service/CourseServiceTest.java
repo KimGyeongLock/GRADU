@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CourseServiceTest {
+class CourseServiceTest {
 
     @Mock CourseRepository courseRepository;
     @Mock StudentRepository studentRepository;
@@ -51,13 +51,18 @@ public class CourseServiceTest {
         // given: 항상 학생 없음을 반환
         when(studentRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // when & then
-        assertThatThrownBy(() ->
-                courseService.addCourse(1L, req("A", BigDecimal.valueOf(3), Category.GENERAL_EDU, 0, false, "A+", (short) 2024, "1"), false)
-        ).isInstanceOf(StudentException.class); // 던져진 예외가 정확히 StudentException 타입인지
+        // when
+        Throwable thrown = catchThrowable(() ->
+                courseService.addCourse(
+                        1L,
+                        req("A", BigDecimal.valueOf(3), Category.GENERAL_EDU, 0, false, "A+", (short) 2024, "1"),
+                        false
+                )
+        );
 
         // then
-        verifyNoInteractions(courseRepository, curriculumRepository, courseCommandService, summaryCommandService); // 상호작용이 있으면 안됨
+        assertThat(thrown).isInstanceOf(StudentException.class);
+        verifyNoInteractions(courseRepository, curriculumRepository, courseCommandService, summaryCommandService);
     }
 
     @Test
@@ -65,19 +70,16 @@ public class CourseServiceTest {
         // given
         when(studentRepository.findById(1L)).thenReturn(Optional.of(student()));
         when(courseRepository.findByStudentIdAndNameAndCategoryAndAcademicYearAndTerm(
-                eq(1L), eq("DB"), eq(Category.MAJOR), eq((short)2024), eq(Term.fromCode("1"))
+                1L, "DB", Category.MAJOR, (short)2024, Term.fromCode("1")
         )).thenReturn(Optional.of(mock(Course.class)));
 
-        // when & then
-        assertThatThrownBy(() ->
-                courseService.addCourse(
-                        1L,
-                        req("DB", BigDecimal.valueOf(3), Category.MAJOR, 0, false, "A+", (short) 2024, "1"),
-                        false
-                )
-        ).isInstanceOf(CourseException.class);
+        // when
+        var dto = req("DB", BigDecimal.valueOf(3), Category.MAJOR, 0, false, "A+", (short) 2024, "1");
 
         // then
+        assertThatThrownBy(() -> courseService.addCourse(1L, dto, false))
+                .isInstanceOf(CourseException.class);
+
         verify(courseRepository, never()).save(any());
         verify(courseCommandService, never()).updateCourse(anyLong(), anyLong(), any(CourseUpdateRequestDto.class));
         verify(summaryCommandService, never()).recomputeAndSave(anyLong());
@@ -93,7 +95,11 @@ public class CourseServiceTest {
         when(existing.getId()).thenReturn(99L);
 
         when(courseRepository.findByStudentIdAndNameAndCategoryAndAcademicYearAndTerm(
-                eq(1L), eq("DB"), eq(Category.MAJOR), eq((short)2024), eq(Term.fromCode("1"))
+                1L,
+                "DB",
+                Category.MAJOR,
+                (short) 2024,
+                Term.fromCode("1")
         )).thenReturn(Optional.of(existing));
 
         // when
@@ -174,8 +180,11 @@ public class CourseServiceTest {
         when(dupReq.getAcademicYear()).thenReturn((short)2024);
         when(dupReq.getTerm()).thenReturn("1");
 
-        // when & then
-        assertThatThrownBy(() -> courseService.bulkInsert(1L, List.of(dupReq)))
+        // when
+        List<CourseBulkRequest> reqs = List.of(dupReq);
+
+        //  then
+        assertThatThrownBy(() -> courseService.bulkInsert(1L, reqs))
                 .isInstanceOf(CourseException.class);
 
         verify(courseRepository, never()).saveAll(anyList());
