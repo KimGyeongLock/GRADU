@@ -28,7 +28,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          ./gradlew test jacocoTestReport sonarqube \
+          ./gradlew test --stacktrace jacocoTestReport sonarqube \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.organization=kimgyeonglock \
             -Dsonar.projectKey=KimGyeongLock_GRADU \
