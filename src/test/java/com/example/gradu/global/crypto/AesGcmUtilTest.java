@@ -3,19 +3,30 @@ package com.example.gradu.global.crypto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
-@TestPropertySource(properties = {
-        "app.crypto.email-key=00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
-})
 class AesGcmUtilTest {
 
     @Autowired
     AesGcmUtil aes;
+
+    @DynamicPropertySource
+    static void props(DynamicPropertyRegistry r) {
+        r.add("app.crypto.email-key", () -> randomHex(32)); // 32 bytes = 256-bit
+    }
+
+    private static String randomHex(int bytes) {
+        byte[] b = new byte[bytes];
+        new java.security.SecureRandom().nextBytes(b);
+        StringBuilder sb = new StringBuilder(bytes * 2);
+        for (byte x : b) sb.append(String.format("%02x", x));
+        return sb.toString();
+    }
 
     @Test
     void encryptDecrypt_roundTrip_returnsOriginal() {
