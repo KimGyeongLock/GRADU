@@ -649,3 +649,80 @@
     transform: translateX(30px);
   }
 }
+
+/* 카드(표) 폭과 동일한 기준 컨테이너 */
+.cardWrap {
+  position: relative;
+  max-width: 1000px;
+  margin: 18px auto 0;
+}
+
+/* 기존 card에 있던 max-width/margin은 cardWrap로 옮겼으니 card에서는 제거해도 됨 */
+.card {
+  /* max-width: 1000px;  <-- 제거 추천 */
+  /* margin: 18px auto 0; <-- 제거 추천 */
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  padding: 24px;
+  position: relative;
+  z-index: 10;
+  transition: opacity .18s, transform .18s;
+}
+
+/* 표 오른쪽 바깥 위 */
+.topRightNote {
+  position: absolute;
+  top: -25px;      /* ✅ 카드 바깥 위로 올리기 */
+  right: 15px;      /* ✅ 표 오른쪽 끝에 맞추기 */
+  color: #9aa0a6;
+  font-size: 13px;
+  font-weight: 500;
+  user-select: none;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .cardWrap {
+    margin: 12px 8px 0;
+    max-width: none;
+  }
+  .topRightNote {
+    top: -20px;
+    right: 15px;
+    font-size: 12px;
+  }
+}
+
+/* 상단 안내 문구 */
+.noticeWrap {
+  max-width: 1000px;
+  margin: 10px auto 50px; /* ✅ 아래 카드랑 간격 확보 */
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.noticeText {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.noticeText b {
+  color: #374151;
+}
+
+/* 모바일에서는 살짝 컴팩트 */
+@media (max-width: 768px) {
+  .noticeWrap {
+    margin: 8px 8px 0;
+    padding: 10px 12px;
+  }
+  .noticeText {
+    font-size: 12px;
+  }
+}
