@@ -20,3 +20,7 @@ export const BSM_MATH_COURSES: string[] = [
   "정수론",
   "실해석학개론",
 ];
+
+export const BSM_COURSE_ALIASES: Record<string, string[]> = {
+  "이산수학": ["Discrete Mathematics"],
+};

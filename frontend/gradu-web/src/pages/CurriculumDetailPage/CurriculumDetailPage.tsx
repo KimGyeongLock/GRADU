@@ -5,7 +5,10 @@ import { axiosInstance, getStudentId } from "../../lib/axios";
 import EditCourseModal from "../CurriculumPage/modal/EditCourseModal";
 import s from "./CurriculumDetail.module.css";
 import type { CourseDto } from "../CurriculumPage/curriculumTypes";
-import { formatSemester, CATEGORY_LABELS } from "../CurriculumPage/curriculumTypes";
+import {
+  formatSemester,
+  CATEGORY_LABELS,
+} from "../CurriculumPage/curriculumTypes";
 import { isGuestMode } from "../../lib/auth";
 import {
   loadGuestCourses,
@@ -17,14 +20,13 @@ import { FaithInfoBox } from "./components/FaithInfoBox";
 import { PersonalityInfoBox } from "./components/PersonalityInfoBox";
 
 import { GENERAL_EDU_COURSES } from "./constants/generalEdu";
-import { BSM_MATH_COURSES } from "./constants/bsm";
-import { MAJOR_ELECTIVE_REQUIRED } from "./constants/major";
+import { BSM_MATH_COURSES, BSM_COURSE_ALIASES } from "./constants/bsm";
+import { MAJOR_ELECTIVE_REQUIRED, MAJOR_COURSE_ALIASES } from "./constants/major";
 import { PRACTICAL_ENGLISH_COURSES } from "./constants/practicalEnglish";
 import { ICT_INTRO_COURSES } from "./constants/ictIntro";
 
 export const CATEGORY_ORDER = Object.keys(CATEGORY_LABELS);
 const ALLOWED = new Set(CATEGORY_ORDER);
-
 
 export default function CurriculumDetailPage() {
   const { category = "" } = useParams();
@@ -39,8 +41,10 @@ export default function CurriculumDetailPage() {
     () => category.toUpperCase().replace(/-/g, "_"),
     [category]
   );
+
   const isValid = ALLOWED.has(categoryEnum);
   const label = isValid ? CATEGORY_LABELS[categoryEnum] : categoryEnum;
+
   const isMajor = categoryEnum === "MAJOR";
   const isGeneralEdu = categoryEnum === "GENERAL_EDU";
   const isBSM = categoryEnum === "BSM";
@@ -48,7 +52,6 @@ export default function CurriculumDetailPage() {
   const isPersonality = categoryEnum === "PERSONALITY_LEADERSHIP";
   const isPracticalEnglish = categoryEnum === "PRACTICAL_ENGLISH";
   const isIctIntro = categoryEnum === "ICT_INTRO";
-
 
   // 🔹 게스트용 로컬 과목 목록
   const [guestCourses, setGuestCourses] = useState<CourseDto[]>([]);
@@ -87,28 +90,95 @@ export default function CurriculumDetailPage() {
   }, [isGuest, guestCourses, serverCourses, categoryEnum, isValid]);
 
   // ✅ 전문교양 칩 하이라이트용: 이미 이수한 과목 이름 Set
-  const normalize = (str: string) => str.trim().replace(/\s+/g, "").toUpperCase();
+  const normalize = (str: string) =>
+    str.trim().replace(/\s+/g, "").toUpperCase();
+
   const takenGeneralEduSet = useMemo(() => {
     if (!isGeneralEdu) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
   }, [isGeneralEdu, list]);
+
   const takenBsmMathSet = useMemo(() => {
     if (!isBSM) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
   }, [isBSM, list]);
+
   const takenMajorSet = useMemo(() => {
     if (!isMajor) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
   }, [isMajor, list]);
+
   const takenPersonalitySet = useMemo(() => {
     if (!isPersonality) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
   }, [isPersonality, list]);
+
+  // ---------------------------
+  // ✅ 가이드 표시/이수 판정 resolver
+  // ---------------------------
+  const hasHangul = (str: string) => /[가-힣]/.test(str);
+
+  function buildGuideDisplayResolver(
+    list: CourseDto[],
+    normalize: (s: string) => string,
+    aliases: Record<string, string[]>
+  ) {
+    const takenByNorm = new Map<string, string>();
+    for (const c of list) takenByNorm.set(normalize(c.name), c.name);
+
+    const resolveDisplayName = (guideName: string) => {
+      // ✅ "이미 과목 이름이 영어"인 가이드 항목은 무시 (그대로 보여줌)
+      if (!hasHangul(guideName)) return guideName;
+
+      // 1) 한국어 그대로 들었으면 한국어로 표시(=실제 이름)
+      const direct = takenByNorm.get(normalize(guideName));
+      if (direct) return direct;
+
+      // 2) 영어 alias로 들었으면, 실제 저장된 영어 이름으로 표시
+      const aliasList = aliases[guideName] ?? [];
+      for (const a of aliasList) {
+        const hit = takenByNorm.get(normalize(a));
+        if (hit) return hit;
+      }
+
+      // 3) 아직 안 들었으면 한국어 디폴트 유지
+      return guideName;
+    };
+
+    const isTaken = (guideName: string) => {
+      // 가이드가 영어인 경우: 원래 방식대로만 체크(변환 없음)
+      if (!hasHangul(guideName)) {
+        return takenByNorm.has(normalize(guideName));
+      }
+
+      if (takenByNorm.has(normalize(guideName))) return true;
+
+      const aliasList = aliases[guideName] ?? [];
+      return aliasList.some((a) => takenByNorm.has(normalize(a)));
+    };
+
+    return { resolveDisplayName, isTaken };
+  }
+
+  // ✅ BSM: alias 적용 예시 (다른 카테고리도 동일하게 확장 가능)
+  const bsmGuide = useMemo(() => {
+    if (!isBSM) return null;
+    return buildGuideDisplayResolver(list, normalize, BSM_COURSE_ALIASES);
+  }, [isBSM, list]);
+  const majorGuide = useMemo(() => {
+    if (!isMajor) return null;
+    return buildGuideDisplayResolver(list, normalize, MAJOR_COURSE_ALIASES);
+  }, [isMajor, list]);
+
   const majorElectiveTakenCount = useMemo(() => {
-    return MAJOR_ELECTIVE_REQUIRED.filter((name) =>
-      takenMajorSet.has(normalize(name))
-    ).length;
-  }, [takenMajorSet]);
+    if (!isMajor) return 0;
+
+    const isTakenFn =
+      majorGuide?.isTaken ?? ((name: string) => takenMajorSet.has(normalize(name)));
+
+    return MAJOR_ELECTIVE_REQUIRED.filter((name) => isTakenFn(name)).length;
+  }, [isMajor, majorGuide, takenMajorSet]);
+
   const takenPracticalEnglishSet = useMemo(() => {
     if (!isPracticalEnglish) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
@@ -118,6 +188,10 @@ export default function CurriculumDetailPage() {
     if (!isIctIntro) return new Set<string>();
     return new Set(list.map((c) => normalize(c.name)));
   }, [isIctIntro, list]);
+
+
+
+
   // 삭제 (로그인 사용자)
   const deleteMutation = useMutation({
     mutationFn: async (courseId: number) => {
@@ -168,12 +242,9 @@ export default function CurriculumDetailPage() {
   };
 
   // ❌ 완전 비로그인 + 게스트 모드도 아닐 때만 안내
-  if (!sid && !isGuest)
-    return (
-      <div className={s.centerNotice}>
-        로그인 정보를 찾을 수 없습니다.
-      </div>
-    );
+  if (!sid && !isGuest) {
+    return <div className={s.centerNotice}>로그인 정보를 찾을 수 없습니다.</div>;
+  }
 
   if (!isValid) {
     return (
@@ -199,6 +270,7 @@ export default function CurriculumDetailPage() {
         </button>
       </div>
 
+      {/* 이수 안내 가이드 */}
       {isGeneralEdu && (
         <CourseInfoBox
           title="전문교양 이수 안내"
@@ -208,47 +280,53 @@ export default function CurriculumDetailPage() {
           normalize={normalize}
         />
       )}
+
       {isBSM && (
-  <CourseInfoBox
-    title="BSM 이수 안내"
-    description={
-      <>
-        <p>
-          BSM은 아래 과목들 중에서 선택하여 이수하시면 됩니다.
-        </p>
-        <p>
-          <b>- (물리학개론 + 물리학실험1)</b> 또는 <b>(물리학1 + 물리학실험1)</b> 또는 <b>(물리학2 + 물리학실험1)</b> 또는 <b>(일반화학 + 일반화학실험)</b> 중 <b>하나 이상 필수 이수</b>
-        </p>
-        <p>
-          <b>- 이산수학 필수 이수</b>
-        </p>
-      </>
-    }
-    courses={BSM_MATH_COURSES}
-    takenSet={takenBsmMathSet}
-    normalize={normalize}
-  />
-)}
+        <CourseInfoBox
+          title="BSM 이수 안내"
+          description={
+            <>
+              <p>BSM은 아래 과목들 중에서 선택하여 이수하시면 됩니다.</p>
+              <p>
+                <b>- (물리학개론 + 물리학실험1)</b> 또는{" "}
+                <b>(물리학1 + 물리학실험1)</b> 또는{" "}
+                <b>(물리학2 + 물리학실험1)</b> 또는{" "}
+                <b>(일반화학 + 일반화학실험)</b> 중 <b>하나 이상 필수 이수</b>
+              </p>
+              <p>
+                <b>- 이산수학 필수 이수</b>
+              </p>
+            </>
+          }
+          courses={BSM_MATH_COURSES}
+          takenSet={takenBsmMathSet} // fallback용(있어도 됨)
+          normalize={normalize}
+          resolveDisplayName={bsmGuide?.resolveDisplayName}
+          isTaken={bsmGuide?.isTaken}
+        />
+      )}
 
       {isMajor && (
         <MajorInfoBox
           takenSet={takenMajorSet}
           normalize={normalize}
           electiveTakenCount={majorElectiveTakenCount}
+          resolveDisplayName={majorGuide?.resolveDisplayName}
+          isTaken={majorGuide?.isTaken}
         />
       )}
+
       {isFaith && (
         <FaithInfoBox
           takenSet={new Set(list.map((c) => normalize(c.name)))}
           normalize={normalize}
         />
       )}
+
       {categoryEnum === "PERSONALITY_LEADERSHIP" && (
-        <PersonalityInfoBox
-          takenSet={takenPersonalitySet}
-          normalize={normalize}
-        />
+        <PersonalityInfoBox takenSet={takenPersonalitySet} normalize={normalize} />
       )}
+
       {isPracticalEnglish && (
         <CourseInfoBox
           title="실무영어 이수 안내"
@@ -258,6 +336,7 @@ export default function CurriculumDetailPage() {
           normalize={normalize}
         />
       )}
+
       {isIctIntro && (
         <CourseInfoBox
           title="ICT융합기초 이수 안내"
@@ -267,7 +346,6 @@ export default function CurriculumDetailPage() {
           normalize={normalize}
         />
       )}
-
 
       {/* 본문 카드 */}
       <div className={s.card}>
@@ -320,9 +398,7 @@ export default function CurriculumDetailPage() {
                     >
                       <td className={s.td}>
                         {c.name}
-                        {c.isEnglish && (
-                          <span className={s.badgeEng}>ENG</span>
-                        )}
+                        {c.isEnglish && <span className={s.badgeEng}>ENG</span>}
                       </td>
                       <td className={s.td}>{c.credit}</td>
                       {isMajor && (
@@ -367,9 +443,7 @@ export default function CurriculumDetailPage() {
                     <div className={s.mobileCardHeader}>
                       <div className={s.mobileCourseTitle}>
                         <span className={s.mobileCourseName}>{c.name}</span>
-                        {c.isEnglish && (
-                          <span className={s.badgeEng}>ENG</span>
-                        )}
+                        {c.isEnglish && <span className={s.badgeEng}>ENG</span>}
                       </div>
                       <span className={s.mobileSemester}>
                         {formatSemester(c.academicYear, c.term)}
@@ -398,10 +472,7 @@ export default function CurriculumDetailPage() {
                     </div>
 
                     <div className={s.mobileCardFooter}>
-                      <button
-                        className={s.btnGhost}
-                        onClick={() => setEditing(c)}
-                      >
+                      <button className={s.btnGhost} onClick={() => setEditing(c)}>
                         수정
                       </button>
                       <button
@@ -410,9 +481,7 @@ export default function CurriculumDetailPage() {
                         disabled={!isGuest && deleteMutation.isPending}
                         title="삭제"
                       >
-                        {!isGuest && deleteMutation.isPending
-                          ? "삭제 중…"
-                          : "삭제"}
+                        {!isGuest && deleteMutation.isPending ? "삭제 중…" : "삭제"}
                       </button>
                     </div>
                   </div>
