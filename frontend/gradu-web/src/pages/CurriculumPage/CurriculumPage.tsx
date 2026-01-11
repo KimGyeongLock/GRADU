@@ -24,6 +24,8 @@ import {
   computeGuestSummary,
 } from "./guest/guestSummary";
 import { fireConfetti } from "../../components/confetti";
+import { useOverlayUI } from "../../ui/OverlayUIContext";
+import RankingCard from "./ranking/RankingCard";
 
 type View = "summary" | "semester";
 
@@ -40,6 +42,7 @@ function nextSemester(y: number, t: Term): { year: number; term: Term } {
 const celebrateKey = (sid: string) => `gradu_celebrated_${sid}`;
 
 export default function CurriculumPage() {
+  const { isRankingOpen, closeRanking } = useOverlayUI();
   const isGuest = isGuestMode();
   const realSid = getStudentId();
   const sid = isGuest ? "guest" : realSid || "";
@@ -305,134 +308,174 @@ export default function CurriculumPage() {
 
   const pfLimitNote = Math.max(39, effectiveSummary.pfLimit);
 
+
   return (
-    <div className="relative">
-      {showBanner && (
-        <div className={s.congratsBanner} role="status">
-          🎓 졸업을 축하합니다!
-        </div>
-      )}
+    <div className={s.pageRoot}>
+      <div
+        className={`${s.rankingDim} ${isRankingOpen ? s.rankingDimOn : ""}`}
+        onClick={closeRanking}
+        aria-hidden={!isRankingOpen}
+      />
 
-      <div className={s.ribbonWrap}>
-        <button
-          className={`${s.ribbon} ${s.ribbonLeft} ${view === "summary" ? s.ribbonActive : ""
-            }`}
-          onClick={() => setView("summary")}
-        >
-          종합 보기
-        </button>
-        <button
-          className={`${s.ribbon} ${s.ribbonLeft2} ${view === "semester" ? s.ribbonActive : ""
-            }`}
-          onClick={() => setView("semester")}
-        >
-          학기별 보기
-        </button>
-      </div>
-      <div className={s.cardWrap}>
-        {view === "summary" && (
-          <div className={s.topRightNote}>25-2 수강편람 참고</div>
-        )}
-        <div className={s.card}>
-          {view === "summary" ? (
-            <SummaryView
-              summary={effectiveSummary}
-              pfLimitNote={pfLimitNote}
-              gradEnglishPassed={gradEnglishPassed}
-              onChangeGradEnglishPassed={setGradEnglishPassed}
-              onClickSaveToggles={handleSaveToggles}
-              savingToggles={saveToggles.isPending}
-            />
-          ) : (
-            <SemesterView
-              mergedGroups={mergedGroups}
-              isLoadingSem={isLoadingSem}
-              isErrorSem={isErrorSem}
-              view={view}
-              onOpenAddFor={openAddFor}
-              onCreateNextSemester={handleCreateNextSemester}
-              onGuestChange={reloadGuestData}
-            />
-          )}
+      <div className={s.pageRow}>
+        <div className={s.leftPane}>
+          <div className={`${s.leftGrid} ${isRankingOpen ? s.leftGridOpen : ""}`}>
+            <div className={s.leftMain}>
+              <div className="relative">
+                {showBanner && (
+                  <div className={s.congratsBanner} role="status">
+                    🎓 졸업을 축하합니다!
+                  </div>
+                )}
 
-          {/* ✅ 플로팅 FAB – summary 뷰에서만 표시 */}
-          {view === "summary" && (
-            <div className={s.plusArea}>
-              {fabOpen && (
-                <div className={s.fabMenu}>
+                <div className={s.ribbonWrap}>
                   <button
-                    type="button"
-                    className={s.fabItem}
-                    onClick={() => {
-                      setFabOpen(false);
-                      openAddFor(undefined, undefined); // 단일 과목 추가
-                    }}
+                    className={`${s.ribbon} ${s.ribbonLeft} ${view === "summary" ? s.ribbonActive : ""
+                      }`}
+                    onClick={() => setView("summary")}
                   >
-                    단일 과목 추가
+                    종합 보기
                   </button>
                   <button
-                    type="button"
-                    className={`${s.fabItem} ${s.fabItemNew}`}
-                    onClick={() => {
-                      setFabOpen(false);
-                      if (isGuest) {
-                        alert(
-                          "AI 캡쳐 기능은 로그인 후 이용할 수 있어요.\n로그인 후 다시 시도해 주세요."
-                        );
-                        return;
-                      }
-                      setAiCaptureOpen(true);
-                    }}
+                    className={`${s.ribbon} ${s.ribbonLeft2} ${view === "semester" ? s.ribbonActive : ""
+                      }`}
+                    onClick={() => setView("semester")}
                   >
-                    <span className={s.newBadge}>NEW</span>
-                    <span>AI 캡쳐로 일괄 추가</span>
+                    학기별 보기
                   </button>
                 </div>
-              )}
 
-              <button
-                type="button"
-                onClick={() => setFabOpen((prev) => !prev)}
-                className={`${s.plusBtn} ${fabOpen ? s.plusBtnOpen : ""}`}
-                aria-label={fabOpen ? "메뉴 닫기" : "과목 추가 옵션 열기"}
-                aria-expanded={fabOpen}
-              >
-                <span className={s.plusIcon} />
-              </button>
+                <div className={s.cardWrap}>
+                  {view === "summary" && (
+                    <div className={s.topRightNote}>25-2 수강편람 참고</div>
+                  )}
+
+                  <div className={s.card}>
+                    {view === "summary" ? (
+                      <SummaryView
+                        summary={effectiveSummary}
+                        pfLimitNote={pfLimitNote}
+                        gradEnglishPassed={gradEnglishPassed}
+                        onChangeGradEnglishPassed={setGradEnglishPassed}
+                        onClickSaveToggles={handleSaveToggles}
+                        savingToggles={saveToggles.isPending}
+                      />
+                    ) : (
+                      <SemesterView
+                        mergedGroups={mergedGroups}
+                        isLoadingSem={isLoadingSem}
+                        isErrorSem={isErrorSem}
+                        view={view}
+                        onOpenAddFor={openAddFor}
+                        onCreateNextSemester={handleCreateNextSemester}
+                        onGuestChange={reloadGuestData}
+                      />
+                    )}
+
+                    {/* ✅ 플로팅 FAB – summary 뷰에서만 표시 */}
+                    {view === "summary" && (
+                      <div className={`${s.plusArea} ${isRankingOpen ? s.plusAreaShifted : ""}`}>
+                        {fabOpen && (
+                          <div className={s.fabMenu}>
+                            <button
+                              type="button"
+                              className={s.fabItem}
+                              onClick={() => {
+                                setFabOpen(false);
+                                openAddFor(undefined, undefined);
+                              }}
+                            >
+                              단일 과목 추가
+                            </button>
+
+                            <button
+                              type="button"
+                              className={`${s.fabItem} ${s.fabItemNew}`}
+                              onClick={() => {
+                                setFabOpen(false);
+                                if (isGuest) {
+                                  alert(
+                                    "AI 캡쳐 기능은 로그인 후 이용할 수 있어요.\n로그인 후 다시 시도해 주세요."
+                                  );
+                                  return;
+                                }
+                                setAiCaptureOpen(true);
+                              }}
+                            >
+                              <span className={s.newBadge}>NEW</span>
+                              <span>AI 캡쳐로 일괄 추가</span>
+                            </button>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setFabOpen((prev) => !prev)}
+                          className={`${s.plusBtn} ${fabOpen ? s.plusBtnOpen : ""}`}
+                          aria-label={fabOpen ? "메뉴 닫기" : "과목 추가 옵션 열기"}
+                          aria-expanded={fabOpen}
+                        >
+                          <span className={s.plusIcon} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 안내 */}
+                {view === "summary" && (
+                  <div className={s.noticeWrap} role="note" aria-label="안내">
+                    <p className={s.noticeText}>
+                      GRADU는 학업 이수 관리를 돕기 위한 서비스이며, 학교의{" "}
+                      <b>공식 시스템이 아닙니다.</b>
+                      <br />
+                      수강편람/학사 공지와 <b>기준이 달라지거나 반영이 지연</b>될 수
+                      있으니,
+                      <b> 최종 확인은 학교 공식 자료</b>(수강편람, 졸업심사안내,
+                      공지사항)를 기준으로 참고 해주세요.
+                    </p>
+                  </div>
+                )}
+
+                <AddCourseModal
+                  open={addOpen}
+                  sid={sid}
+                  onClose={closeAdd}
+                  onSaved={afterAddSaved}
+                  initialYear={prefill.year}
+                  initialTerm={prefill.term}
+                />
+
+                <AiCaptureModal
+                  open={aiCaptureOpen}
+                  sid={sid}
+                  onClose={() => setAiCaptureOpen(false)}
+                  onSaved={afterAddSaved}
+                  exampleImageUrl="/course_example.png"
+                />
+              </div>
             </div>
-          )}
+
+            {/* ✅ 오른쪽: 랭킹 패널 */}
+            <aside
+              className={`${s.rankingPane} ${isRankingOpen ? s.rankingPaneOn : ""}`}
+              aria-hidden={!isRankingOpen}
+            >
+              <div className={s.rankingPaneInner}>
+                <div className={s.rankingSticky}>
+                  <div className={s.rankingCardMock}>
+                    <div className={s.rankingHeader}>과목 랭킹</div>
+                    <div className={s.rankingBody}>
+                      <RankingCard initialCategory="liberal" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
         </div>
       </div>
-
-      {/* 안내 */}
-      {view === "summary" && (
-        <div className={s.noticeWrap} role="note" aria-label="안내">
-          <p className={s.noticeText}>
-            GRADU는 학업 이수 관리를 돕기 위한 서비스이며, 학교의 <b>공식 시스템이 아닙니다.</b>
-            <br />
-            수강편람/학사 공지와 <b>기준이 달라지거나 반영이 지연</b>될 수 있으니,
-            <b> 최종 확인은 학교 공식 자료</b>(수강편람, 졸업심사안내, 공지사항)를 기준으로 참고 해주세요.
-          </p>
-        </div>
-      )}
-
-
-      <AddCourseModal
-        open={addOpen}
-        sid={sid}
-        onClose={closeAdd}
-        onSaved={afterAddSaved}
-        initialYear={prefill.year}
-        initialTerm={prefill.term}
-      />
-
-      <AiCaptureModal
-        open={aiCaptureOpen}
-        sid={sid}
-        onClose={() => setAiCaptureOpen(false)}
-        onSaved={afterAddSaved}
-        exampleImageUrl="/course_example.png"
-      />
     </div>
   );
 }

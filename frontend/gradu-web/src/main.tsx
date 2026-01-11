@@ -17,6 +17,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { PrivateRoute } from "./routes/PrivateRoute";
 import { PublicRoute } from "./routes/PublicRoute";
+import { OverlayUIProvider } from "./ui/OverlayUIContext";
 
 import "./index.css";
 import "./styles/reset.css";
@@ -74,7 +75,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <QueryClientProvider client={qc}>
-      <RouterProvider router={router} />
+      <OverlayUIProvider>
+        <RouterProvider router={router} />
+      </OverlayUIProvider>
     </QueryClientProvider>
   </React.StrictMode>
 );
