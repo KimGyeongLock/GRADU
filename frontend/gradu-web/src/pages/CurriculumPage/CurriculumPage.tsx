@@ -347,7 +347,7 @@ export default function CurriculumPage() {
 
                 <div className={s.cardWrap}>
                   {view === "summary" && (
-                    <div className={s.topRightNote}>25-2 수강편람 참고</div>
+                    <div className={s.topRightNote}>26-1 수강편람 참고</div>
                   )}
 
                   <div className={s.card}>
