@@ -1,7 +1,6 @@
 package com.example.gradu.domain.ranking.service;
 
 import com.example.gradu.domain.curriculum.entity.Category;
-import com.example.gradu.domain.ranking.dto.CourseRankingDto;
 import com.example.gradu.domain.ranking.dto.CourseRankingDto.RankingResponse;
 import com.example.gradu.domain.ranking.repository.CourseRankingRepository;
 import org.springframework.data.domain.PageRequest;
