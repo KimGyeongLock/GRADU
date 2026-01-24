@@ -26,17 +26,23 @@ class CourseRankingServiceTest {
     }
 
     @Test
-    void getCourseRanking_returnsMajorAndLiberalTop10_withRanksStartingAt1() {
-        // given: repo가 2번 호출되므로 thenReturn을 2개 준비
-        var majorRows = List.of(
+    void getCourseRanking_returnsMajorAndLiberalRankings_withFilteringAndRanksStartingAt1() {
+        // given: repo가 2번 호출되므로 thenReturn을 2개 준비(전공 -> 교양)
+        List<CourseRankingRepository.CourseCountRow> majorRows = List.of(
                 row("OS", 12),
                 row("DB", 10),
                 row("DS", 7)
         );
 
-        var liberalRows = List.of(
+        // 교양: "채플", "공동체리더십훈련" 포함 과목은 제외되어야 함
+        List<CourseRankingRepository.CourseCountRow> liberalRows = List.of(
                 row("채플", 30),
-                row("실용영어", 20)
+                row("공동체리더십훈련(1)", 25),
+                row("실용영어", 20),
+                row("철학의이해", 18),
+                row("채플 실습", 17),              // "채플" 포함 → 제외
+                row("공동체리더십훈련", 16),         // 포함 → 제외
+                row("글쓰기", 15)
         );
 
         when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
@@ -51,26 +57,29 @@ class CourseRankingServiceTest {
         assertThat(res.major().get(1)).isEqualTo(new CourseRankingDto.RankingItem(2, "DB", 10, 0));
         assertThat(res.major().get(2)).isEqualTo(new CourseRankingDto.RankingItem(3, "DS", 7, 0));
 
-        // then: liberal 랭킹 변환
-        assertThat(res.liberal()).hasSize(2);
-        assertThat(res.liberal().get(0)).isEqualTo(new CourseRankingDto.RankingItem(1, "채플", 30, 0));
-        assertThat(res.liberal().get(1)).isEqualTo(new CourseRankingDto.RankingItem(2, "실용영어", 20, 0));
+        // then: liberal 랭킹 변환 (필터링 + rank 재부여)
+        assertThat(res.liberal()).containsExactly(
+                new CourseRankingDto.RankingItem(1, "실용영어", 20, 0),
+                new CourseRankingDto.RankingItem(2, "철학의이해", 18, 0),
+                new CourseRankingDto.RankingItem(3, "글쓰기", 15, 0)
+        );
 
-        // repo 호출 검증(2번)
         verify(repository, times(2)).findTopCoursesByCategories(anySet(), any(Pageable.class));
     }
 
     @Test
-    void getCourseRanking_callsRepositoryWithMajorAndNonMajorCategories_andPageSize10() {
+    void getCourseRanking_callsRepository_withMajorPageSize10_andLiberalPageSize30() {
         // given
         when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
-                .thenReturn(List.of(), List.of()); // major/libral 둘 다 빈 결과
+                .thenReturn(List.<CourseRankingRepository.CourseCountRow>of(),
+                        List.<CourseRankingRepository.CourseCountRow>of());
 
         // when
         service.getCourseRanking();
 
-        // then: 인자 캡쳐해서 major/libral 분기 확인
-        ArgumentCaptor<Set<Category>> catCaptor = ArgumentCaptor.forClass(Set.class);
+        // then: 인자 캡쳐
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<Set<Category>> catCaptor = (ArgumentCaptor) ArgumentCaptor.forClass(Set.class);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
         verify(repository, times(2)).findTopCoursesByCategories(catCaptor.capture(), pageableCaptor.capture());
@@ -78,18 +87,57 @@ class CourseRankingServiceTest {
         List<Set<Category>> capturedCats = catCaptor.getAllValues();
         List<Pageable> capturedPageables = pageableCaptor.getAllValues();
 
-        // pageable: page=0, size=10 확인
-        for (Pageable p : capturedPageables) {
-            assertThat(p.getPageNumber()).isEqualTo(0);
-            assertThat(p.getPageSize()).isEqualTo(10);
+        int majorIdx = -1;
+        int liberalIdx = -1;
+        for (int i = 0; i < capturedCats.size(); i++) {
+            if (capturedCats.get(i).contains(Category.MAJOR)) majorIdx = i;
+            else liberalIdx = i;
         }
 
-        // categories: 한 번은 MAJOR 포함(전공), 한 번은 MAJOR 미포함(교양)
-        boolean sawMajorSet = capturedCats.stream().anyMatch(s -> s.contains(Category.MAJOR));
-        boolean sawNonMajorSet = capturedCats.stream().anyMatch(s -> !s.contains(Category.MAJOR));
+        assertThat(majorIdx).isNotEqualTo(-1);
+        assertThat(liberalIdx).isNotEqualTo(-1);
 
-        assertThat(sawMajorSet).isTrue();
-        assertThat(sawNonMajorSet).isTrue();
+        Pageable majorPageable = capturedPageables.get(majorIdx);
+        Pageable liberalPageable = capturedPageables.get(liberalIdx);
+
+        assertThat(majorPageable.getPageNumber()).isEqualTo(0);
+        assertThat(majorPageable.getPageSize()).isEqualTo(10);
+
+        assertThat(liberalPageable.getPageNumber()).isEqualTo(0);
+        assertThat(liberalPageable.getPageSize()).isEqualTo(30);
+    }
+
+    @Test
+    void liberalRanking_limitsTo10_afterFiltering_andRanksAreReassigned() {
+        // given
+        List<CourseRankingRepository.CourseCountRow> majorRows = List.of();
+
+        List<CourseRankingRepository.CourseCountRow> liberalRows = List.of(
+                row("채플", 100),
+                row("공동체리더십훈련", 99),
+                row("교양1", 98),
+                row("교양2", 97),
+                row("교양3", 96),
+                row("교양4", 95),
+                row("교양5", 94),
+                row("교양6", 93),
+                row("교양7", 92),
+                row("교양8", 91),
+                row("교양9", 90),
+                row("교양10", 89),
+                row("교양11", 88)
+        );
+
+        when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
+                .thenReturn(majorRows, liberalRows);
+
+        // when
+        CourseRankingDto.RankingResponse res = service.getCourseRanking();
+
+        // then
+        assertThat(res.liberal()).hasSize(10);
+        assertThat(res.liberal().get(0)).isEqualTo(new CourseRankingDto.RankingItem(1, "교양1", 98, 0));
+        assertThat(res.liberal().get(9)).isEqualTo(new CourseRankingDto.RankingItem(10, "교양10", 89, 0));
     }
 
     private static CourseRankingRepository.CourseCountRow row(String name, long takenCount) {
