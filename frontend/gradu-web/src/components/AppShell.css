@@ -15,10 +15,10 @@
 }
 
 .appHeaderInner {
-  max-width: 1200px;
+  max-width: 1350px;   /* 1200 -> 1500 (원하면 1600도 OK) */
   width: 100%;
   margin: 0 auto;
-  padding: 12px 24px;
+  padding: 12px 20px;  /* 24 -> 20 (좌우 마진 살짝 줄임) */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -118,11 +118,69 @@
 }
 
 .appContent {
-  max-width: 1200px;
+  max-width: 1350px;   /* 1200 -> 1500 */
   width: 100%;
-  padding: 24px 24px;
+  padding: 20px 20px;  /* 24 -> 20 */
   margin: 0 auto;
 }
+@media (min-width: 1600px) {
+  .appHeaderInner,
+  .appContent {
+    max-width: 1600px;
+  }
+}
+.rankingBtn {
+  margin-right: 10px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: #ffffff;
+  color: #374151;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.03s ease;
+}
+
+.rankingBtn:hover {
+  background: #f9fafb;
+  border-color: rgba(129, 140, 248, 0.7);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+}
+
+.rankingBtn:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.16);
+}
+
+.rankingBtnActive {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+.rankingIcon {
+  font-size: 16px;
+  line-height: 1;
+  transform: translateY(0.5px);
+}
+
+.rankingBtnText {
+  display: inline;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+@media (max-width: 520px){
+  .rankingBtnText{ display:none; }
+}
+
 
 /* 📱 모바일에서 헤더 여백 & 버튼 크기 조정 */
 @media (max-width: 480px) {
