@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import s from "./RankingCard.module.css";
-import { mockRanking } from "./mockRanking";
-import type { RankingCategory, RankingItem } from "./rankingTypes";
+import type { RankingCategory, RankingData, RankingItem } from "./rankingTypes";
 
 type Props = {
   initialCategory?: RankingCategory;
+  data: RankingData;
 };
 
 function formatCount(n: number) {
@@ -93,13 +93,13 @@ function BookIcon({ active }: { active: boolean }) {
   );
 }
 
-export default function RankingCard({ initialCategory = "liberal" }: Props) {
+export default function RankingCard({ initialCategory = "liberal", data }: Props) {
   const [cat, setCat] = useState<RankingCategory>(initialCategory);
 
   const items: RankingItem[] = useMemo(() => {
-    const list = cat === "major" ? mockRanking.major : mockRanking.liberal;
+    const list = cat === "major" ? data.major : data.liberal;
     return list.slice(0, 10);
-  }, [cat]);
+  }, [cat, data]);
 
   return (
     <section className={s.root} aria-label="과목 랭킹 리스트">

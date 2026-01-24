@@ -25,7 +25,7 @@ import {
 } from "./guest/guestSummary";
 import { fireConfetti } from "../../components/confetti";
 import { useOverlayUI } from "../../ui/OverlayUIContext";
-import RankingCard from "./ranking/RankingCard";
+import CourseRankingSection from "./ranking/CourseRankingSection";
 
 type View = "summary" | "semester";
 
@@ -466,7 +466,7 @@ export default function CurriculumPage() {
                   <div className={s.rankingCardMock}>
                     <div className={s.rankingHeader}>과목 랭킹</div>
                     <div className={s.rankingBody}>
-                      <RankingCard initialCategory="liberal" />
+                      <CourseRankingSection />
                     </div>
                   </div>
                 </div>
