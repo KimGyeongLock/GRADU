@@ -873,5 +873,7 @@
 
 
 .rankingBody {
-  overflow: visible; /* 컨텐츠만큼 */
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+  flex: 1;
 }
