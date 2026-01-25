@@ -21,5 +21,5 @@ export default function CourseRankingSection() {
   }
   if (!data) return null;
 
-  return <RankingCard data={data} initialCategory="liberal" />;
+  return <RankingCard data={data} initialCategory="major" />;
 }

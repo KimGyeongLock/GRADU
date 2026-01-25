@@ -1,10 +1,3 @@
-export type RankingCategory = "major" | "liberal";
-
-/**
- * rank: 1~10
- * takenCount: 수강 인원(집계값)
- * delta: 순위 변동(+, -, 0)
- */
 export type RankingItem = {
   rank: number;
   courseName: string;
@@ -12,7 +5,27 @@ export type RankingItem = {
   delta: number;
 };
 
-export type RankingData = {
-  major: RankingItem[];
-  liberal: RankingItem[];
+export type MajorRanking = {
+  y1s1: RankingItem[];
+  y1s2: RankingItem[];
+  y2s1: RankingItem[];
+  y2s2: RankingItem[];
+  y3s1: RankingItem[];
+  y3s2: RankingItem[];
+  y4s1: RankingItem[];
+  y4s2: RankingItem[];
 };
+
+export type LiberalRanking = {
+  faithWorldview: RankingItem[];
+  generalEdu: RankingItem[];
+  bsm: RankingItem[];
+  freeElective: RankingItem[];
+};
+
+export type RankingData = {
+  major: MajorRanking;
+  liberal: LiberalRanking;
+};
+
+export type RankingCategory = "major" | "liberal";
