@@ -1,14 +1,13 @@
 .card {
-  max-width: 1000px;
-  margin: 18px auto 0;
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   padding: 24px;
   position: relative;
   z-index: 10;
   transition: opacity .18s, transform .18s;
 }
+
 
 .cardOnTop {
   opacity: 1;
@@ -51,9 +50,19 @@
   background: rgba(249, 250, 251, 0.4);
 }
 
-.statusPass { color:#16a34a; font-weight:700; }
-.statusFail { color:#dc2626; font-weight:700; }
-.statusNeutral { color:#6b7280; }
+.statusPass {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.statusFail {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.statusNeutral {
+  color: #6b7280;
+}
 
 .viewBtn {
   padding: 6px 10px;
@@ -72,13 +81,20 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
-  z-index: 40;
 
   margin-left: auto;
   padding-right: 16px;
 
   transform: translateX(130px);
+  transition: transform .25s ease;
 }
+
+/* ✅ 랭킹 켜졌을 때만 살짝 왼쪽 */
+.plusAreaShifted {
+  transform: translateX(70px);
+  /* ← 130 → 70 정도가 가장 자연스러움 */
+}
+
 
 .fabMenu {
   display: flex;
@@ -93,6 +109,7 @@
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -107,7 +124,7 @@
   font-size: 13px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 12px 32px rgba(15,23,42,0.35);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.35);
   white-space: nowrap;
 }
 
@@ -140,7 +157,8 @@
 }
 
 .plusBtnOpen {
-  transform: rotate(180deg); /* 플립 효과 */
+  transform: rotate(180deg);
+  /* 플립 효과 */
   background: #1d4ed8;
 }
 
@@ -169,6 +187,7 @@
 .plusIcon::before {
   transform: translate(-50%, -50%) rotate(0deg);
 }
+
 .plusIcon::after {
   transform: translate(-50%, -50%) rotate(90deg);
 }
@@ -177,198 +196,223 @@
 .plusBtnOpen .plusIcon::before {
   transform: translate(-50%, -50%) rotate(45deg);
 }
+
 .plusBtnOpen .plusIcon::after {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-.summarySep td { height: 10px; background: #f3f4f6; border: none; }
+.summarySep td {
+  height: 10px;
+  background: #f3f4f6;
+  border: none;
+}
 
 .tdLabel {
   border: 1px solid #e5e7eb;
   padding: 12px 16px;
-  background:#fafafa;
-  font-weight:600;
+  background: #fafafa;
+  font-weight: 600;
 }
 
 .tdNote {
   border: 1px solid #e5e7eb;
   padding: 12px 16px;
-  color:#6b7280;
+  color: #6b7280;
 }
 
 .tdValue {
   border: 1px solid #e5e7eb;
   padding: 12px 16px;
-  text-align:center;
+  text-align: center;
 }
 
 .summaryFinal td {
-  border-top:2px solid #e5e7eb;
+  border-top: 2px solid #e5e7eb;
 }
 
 /* 토글 */
 .toggle {
-  position:relative;
-  display:inline-block;
-  width:44px;
-  height:24px;
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
 }
 
 .toggle input {
-  opacity:0;
-  width:0;
-  height:0;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .toggle span {
-  position:absolute;
-  inset:0;
-  background:#e5e7eb;
-  border-radius:999px;
-  transition:.2s;
+  position: absolute;
+  inset: 0;
+  background: #e5e7eb;
+  border-radius: 999px;
+  transition: .2s;
 }
 
 .toggle span:before {
-  content:"";
-  position:absolute;
-  height:18px;
-  width:18px;
-  left:3px;
-  top:3px;
-  background:#fff;
-  border-radius:50%;
-  transition:.2s;
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: .2s;
 }
 
-.toggle input:checked + span { background:#2563eb; }
-.toggle input:checked + span:before { transform:translateX(20px); }
+.toggle input:checked+span {
+  background: #2563eb;
+}
+
+.toggle input:checked+span:before {
+  transform: translateX(20px);
+}
 
 /* 저장 버튼 */
 .saveBtn {
-  appearance:none;
-  -webkit-appearance:none;
-  display:inline-block;
-  padding:6px 12px;
-  background:#2563eb;
-  color:#fff;
-  border:0;
-  border-radius:8px;
-  font-weight:600;
-  font-size:14px;
-  cursor:pointer;
-  line-height:1;
-  transition:transform .12s, box-shadow .12s, background-color .12s;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-block;
+  padding: 6px 12px;
+  background: #2563eb;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform .12s, box-shadow .12s, background-color .12s;
 }
 
 .saveBtn:hover {
-  background:#1d4ed8;
-  box-shadow:0 2px 8px rgba(37,99,235,.25);
+  background: #1d4ed8;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, .25);
 }
 
-.saveBtn:active { transform:translateY(1px) }
+.saveBtn:active {
+  transform: translateY(1px)
+}
 
 .saveBtn:disabled {
-  background:#94a3b8;
-  color:#f8fafc;
-  cursor:not-allowed;
-  box-shadow:none;
-  transform:none;
+  background: #94a3b8;
+  color: #f8fafc;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 /* 리본 탭 */
 .ribbonWrap {
-  position:relative;
-  max-width:1000px;
-  margin:0 auto;
-  height:0;
-  z-index:20;
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  height: 0;
+  z-index: 20;
 }
 
 .ribbon {
-  position:absolute;
-  top:-26px;
-  padding:8px 14px;
-  border-radius:10px;
-  font-weight:700;
-  font-size:13px;
-  border:1px solid rgba(0,0,0,.08);
-  box-shadow:0 8px 18px rgba(0,0,0,.12);
-  background:#fffbe8;
-  transform:rotate(-2deg);
-  cursor:pointer;
-  user-select:none;
-  transition:transform .15s, box-shadow .15s, background-color .15s;
+  position: absolute;
+  top: -26px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  border: 1px solid rgba(0, 0, 0, .08);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, .12);
+  background: #fffbe8;
+  transform: rotate(-2deg);
+  cursor: pointer;
+  user-select: none;
+  transition: transform .15s, box-shadow .15s, background-color .15s;
 }
 
 .ribbon:hover {
-  transform:translateY(-1px) rotate(-2deg);
-  box-shadow:0 10px 22px rgba(0,0,0,.16);
+  transform: translateY(-1px) rotate(-2deg);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, .16);
 }
 
 .ribbonActive {
-  background:#fff3c4;
-  box-shadow:0 12px 26px rgba(0,0,0,.18);
+  background: #fff3c4;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, .18);
 }
 
-.ribbonLeft { left:22px }
-.ribbonLeft2 { left:120px; transform:rotate(2deg) }
-.ribbonLeft2:hover { transform:translateY(-1px) rotate(2deg) }
+.ribbonLeft {
+  left: 22px
+}
+
+.ribbonLeft2 {
+  left: 120px;
+  transform: rotate(2deg)
+}
+
+.ribbonLeft2:hover {
+  transform: translateY(-1px) rotate(2deg)
+}
 
 /* 학기별 보기 */
-.semesterWrap { padding:12px }
+.semesterWrap {
+  padding: 12px
+}
 
 .semesterCard {
-  border:1px solid #e5e7eb;
-  border-radius:12px;
-  overflow:hidden;
-  background:#fff;
-  margin-bottom:16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  margin-bottom: 16px;
 }
 
 .semesterHeader {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  background:#f3f4f6;
-  color:#111827;
-  font-weight:700;
-  padding:10px 12px;
-  border-bottom:1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f3f4f6;
+  color: #111827;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .badgeEng {
-  margin-left:8px;
-  display:inline-block;
-  padding:2px 8px;
-  font-size:12px;
-  border-radius:9999px;
-  background:#e0f2fe;
-  color:#0369a1;
-  font-weight:700;
+  margin-left: 8px;
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 9999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 700;
 }
 
 .badgePlan {
-  margin-left:8px;
-  font-size:12px;
-  color:#7c3aed;
-  background:#ede9fe;
-  border-radius:9999px;
-  padding:2px 8px;
-  font-weight:700;
+  margin-left: 8px;
+  font-size: 12px;
+  color: #7c3aed;
+  background: #ede9fe;
+  border-radius: 9999px;
+  padding: 2px 8px;
+  font-weight: 700;
 }
 
 .semesterAddSmall {
-  margin-left:auto;
-  background:#fff;
-  border:1px solid #cbd5e1;
-  color:#1f2937;
-  border-radius:8px;
-  padding:4px 10px;
-  font-size:13px;
-  cursor:pointer;
+  margin-left: auto;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  color: #1f2937;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
 }
 
-.semesterAddSmall:hover { background:#f8fafc }
+.semesterAddSmall:hover {
+  background: #f8fafc
+}
 
 .semesterAddBar {
   display: flex;
@@ -396,8 +440,13 @@
 }
 
 /* ========= PC / 모바일 스위치 ========= */
-.desktopOnly { display: block; }
-.mobileOnly { display: none; }
+.desktopOnly {
+  display: block;
+}
+
+.mobileOnly {
+  display: none;
+}
 
 /* ========= 모바일 카드 스타일 ========= */
 @media (max-width: 768px) {
@@ -406,8 +455,13 @@
     padding: 16px 10px;
   }
 
-  .desktopOnly { display: none; }
-  .mobileOnly { display: block; }
+  .desktopOnly {
+    display: none;
+  }
+
+  .mobileOnly {
+    display: block;
+  }
 
   .mobileSummaryWrap {
     display: flex;
@@ -421,104 +475,104 @@
     border: 1px solid #e5e7eb;
     padding: 10px 12px;
     background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 
   .mobileCardHeader {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
   }
 
   .mobileCategory {
-    font-weight:700;
-    font-size:14px;
-    color:#111827;
+    font-weight: 700;
+    font-size: 14px;
+    color: #111827;
   }
 
   .mobileStatusBadge {
-    padding:2px 8px;
-    border-radius:9999px;
-    font-size:12px;
-    border:1px solid currentColor;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
+    border: 1px solid currentColor;
   }
 
   .mobileCardBody {
-    font-size:13px;
+    font-size: 13px;
   }
 
   .mobileRow {
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-    margin-top:4px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 4px;
   }
 
   .mobileLabel {
-    color:#6b7280;
+    color: #6b7280;
   }
 
   .mobileValue {
-    font-weight:600;
-    color:#111827;
+    font-weight: 600;
+    color: #111827;
   }
 
   .mobileCardFooter {
-    margin-top:8px;
-    text-align:right;
+    margin-top: 8px;
+    text-align: right;
   }
 
   .mobileViewBtn {
-    padding:4px 10px;
-    border-radius:9999px;
-    font-size:12px;
-    background:#fff;
-    border:1px solid #d1d5db;
-    cursor:pointer;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
   }
 
   /* 학기별 모바일 과목 카드 */
   .mobileCourseList {
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    padding:8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
   }
 
   .mobileCourseCard {
-    border-radius:10px;
-    border:1px solid #e5e7eb;
-    padding:8px 10px;
-    background:#fff;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    padding: 8px 10px;
+    background: #fff;
   }
 
   .mobileCourseTitleRow {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
   }
 
   .mobileCourseName {
-    font-size:14px;
-    font-weight:600;
-    color:#111827;
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
   }
 
   .mobileCourseMeta {
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    font-size:12px;
-    color:#4b5563;
-    margin-bottom:6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    color: #4b5563;
+    margin-bottom: 6px;
   }
 
   .mobileEmpty {
-    padding:10px 12px;
-    font-size:13px;
-    color:#6b7280;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #6b7280;
   }
 
   /* 모바일에서 FAB 위치 조금 위로 조정 */
@@ -531,7 +585,8 @@
 /* 🎓 졸업 축하 배너 */
 .congratsBanner {
   position: fixed;
-  top: 64px;            /* 헤더 바로 아래 정도 */
+  top: 64px;
+  /* 헤더 바로 아래 정도 */
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 18px;
@@ -555,6 +610,7 @@
     opacity: 0;
     transform: translate(-50%, -6px);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0);
@@ -587,6 +643,7 @@
   from {
     transform: scale(1);
   }
+
   to {
     transform: scale(1.08);
   }
@@ -609,8 +666,10 @@
   font-size: 14px;
 
   /* ✅ 추가 */
-  white-space: nowrap;   /* 글자 줄바꿈 방지 */
-  min-width: 48px;       /* 너무 좁아지지 않게 최소 폭 */
+  white-space: nowrap;
+  /* 글자 줄바꿈 방지 */
+  min-width: 48px;
+  /* 너무 좁아지지 않게 최소 폭 */
   text-align: center;
 }
 
@@ -619,6 +678,7 @@
   border: none;
   color: white;
 }
+
 .btnGhost:hover {
   background: #f9fafb;
 }
@@ -633,16 +693,19 @@
   .btnGroup {
     gap: 6px;
   }
+
   .congratsBanner {
     top: 56px;
     font-size: 13px;
     padding: 8px 14px;
   }
+
   .btnGhost,
   .btnDanger {
     font-size: 13px;
     padding: 5px 10px;
   }
+
   .plusArea {
     bottom: 20px;
     padding-right: 8px;
@@ -657,24 +720,13 @@
   margin: 18px auto 0;
 }
 
-/* 기존 card에 있던 max-width/margin은 cardWrap로 옮겼으니 card에서는 제거해도 됨 */
-.card {
-  /* max-width: 1000px;  <-- 제거 추천 */
-  /* margin: 18px auto 0; <-- 제거 추천 */
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  padding: 24px;
-  position: relative;
-  z-index: 10;
-  transition: opacity .18s, transform .18s;
-}
-
 /* 표 오른쪽 바깥 위 */
 .topRightNote {
   position: absolute;
-  top: -25px;      /* ✅ 카드 바깥 위로 올리기 */
-  right: 15px;      /* ✅ 표 오른쪽 끝에 맞추기 */
+  top: -25px;
+  /* ✅ 카드 바깥 위로 올리기 */
+  right: 15px;
+  /* ✅ 표 오른쪽 끝에 맞추기 */
   color: #9aa0a6;
   font-size: 13px;
   font-weight: 500;
@@ -687,6 +739,7 @@
     margin: 12px 8px 0;
     max-width: none;
   }
+
   .topRightNote {
     top: -20px;
     right: 15px;
@@ -697,7 +750,8 @@
 /* 상단 안내 문구 */
 .noticeWrap {
   max-width: 1000px;
-  margin: 10px auto 50px; /* ✅ 아래 카드랑 간격 확보 */
+  margin: 10px auto 50px;
+  /* ✅ 아래 카드랑 간격 확보 */
   padding: 10px 14px;
   border-radius: 12px;
   background: #f8fafc;
@@ -722,7 +776,104 @@
     margin: 8px 8px 0;
     padding: 10px 12px;
   }
+
   .noticeText {
     font-size: 12px;
   }
+}
+
+
+/* ======= 2컬럼 그리드(좌: 메인 / 우: 랭킹) ======= */
+.pageRoot {
+  position: relative;
+  min-height: 100vh;
+}
+
+.pageRow {
+  /* ✅ 화면 커져도 표 + 랭킹이 한 덩어리로 고정 */
+  max-width: 1420px;
+  /* 1000(표) + 380(랭킹) + gap */
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  /* 여기만 줄이면 간격 줄어듦 */
+}
+
+.leftPane {
+  flex: 1;
+  min-width: 0;
+}
+
+
+.leftGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 0;
+  /* 기본 닫힘 */
+  gap: 18px;
+  align-items: start;
+}
+
+.leftGridOpen {
+  grid-template-columns: minmax(0, 1fr) 380px;
+  /* 열림 */
+}
+
+.leftMain {
+  min-width: 0;
+}
+
+.rankingPane {
+  position: fixed;
+  top: 113px;
+  width: 380px;
+
+  right: calc(
+    max(24px, (100vw - 1420px) / 2 + 24px)
+  - clamp(0px, (100vw - 1420px) / 9, 120px)
+  );
+
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+
+  transition: opacity .2s ease, transform .25s ease;
+  transform: translateX(12px);
+}
+
+.rankingPaneOn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+/* 카드 */
+.rankingCardMock {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.rankingHeader {
+  padding: 14px 16px;
+  font-weight: 900;
+  font-size: 16px;
+  color: #1e3a8a;
+  /* indigo-900 */
+  background: #eff6ff;
+  /* blue-50 */
+  border-bottom: 1px solid #dbeafe;
+}
+
+
+.rankingBody {
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+  flex: 1;
 }

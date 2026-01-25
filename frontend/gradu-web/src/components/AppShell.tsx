@@ -1,8 +1,9 @@
 // src/components/AppShell.tsx
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { logoutApi } from "../lib/axios";
 import Footer from "./Footer";
+import { useOverlayUI } from "../ui/OverlayUIContext";
 
 import "./AppShell.css";
 
@@ -31,6 +32,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
     }
   };
 
+  const loc = useLocation();
+  const { isRankingOpen, toggleRanking, closeRanking } = useOverlayUI();
+
+  // 커리큘럼 페이지에서만 보이게 (경로는 너 프로젝트에 맞춰 수정)
+  const showRankingBtn = loc.pathname === "/" || loc.pathname.startsWith("/curriculum");
+
+  // 페이지 이동 시 랭킹 자동 닫기(선택)
+  useEffect(() => {
+    closeRanking();
+  }, [loc.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="appShell">
       <header className="appHeader">
@@ -42,14 +54,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </h1>
 
           <div className="account">
+            {showRankingBtn && (
+              <button
+                type="button"
+                onClick={toggleRanking}
+                className={`rankingBtn ${isRankingOpen ? "rankingBtnActive" : ""}`}
+                aria-pressed={isRankingOpen}
+              >
+                <span className="rankingIcon" aria-hidden>🏅</span>
+                <span className="rankingBtnText">과목 랭킹</span>
+              </button>
+            )}
+
             <button
               ref={btnRef}
               onClick={() => setOpen((v) => !v)}
               className="accountBtn"
             >
-              <span className="accountIcon" aria-hidden>
-                ⚙️
-              </span>
+              <span className="accountIcon" aria-hidden>⚙️</span>
               <span className="accountName">설정</span>
             </button>
 
