@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,51 +19,36 @@ import static org.mockito.Mockito.*;
 class CourseRankingServiceTest {
 
     private CourseRankingRepository repository;
+    private MajorRoadmapIndex roadmapIndex;
     private CourseRankingService service;
-    private MajorRoadmapIndex resolver;
 
     @BeforeEach
     void setUp() {
         repository = mock(CourseRankingRepository.class);
-        resolver = mock(MajorRoadmapIndex.class);
-        service = new CourseRankingService(repository, resolver);
+        roadmapIndex = mock(MajorRoadmapIndex.class);
+        service = new CourseRankingService(repository, roadmapIndex);
     }
 
     @Test
-    void getCourseRanking_returnsMajorAndLiberalRankings_withFilteringAndRanksStartingAt1() {
-        // given: 호출 순서(예시)
-        // 1) major-y1s2
-        // 2) major-y2s1
-        // 3) major-y2s2
-        // 4) major-y3s1
-        // 5) major-y3s2
-        // 6) major-y4s1
-        // 7) major-y4s2
-        // 8) liberal-faith
-        // 9) liberal-generalEdu
-        // 10) liberal-bsm
-        // 11) liberal-free
-
-        // ✅ 너 서비스가 "전공을 학기별로 7번 호출"하도록 구현했다고 가정
-        // 만약 전공을 1번만 호출하는 구조면, 이 테스트의 반환/검증도 그 구조로 맞춰야 해.
-
-        List<CourseRankingRepository.CourseCountRow> y1s2Rows = List.of(
+    void getCourseRanking_returnsMajorAndLiberalRankings_withFiltering_andMajorGroupedByTerm() {
+        // ===== major rows (repo 1st call) =====
+        List<CourseRankingRepository.CourseCountRow> majorRows = List.of(
                 row("Intro to Programming", 12),
-                row("Discrete Math", 10)
+                row("Discrete Math", 10),
+                row("Unmapped Major Course", 9)
         );
-        List<CourseRankingRepository.CourseCountRow> y2s1Rows = List.of(
-                row("Data Structures", 20)
-        );
-        List<CourseRankingRepository.CourseCountRow> y2s2Rows = List.of();
-        List<CourseRankingRepository.CourseCountRow> y3s1Rows = List.of();
-        List<CourseRankingRepository.CourseCountRow> y3s2Rows = List.of();
-        List<CourseRankingRepository.CourseCountRow> y4s1Rows = List.of();
-        List<CourseRankingRepository.CourseCountRow> y4s2Rows = List.of();
 
-        // 교양: faith에 필터링 대상 포함
+        when(roadmapIndex.findTermByCourseName("Intro to Programming"))
+                .thenReturn(Optional.of(new MajorRoadmapIndex.TermKey(1, 2))); // y1s2
+        when(roadmapIndex.findTermByCourseName("Discrete Math"))
+                .thenReturn(Optional.of(new MajorRoadmapIndex.TermKey(2, 1))); // y2s1
+        when(roadmapIndex.findTermByCourseName("Unmapped Major Course"))
+                .thenReturn(Optional.empty());
+
+        // ===== liberal rows (repo calls 2~5) =====
         List<CourseRankingRepository.CourseCountRow> faithRows = List.of(
-                row("채플", 30),
-                row("공동체리더십훈련(1)", 25),
+                row("채플", 30),                 // 제외
+                row("공동체리더십훈련(1)", 25),   // 제외
                 row("그리스도인과 선교", 20)
         );
         List<CourseRankingRepository.CourseCountRow> generalEduRows = List.of(
@@ -78,112 +64,90 @@ class CourseRankingServiceTest {
 
         when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
                 .thenReturn(
-                        y1s2Rows,
-                        y2s1Rows,
-                        y2s2Rows,
-                        y3s1Rows,
-                        y3s2Rows,
-                        y4s1Rows,
-                        y4s2Rows,
-                        faithRows,
-                        generalEduRows,
-                        bsmRows,
-                        freeRows
+                        majorRows,       // 1) major (전체)
+                        faithRows,       // 2) liberal-faith
+                        generalEduRows,  // 3) liberal-generalEdu
+                        bsmRows,         // 4) liberal-bsm
+                        freeRows         // 5) liberal-freeElective
                 );
 
         // when
         CourseRankingDto.RankingResponse res = service.getCourseRanking();
 
-        // then: major.y1s2 rank 재부여
+        // then: major buckets
         assertThat(res.major().y1s2()).containsExactly(
-                new CourseRankingDto.RankingItem(1, "Intro to Programming", 12, 0),
-                new CourseRankingDto.RankingItem(2, "Discrete Math", 10, 0)
+                new CourseRankingDto.RankingItem(1, "Intro to Programming", 12, 0)
         );
-
-        // then: major.y2s1
         assertThat(res.major().y2s1()).containsExactly(
-                new CourseRankingDto.RankingItem(1, "Data Structures", 20, 0)
+                new CourseRankingDto.RankingItem(1, "Discrete Math", 10, 0)
         );
 
-        // then: liberal.faithWorldview (채플/공동체리더십훈련 제외 + rank 재부여)
+        // Unmapped는 어떤 버킷에도 없어야 함
+        boolean existsUnmapped =
+                res.major().y1s2().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"))
+                        || res.major().y2s1().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"))
+                        || res.major().y2s2().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"))
+                        || res.major().y3s1().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"))
+                        || res.major().y3s2().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"))
+                        || res.major().y4s1().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"))
+                        || res.major().y4s2().stream().anyMatch(i -> i.courseName().equals("Unmapped Major Course"));
+        assertThat(existsUnmapped).isFalse();
+
+        // then: liberal filtering + rank reassigned
         assertThat(res.liberal().faithWorldview()).containsExactly(
                 new CourseRankingDto.RankingItem(1, "그리스도인과 선교", 20, 0)
         );
-
-        // then: liberal.generalEdu
         assertThat(res.liberal().generalEdu()).containsExactly(
                 new CourseRankingDto.RankingItem(1, "철학의이해", 18, 0),
                 new CourseRankingDto.RankingItem(2, "글쓰기", 15, 0)
         );
-
-        // then: liberal.bsm
         assertThat(res.liberal().bsm()).containsExactly(
                 new CourseRankingDto.RankingItem(1, "Calculus1", 100, 0)
         );
-
-        // then: liberal.freeElective
         assertThat(res.liberal().freeElective()).containsExactly(
                 new CourseRankingDto.RankingItem(1, "자유선택과목", 22, 0)
         );
 
-        // repository 호출 횟수(전공 7 + 교양 4 = 11)
-        verify(repository, times(11)).findTopCoursesByCategories(anySet(), any(Pageable.class));
+        verify(repository, times(5))
+                .findTopCoursesByCategories(anySet(), any(Pageable.class));
     }
 
     @Test
-    void getCourseRanking_callsRepository_withExpectedPageSizes() {
-        // given: 빈 리스트를 호출 횟수만큼 반환
+    void getCourseRanking_callsRepository_5times_and_usesReasonablePageSizes() {
         when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
-                .thenReturn(
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of(),
-                        List.<CourseRankingRepository.CourseCountRow>of()
-                );
+                .thenReturn(List.of(), List.of(), List.of(), List.of(), List.of());
 
-        // when
         service.getCourseRanking();
 
-        // then
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Set<Category>> catCaptor = (ArgumentCaptor) ArgumentCaptor.forClass(Set.class);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
 
-        verify(repository, times(11)).findTopCoursesByCategories(catCaptor.capture(), pageableCaptor.capture());
+        verify(repository, times(5))
+                .findTopCoursesByCategories(catCaptor.capture(), pageableCaptor.capture());
 
-        var cats = catCaptor.getAllValues();
         var pages = pageableCaptor.getAllValues();
+        assertThat(pages).hasSize(5);
 
-        // 전부 page=0
+        // page=0
         for (Pageable p : pages) {
             assertThat(p.getPageNumber()).isEqualTo(0);
         }
 
-        // 전공/교양은 서비스 구현에 따라 pageSize가 다를 수 있음.
-        // 네 기존 구현은 applyFilter=true 인 경우 30, 아니면 10이었음.
-        // 전공 학기별도 보통 10으로 두는 게 자연스러움.
-        // 여기서는 "전부 10 또는 30 중 하나"로만 검증(너무 빡세게 고정하지 않음)
+        // ✅ 핵심 수정:
+        // major는 roadmap 분류하려고 크게 가져올 수 있음(예: 300)
+        // liberal 4개는 필터링 때문에 30(혹은 10)일 수 있음
+        // -> "10/30/300" 허용으로 테스트를 서비스 정책에 맞춘다.
         for (Pageable p : pages) {
-            assertThat(p.getPageSize()).isIn(10, 30);
+            assertThat(p.getPageSize()).isIn(10, 30, 300);
         }
-
-        assertThat(cats).hasSize(11);
     }
 
     @Test
-    void liberalRanking_limitsTo10_afterFiltering_andRanksAreReassigned_perSubTab() {
-        // given
-        // 전공 7회는 빈값
-        List<CourseRankingRepository.CourseCountRow> empty = List.of();
+    void liberalFaith_limitsTo10_afterFiltering_andRanksReassigned() {
+        // major 1회 + liberal 4회 = 5회
+        List<CourseRankingRepository.CourseCountRow> majorEmpty = List.of();
 
-        // faith는 필터링 대상 + 10개 초과
         List<CourseRankingRepository.CourseCountRow> faithRows = List.of(
                 row("채플", 100),
                 row("공동체리더십훈련", 99),
@@ -202,17 +166,15 @@ class CourseRankingServiceTest {
 
         when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
                 .thenReturn(
-                        empty, empty, empty, empty, empty, empty, empty, // major 7
-                        faithRows,                                       // liberal faith
-                        List.<CourseRankingRepository.CourseCountRow>of(), // generalEdu
-                        List.<CourseRankingRepository.CourseCountRow>of(), // bsm
-                        List.<CourseRankingRepository.CourseCountRow>of()  // free
+                        majorEmpty, // 1) major
+                        faithRows,  // 2) liberal-faith
+                        List.of(),  // 3) generalEdu
+                        List.of(),  // 4) bsm
+                        List.of()   // 5) freeElective
                 );
 
-        // when
         CourseRankingDto.RankingResponse res = service.getCourseRanking();
 
-        // then
         var faith = res.liberal().faithWorldview();
         assertThat(faith).hasSize(10);
         assertThat(faith.get(0)).isEqualTo(new CourseRankingDto.RankingItem(1, "교양1", 98, 0));
