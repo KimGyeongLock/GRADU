@@ -181,6 +181,21 @@ class CourseRankingServiceTest {
         assertThat(faith.get(9)).isEqualTo(new CourseRankingDto.RankingItem(10, "교양10", 89, 0));
     }
 
+    @Test
+    void majorCourse_isIgnored_whenRoadmapIndexReturnsEmpty() {
+        when(repository.findTopCoursesByCategories(anySet(), any(Pageable.class)))
+                .thenReturn(List.of(row("Unknown Major", 10)),
+                        List.of(), List.of(), List.of(), List.of());
+
+        when(roadmapIndex.findTermByCourseName("Unknown Major"))
+                .thenReturn(Optional.empty());
+
+        CourseRankingDto.RankingResponse res = service.getCourseRanking();
+
+        assertThat(res.major().y1s2()).isEmpty();
+        assertThat(res.major().y2s1()).isEmpty();
+    }
+
     private static CourseRankingRepository.CourseCountRow row(String name, long takenCount) {
         return new CourseRankingRepository.CourseCountRow() {
             @Override public String getName() { return name; }
