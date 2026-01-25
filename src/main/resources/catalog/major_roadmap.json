@@ -1,10 +1,11 @@
 [
   { "year": 1, "semester": 2, "courseCode": "ECE10002", "nameKo": "C 프로그래밍", "nameEn": "C-Programming" },
+  { "year": 1, "semester": 2, "courseCode": "ECE10002", "nameKo": "C 프로그래밍(전산전자)", "nameEn": "C-Programming" },
   { "year": 1, "semester": 2, "courseCode": "ECE10005", "nameKo": "코딩 스튜디오", "nameEn": "Coding Studio" },
   { "year": 1, "semester": 2, "courseCode": "ECE10020", "nameKo": "공학설계입문", "nameEn": "Introduction to Engineering Design" },
 
-  { "year": 2, "semester": 1, "courseCode": "ECE20010", "nameKo": "데이터구조", "nameEn": "Data Structure" },
-  { "year": 2, "semester": 1, "courseCode": "ECE20016", "nameKo": "자바프로그래밍언어", "nameEn": "Introduction to JAVA Programming" },
+  { "year": 2, "semester": 1, "courseCode": "ECE20010", "nameKo": "데이터구조", "nameEn": "Data Structures" },
+  { "year": 2, "semester": 1, "courseCode": "ECE20016", "nameKo": "자바프로그래밍언어", "nameEn": "Java Programming" },
   { "year": 2, "semester": 1, "courseCode": "ECE20025", "nameKo": "프로그래밍 스튜디오", "nameEn": "Programming Studio" },
   { "year": 2, "semester": 1, "courseCode": "ECE20057", "nameKo": "논리설계", "nameEn": "Logic Design" },
   { "year": 2, "semester": 1, "courseCode": "ECE20064", "nameKo": "회로이론", "nameEn": "Circuit Theory" },
@@ -21,10 +22,10 @@
 
   { "year": 3, "semester": 1, "courseCode": "ECE30002", "nameKo": "모바일앱개발", "nameEn": "Mobile App Development" },
   { "year": 3, "semester": 1, "courseCode": "ECE30008", "nameKo": "AI개론", "nameEn": "Introduction to AI" },
-  { "year": 3, "semester": 1, "courseCode": "ECE30011", "nameKo": "알고리듬분석", "nameEn": "Algorithm Analysis" },
+  { "year": 3, "semester": 1, "courseCode": "ECE30011", "nameKo": "알고리듬분석", "nameEn": "Algorithms Analysis" },
   { "year": 3, "semester": 1, "courseCode": "ECE30012", "nameKo": "객체지향설계패턴", "nameEn": "Object-Oriented Design Pattern" },
-  { "year": 3, "semester": 1, "courseCode": "ECE30021", "nameKo": "운영체제", "nameEn": "Operating System" },
-  { "year": 3, "semester": 1, "courseCode": "ECE30030", "nameKo": "데이터베이스", "nameEn": "Data Base" },
+  { "year": 3, "semester": 1, "courseCode": "ECE30021", "nameKo": "운영체제", "nameEn": "Operating Systems" },
+  { "year": 3, "semester": 1, "courseCode": "ECE30030", "nameKo": "데이터베이스", "nameEn": "Database System" },
   { "year": 3, "semester": 1, "courseCode": "ECE30039", "nameKo": "직업과진로설계", "nameEn": "Vocation and Career Planning" },
   { "year": 3, "semester": 1, "courseCode": "ECE30051", "nameKo": "전자회로1", "nameEn": "Electronic Circuits 1" },
   { "year": 3, "semester": 1, "courseCode": "ECE30070", "nameKo": "마이크로프로세서응용", "nameEn": "Microprocessor Application" },
