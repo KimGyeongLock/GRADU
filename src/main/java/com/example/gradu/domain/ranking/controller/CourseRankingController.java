@@ -1,6 +1,5 @@
 package com.example.gradu.domain.ranking.controller;
 
-import com.example.gradu.domain.ranking.dto.CourseRankingDto;
 import com.example.gradu.domain.ranking.service.CourseRankingService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +18,7 @@ public class CourseRankingController {
     }
 
     @GetMapping("/courses")
-    public RankingResponse courseBanking() {
+    public RankingResponse courseRanking() {
         return rankingService.getCourseRanking();
     }
 }

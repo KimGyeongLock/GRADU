@@ -31,7 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class CourseRankingControllerTest {
 
-    @Autowired MockMvc mvc;
+    @Autowired
+    MockMvc mvc;
 
     @MockitoBean
     CourseRankingService rankingService;
@@ -39,10 +40,26 @@ class CourseRankingControllerTest {
     @Test
     void getCourses_returnsRankingResponseJson() throws Exception {
         // given
-        var resp = new CourseRankingDto.RankingResponse(
-                List.of(new CourseRankingDto.RankingItem(1, "DB", 10, 0)),
-                List.of(new CourseRankingDto.RankingItem(1, "채플", 20, 0))
+        var item = new CourseRankingDto.RankingItem(1, "DB", 10, 0);
+
+        var major = new CourseRankingDto.MajorRanking(
+                List.of(item), // y1s2
+                List.of(),     // y2s1
+                List.of(),     // y2s2
+                List.of(),     // y3s1
+                List.of(),     // y3s2
+                List.of(),     // y4s1
+                List.of()      // y4s2
         );
+
+        var liberal = new CourseRankingDto.LiberalRanking(
+                List.of(new CourseRankingDto.RankingItem(1, "채플", 20, 0)), // faithWorldview
+                List.of(), // generalEdu
+                List.of(), // bsm
+                List.of()  // freeElective
+        );
+
+        var resp = new CourseRankingDto.RankingResponse(major, liberal);
 
         when(rankingService.getCourseRanking()).thenReturn(resp);
 
@@ -50,10 +67,14 @@ class CourseRankingControllerTest {
         mvc.perform(get("/api/v1/rankings/courses"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("application/json"))
-                .andExpect(jsonPath("$.major[0].rank").value(1))
-                .andExpect(jsonPath("$.major[0].courseName").value("DB"))
-                .andExpect(jsonPath("$.major[0].takenCount").value(10))
-                .andExpect(jsonPath("$.major[0].delta").value(0))
-                .andExpect(jsonPath("$.liberal[0].courseName").value("채플"));
+
+                // major.y1s2[0]
+                .andExpect(jsonPath("$.major.y1s2[0].rank").value(1))
+                .andExpect(jsonPath("$.major.y1s2[0].courseName").value("DB"))
+                .andExpect(jsonPath("$.major.y1s2[0].takenCount").value(10))
+                .andExpect(jsonPath("$.major.y1s2[0].delta").value(0))
+
+                // liberal.faithWorldview[0]
+                .andExpect(jsonPath("$.liberal.faithWorldview[0].courseName").value("채플"));
     }
 }

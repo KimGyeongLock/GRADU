@@ -11,14 +11,41 @@ class CourseRankingDtoTest {
     @Test
     void dtoRecords_canBeConstructedAndRead() {
         var item = new CourseRankingDto.RankingItem(1, "자료구조", 1234, 0);
-        var resp = new CourseRankingDto.RankingResponse(List.of(item), List.of());
 
+        var major = new CourseRankingDto.MajorRanking(
+                List.of(item), // y1s2
+                List.of(),     // y2s1
+                List.of(),     // y2s2
+                List.of(),     // y3s1
+                List.of(),     // y3s2
+                List.of(),     // y4s1
+                List.of()      // y4s2
+        );
+
+        var liberal = new CourseRankingDto.LiberalRanking(
+                List.of(), // faithWorldview
+                List.of(), // generalEdu
+                List.of(), // bsm
+                List.of()  // freeElective
+        );
+
+        var resp = new CourseRankingDto.RankingResponse(major, liberal);
+
+        // item
         assertThat(item.rank()).isEqualTo(1);
         assertThat(item.courseName()).isEqualTo("자료구조");
         assertThat(item.takenCount()).isEqualTo(1234);
         assertThat(item.delta()).isEqualTo(0);
 
-        assertThat(resp.major()).hasSize(1);
-        assertThat(resp.liberal()).isEmpty();
+        // major
+        assertThat(resp.major().y1s2()).hasSize(1);
+        assertThat(resp.major().y1s2().get(0).courseName()).isEqualTo("자료구조");
+        assertThat(resp.major().y2s1()).isEmpty();
+
+        // liberal
+        assertThat(resp.liberal().faithWorldview()).isEmpty();
+        assertThat(resp.liberal().generalEdu()).isEmpty();
+        assertThat(resp.liberal().bsm()).isEmpty();
+        assertThat(resp.liberal().freeElective()).isEmpty();
     }
 }

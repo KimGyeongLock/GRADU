@@ -828,7 +828,6 @@
 .rankingPane {
   position: fixed;
   top: 113px;
-  bottom: 24px;
   width: 380px;
 
   right: calc(
@@ -857,7 +856,6 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   border: 1px solid rgba(0, 0, 0, 0.06);
-  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -875,8 +873,5 @@
 
 
 .rankingBody {
-  min-height: 420px;
-  max-height: calc(100vh - 200px);
-  overflow: auto;
-  flex: 1;
+  overflow: visible; /* 컨텐츠만큼 */
 }
