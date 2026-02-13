@@ -47,6 +47,9 @@
 
 .tabIcon{ color: currentColor; }
 
+.tabIconActive{ opacity: 1; transition: opacity .12s ease; }
+.tabIconInactive{ opacity: 0.7; transition: opacity .12s ease; }
+
 /* ===== List ===== */
 .list{
   padding: 10px 8px 12px;

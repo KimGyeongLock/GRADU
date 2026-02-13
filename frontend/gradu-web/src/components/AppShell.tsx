@@ -41,7 +41,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   // 페이지 이동 시 랭킹 자동 닫기(선택)
   useEffect(() => {
     closeRanking();
-  }, [loc.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loc.pathname, closeRanking]);
 
   return (
     <div className="appShell">

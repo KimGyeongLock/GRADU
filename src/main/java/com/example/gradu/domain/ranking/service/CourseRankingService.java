@@ -6,6 +6,7 @@ import com.example.gradu.domain.ranking.dto.CourseRankingDto.*;
 import com.example.gradu.domain.ranking.repository.CourseRankingRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -42,6 +43,11 @@ public class CourseRankingService {
         this.majorRoadmapIndex = majorRoadmapIndex;
     }
 
+    private static final int MAJOR_FETCH_SIZE = 300;
+    private static final int LIBERAL_FILTER_FETCH_SIZE = 30;
+    private static final int RANKING_LIMIT = 10;
+
+    @Transactional(readOnly = true)
     public RankingResponse getCourseRanking() {
         var major = loadMajorByTerms();
 
@@ -73,7 +79,7 @@ public class CourseRankingService {
         // ✅ 전공은 term별로 쪼개야 하므로 충분히 많이 가져오기
         var fetchedRows = repository.findTopCoursesByCategories(
                 MAJOR_CATEGORIES,
-                PageRequest.of(0, 300)
+                PageRequest.of(0, MAJOR_FETCH_SIZE)
         );
 
         for (var r : fetchedRows) {
@@ -127,7 +133,7 @@ public class CourseRankingService {
                     if (c != 0) return c;
                     return a.displayName.compareTo(a.displayName);
                 })
-                .limit(10)
+                .limit(RANKING_LIMIT)
                 .toList();
 
         return IntStream.range(0, merged.size())
@@ -144,7 +150,7 @@ public class CourseRankingService {
      * ✅ 교양: 카테고리별로 가져온 뒤(필요시 필터) → 합산 top10
      */
     private List<RankingItem> loadTop10Merged(Set<Category> categories, boolean applyFilter) {
-        int fetchSize = applyFilter ? 30 : 10;
+        int fetchSize = applyFilter ? LIBERAL_FILTER_FETCH_SIZE : RANKING_LIMIT;
 
         var fetchedRows = repository.findTopCoursesByCategories(
                 categories,

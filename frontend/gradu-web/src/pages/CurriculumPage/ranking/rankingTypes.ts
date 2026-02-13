@@ -6,7 +6,6 @@ export type RankingItem = {
 };
 
 export type MajorRanking = {
-  y1s1: RankingItem[];
   y1s2: RankingItem[];
   y2s1: RankingItem[];
   y2s2: RankingItem[];

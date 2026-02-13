@@ -43,13 +43,12 @@ function Medal({ rank }: { rank: number }) {
 function HatIcon({ active }: { active: boolean }) {
   return (
     <svg
-      className={s.tabIcon}
+      className={`${s.tabIcon} ${active ? s.tabIconActive : s.tabIconInactive}`}
       width="20"
       height="20"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      style={{ opacity: active ? 1 : 0.7 }}
     >
       <path
         d="M12 3 2 8l10 5 10-5-10-5Z"
@@ -70,13 +69,12 @@ function HatIcon({ active }: { active: boolean }) {
 function BookIcon({ active }: { active: boolean }) {
   return (
     <svg
-      className={s.tabIcon}
+      className={`${s.tabIcon} ${active ? s.tabIconActive : s.tabIconInactive}`}
       width="20"
       height="20"
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      style={{ opacity: active ? 1 : 0.7 }}
     >
       <path
         d="M4.5 5.5c1.5-1 3.5-1 5 0l1 .7 1-.7c1.5-1 3.5-1 5 0V20c-1.5-1-3.5-1-5 0l-1 .7-1-.7c-1.5-1-3.5-1-5 0V5.5Z"

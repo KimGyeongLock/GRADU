@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useState, useCallback, type ReactNode } from "react";
 
 type OverlayUI = {
   isRankingOpen: boolean;
@@ -12,14 +12,18 @@ const Ctx = createContext<OverlayUI | null>(null);
 export function OverlayUIProvider({ children }: { children: ReactNode }) {
   const [isRankingOpen, setIsRankingOpen] = useState(false);
 
+  const openRanking = useCallback(() => setIsRankingOpen(true), []);
+  const closeRanking = useCallback(() => setIsRankingOpen(false), []);
+  const toggleRanking = useCallback(() => setIsRankingOpen((v) => !v), []);
+
   const value = useMemo<OverlayUI>(
     () => ({
       isRankingOpen,
-      openRanking: () => setIsRankingOpen(true),
-      closeRanking: () => setIsRankingOpen(false),
-      toggleRanking: () => setIsRankingOpen((v) => !v),
+      openRanking,
+      closeRanking,
+      toggleRanking,
     }),
-    [isRankingOpen]
+    [isRankingOpen, openRanking, closeRanking, toggleRanking]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
