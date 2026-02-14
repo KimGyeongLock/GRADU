@@ -40,9 +40,9 @@ class CourseRankingControllerTest {
     @Test
     void getCourses_returnsRankingResponseJson() throws Exception {
         // given
-        var item = new CourseRankingDto.RankingItem(1, "DB", 10, 0);
+        var item = new CourseRankingDto.RankingItemDto(1, "DB", 10, 0);
 
-        var major = new CourseRankingDto.MajorRanking(
+        var major = new CourseRankingDto.MajorRankingDto(
                 List.of(item), // y1s2
                 List.of(),     // y2s1
                 List.of(),     // y2s2
@@ -52,14 +52,14 @@ class CourseRankingControllerTest {
                 List.of()      // y4s2
         );
 
-        var liberal = new CourseRankingDto.LiberalRanking(
-                List.of(new CourseRankingDto.RankingItem(1, "채플", 20, 0)), // faithWorldview
+        var liberal = new CourseRankingDto.LiberalRankingDto(
+                List.of(new CourseRankingDto.RankingItemDto(1, "채플", 20, 0)), // faithWorldview
                 List.of(), // generalEdu
                 List.of(), // bsm
                 List.of()  // freeElective
         );
 
-        var resp = new CourseRankingDto.RankingResponse(major, liberal);
+        var resp = new CourseRankingDto.RankingResponseDto(major, liberal);
 
         when(rankingService.getCourseRanking()).thenReturn(resp);
 

@@ -48,17 +48,17 @@ public class CourseRankingService {
     private static final int RANKING_LIMIT = 10;
 
     @Transactional(readOnly = true)
-    public RankingResponse getCourseRanking() {
+    public RankingResponseDto getCourseRanking() {
         var major = loadMajorByTerms();
 
-        var liberal = new LiberalRanking(
+        var liberal = new LiberalRankingDto(
                 loadTop10Merged(LIB_FAITH, true),
                 loadTop10Merged(LIB_GENERAL_EDU, true),
                 loadTop10Merged(LIB_BSM, true),
                 loadTop10Merged(LIB_FREE_ELECTIVE, true)
         );
 
-        return new RankingResponse(major, liberal);
+        return new RankingResponseDto(major, liberal);
     }
 
     /**
@@ -66,7 +66,7 @@ public class CourseRankingService {
      * - 1-1은 없음 → y1s2부터 생성
      * - 같은 과목(공백 차이)은 term 버킷 안에서 합산
      */
-    private MajorRanking loadMajorByTerms() {
+    private MajorRankingDto loadMajorByTerms() {
         Map<String, List<CourseRankingRepository.CourseCountRow>> bucket = new LinkedHashMap<>();
         bucket.put("y1s2", new ArrayList<>());
         bucket.put("y2s1", new ArrayList<>());
@@ -91,7 +91,7 @@ public class CourseRankingService {
             if (list != null) list.add(r);
         }
 
-        return new MajorRanking(
+        return new MajorRankingDto(
                 toTop10Merged(bucket.get("y1s2")),
                 toTop10Merged(bucket.get("y2s1")),
                 toTop10Merged(bucket.get("y2s2")),
@@ -105,7 +105,7 @@ public class CourseRankingService {
     /**
      * ✅ 교양/전공 공통: rows를 "공백 제거 키"로 합산 → takenCount desc 정렬 → top10 → rank 부여
      */
-    private List<RankingItem> toTop10Merged(List<CourseRankingRepository.CourseCountRow> rows) {
+    private List<RankingItemDto> toTop10Merged(List<CourseRankingRepository.CourseCountRow> rows) {
         if (rows == null || rows.isEmpty()) return List.of();
 
         // normKey -> (sumCount, displayName)
@@ -137,7 +137,7 @@ public class CourseRankingService {
                 .toList();
 
         return IntStream.range(0, merged.size())
-                .mapToObj(i -> new RankingItem(
+                .mapToObj(i -> new RankingItemDto(
                         i + 1,
                         merged.get(i).displayName,
                         merged.get(i).takenCount,
@@ -149,7 +149,7 @@ public class CourseRankingService {
     /**
      * ✅ 교양: 카테고리별로 가져온 뒤(필요시 필터) → 합산 top10
      */
-    private List<RankingItem> loadTop10Merged(Set<Category> categories, boolean applyFilter) {
+    private List<RankingItemDto> loadTop10Merged(Set<Category> categories, boolean applyFilter) {
         int fetchSize = applyFilter ? LIBERAL_FILTER_FETCH_SIZE : RANKING_LIMIT;
 
         var fetchedRows = repository.findTopCoursesByCategories(
@@ -196,13 +196,5 @@ public class CourseRankingService {
         return a;
     }
 
-    private static final class Agg {
-        final long takenCount;
-        final String displayName;
-
-        private Agg(long takenCount, String displayName) {
-            this.takenCount = takenCount;
-            this.displayName = displayName;
-        }
-    }
+    private record Agg(long takenCount, String displayName) {}
 }

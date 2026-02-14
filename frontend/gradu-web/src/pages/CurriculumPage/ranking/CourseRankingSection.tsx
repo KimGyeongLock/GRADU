@@ -15,7 +15,7 @@ export default function CourseRankingSection() {
   if (isError) {
     return (
       <div style={{ padding: 12 }}>
-        랭킹 로딩 실패: {(error as Error)?.message ?? "unknown error"}
+        랭킹을 불러오는 데 실패했습니다.
       </div>
     );
   }

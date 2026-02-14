@@ -4,32 +4,32 @@ import java.util.List;
 
 public class CourseRankingDto {
 
-    public record RankingItem(
+    public record RankingItemDto(
             int rank,
             String courseName,
             long takenCount,
             int delta
     ) {}
 
-    public record LiberalRanking(
-            List<RankingItem> faithWorldview,
-            List<RankingItem> generalEdu,
-            List<RankingItem> bsm,
-            List<RankingItem> freeElective
+    public record LiberalRankingDto(
+            List<RankingItemDto> faithWorldview,
+            List<RankingItemDto> generalEdu,
+            List<RankingItemDto> bsm,
+            List<RankingItemDto> freeElective
     ) {}
 
-    public record MajorRanking(
-            List<RankingItem> y1s2,
-            List<RankingItem> y2s1,
-            List<RankingItem> y2s2,
-            List<RankingItem> y3s1,
-            List<RankingItem> y3s2,
-            List<RankingItem> y4s1,
-            List<RankingItem> y4s2
+    public record MajorRankingDto(
+            List<RankingItemDto> y1s2,
+            List<RankingItemDto> y2s1,
+            List<RankingItemDto> y2s2,
+            List<RankingItemDto> y3s1,
+            List<RankingItemDto> y3s2,
+            List<RankingItemDto> y4s1,
+            List<RankingItemDto> y4s2
     ) {}
 
-    public record RankingResponse(
-            MajorRanking major,
-            LiberalRanking liberal
+    public record RankingResponseDto(
+            MajorRankingDto major,
+            LiberalRankingDto liberal
     ) {}
 }

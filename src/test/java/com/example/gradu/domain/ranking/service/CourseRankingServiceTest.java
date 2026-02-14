@@ -86,14 +86,14 @@ class CourseRankingServiceTest {
                 );
 
         // when
-        CourseRankingDto.RankingResponse res = service.getCourseRanking();
+        CourseRankingDto.RankingResponseDto res = service.getCourseRanking();
 
         // then - major y2s1: 합산 + 정렬(자료구조 5 vs 웹서비스개발 4)
         var y2s1 = res.major().y2s1();
         assertThat(y2s1).hasSize(2);
 
         assertThat(y2s1.get(0)).isEqualTo(
-                new CourseRankingDto.RankingItem(1, "자료구조", 5, 0)
+                new CourseRankingDto.RankingItemDto(1, "자료구조", 5, 0)
         );
 
         // ✅ displayName은 더 "읽기 좋은" 쪽(보통 공백 포함/긴 쪽) 우선
@@ -112,25 +112,25 @@ class CourseRankingServiceTest {
 
         // then - liberal faith: 필터링 후 1개만 남고 rank=1
         assertThat(res.liberal().faithWorldview()).containsExactly(
-                new CourseRankingDto.RankingItem(1, "그리스도인과 선교", 10, 0)
+                new CourseRankingDto.RankingItemDto(1, "그리스도인과 선교", 10, 0)
         );
 
         // then - liberal general: "철학의 이해"(2) + "철학의이해"(5) => 7로 합쳐져 1등
         var general = res.liberal().generalEdu();
         assertThat(general).hasSize(2);
         assertThat(general.get(0)).isEqualTo(
-                new CourseRankingDto.RankingItem(1, "철학의 이해", 7, 0)
+                new CourseRankingDto.RankingItemDto(1, "철학의 이해", 7, 0)
         );
         assertThat(general.get(1)).isEqualTo(
-                new CourseRankingDto.RankingItem(2, "글쓰기", 1, 0)
+                new CourseRankingDto.RankingItemDto(2, "글쓰기", 1, 0)
         );
 
         assertThat(res.liberal().bsm()).containsExactly(
-                new CourseRankingDto.RankingItem(1, "Calculus1", 50, 0)
+                new CourseRankingDto.RankingItemDto(1, "Calculus1", 50, 0)
         );
 
         assertThat(res.liberal().freeElective()).containsExactly(
-                new CourseRankingDto.RankingItem(1, "자유선택과목", 7, 0)
+                new CourseRankingDto.RankingItemDto(1, "자유선택과목", 7, 0)
         );
 
         // repo 호출 5번

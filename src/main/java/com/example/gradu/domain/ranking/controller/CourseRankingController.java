@@ -18,7 +18,7 @@ public class CourseRankingController {
     }
 
     @GetMapping("/courses")
-    public RankingResponse courseRanking() {
+    public RankingResponseDto courseRanking() {
         return rankingService.getCourseRanking();
     }
 }

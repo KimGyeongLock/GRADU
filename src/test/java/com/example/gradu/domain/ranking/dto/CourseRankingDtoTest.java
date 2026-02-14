@@ -10,9 +10,9 @@ class CourseRankingDtoTest {
 
     @Test
     void dtoRecords_canBeConstructedAndRead() {
-        var item = new CourseRankingDto.RankingItem(1, "자료구조", 1234, 0);
+        var item = new CourseRankingDto.RankingItemDto(1, "자료구조", 1234, 0);
 
-        var major = new CourseRankingDto.MajorRanking(
+        var major = new CourseRankingDto.MajorRankingDto(
                 List.of(item), // y1s2
                 List.of(),     // y2s1
                 List.of(),     // y2s2
@@ -22,14 +22,14 @@ class CourseRankingDtoTest {
                 List.of()      // y4s2
         );
 
-        var liberal = new CourseRankingDto.LiberalRanking(
+        var liberal = new CourseRankingDto.LiberalRankingDto(
                 List.of(), // faithWorldview
                 List.of(), // generalEdu
                 List.of(), // bsm
                 List.of()  // freeElective
         );
 
-        var resp = new CourseRankingDto.RankingResponse(major, liberal);
+        var resp = new CourseRankingDto.RankingResponseDto(major, liberal);
 
         // item
         assertThat(item.rank()).isEqualTo(1);
