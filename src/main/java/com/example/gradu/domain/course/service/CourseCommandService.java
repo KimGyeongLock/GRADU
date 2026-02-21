@@ -7,6 +7,7 @@ import com.example.gradu.domain.course.repository.CourseRepository;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.domain.curriculum.entity.Curriculum;
 import com.example.gradu.domain.curriculum.repository.CurriculumRepository;
+import com.example.gradu.domain.ranking.service.CourseRankingUpdateService;
 import com.example.gradu.domain.summary.service.SummaryCommandService;
 import com.example.gradu.domain.summary.service.SummaryService;
 import com.example.gradu.global.exception.ErrorCode;
@@ -28,10 +29,13 @@ public class CourseCommandService {
     private final CourseRepository courseRepository;
     private final CurriculumRepository curriculumRepository;
     private final SummaryCommandService summaryCommandService;
+    private final CourseRankingUpdateService rankingUpdateService;
 
     @Transactional
     public Course updateCourse(Long studentId, Long courseId, CourseUpdateRequestDto request) {
         Course course = loadCourse(studentId, courseId);
+        String oldName = course.getName();
+        Category oldCategory = course.getCategory();
 
         if (request.getName() != null && !request.getName().equals(course.getName())) {
             boolean nameExists = courseRepository.existsByStudentIdAndNameAndCategoryAndAcademicYearAndTermAndIdNot(studentId, request.getName(), course.getCategory(), course.getAcademicYear(), course.getTerm(), courseId);
@@ -49,6 +53,8 @@ public class CourseCommandService {
         applyEntityFieldUpdates(course, request, ctx);
 
         summaryCommandService.recomputeAndSave(studentId);
+        rankingUpdateService.onUpdated(oldName, oldCategory, course.getName(), course.getCategory());
+
         return course;
     }
 
@@ -161,6 +167,7 @@ public class CourseCommandService {
             majorDesignedCur.addEarnedCredits(-Optional.ofNullable(course.getDesignedCredit()).orElse(0));
         }
 
+        rankingUpdateService.onDeleted(course.getName(), course.getCategory());
         courseRepository.delete(course);
         summaryCommandService.recomputeAndSave(studentId);
     }
