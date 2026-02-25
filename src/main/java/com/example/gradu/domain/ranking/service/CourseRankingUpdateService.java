@@ -7,12 +7,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.EnumSet;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CourseRankingUpdateService {
     private final CourseRankingRedisRepository redisRepo;
     private final MajorRoadmapIndex roadmapIndex;
+    private static final EnumSet<Category> TRACKED_CATEGORIES = EnumSet.of(
+            Category.MAJOR,
+            Category.FAITH_WORLDVIEW,
+            Category.GENERAL_EDU,
+            Category.BSM,
+            Category.FREE_ELECTIVE_BASIC,
+            Category.FREE_ELECTIVE_MJR
+    );
 
     public void onCreated(String name, Category category) {
         try {
@@ -45,14 +55,15 @@ public class CourseRankingUpdateService {
 
     private void apply(String name, Category category, int delta) {
         String norm = norm(name);
-        if (norm.isBlank() || category == null) return;
-        redisRepo.zincrByCategory(category, norm, delta);
-        redisRepo.saveDisplay(norm, name);
+        if (norm.isBlank() || category == null || !TRACKED_CATEGORIES.contains(category)) return;
 
+        String majorBucket = null;
         if (category == Category.MAJOR) {
-            roadmapIndex.findTermByCourseName(name)
-                    .ifPresent(t -> redisRepo.zincrByMajorBucket(t.toBucketKey(), norm, delta));
+            majorBucket = roadmapIndex.findTermByCourseName(name)
+                    .map(MajorRoadmapIndex.TermKey::toBucketKey)
+                    .orElse(null);
         }
+        redisRepo.updateAtomically(category, majorBucket, norm, name, delta);
     }
 
     private static String norm(String s) {

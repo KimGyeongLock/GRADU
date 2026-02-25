@@ -4,6 +4,8 @@ import com.example.gradu.domain.curriculum.entity.Category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -16,6 +18,17 @@ public class CourseRankingRedisRepository {
     private static final String PREFIX = "ranking:course:v1";
     private static final String DISPLAY_KEY = PREFIX + ":display";
     private static final String READY_KEY = PREFIX + ":ready";
+    private static final RedisScript<Long> UPDATE_RANKING_SCRIPT = new DefaultRedisScript<>(
+            """
+            redis.call('ZINCRBY', KEYS[1], ARGV[1], ARGV[2])          -- cat
+            if KEYS[2] ~= '' then
+              redis.call('ZINCRBY', KEYS[2], ARGV[1], ARGV[2])        -- major(optional)
+            end
+            redis.call('HSET', KEYS[3], ARGV[2], ARGV[3])             -- display
+            return 1
+            """,
+            Long.class
+    );
 
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -56,7 +69,7 @@ public class CourseRankingRedisRepository {
 
     public void clearRankingKeys() {
         Set<String> keys = redisTemplate.keys(PREFIX + ":*");
-        if (keys == null || keys.isEmpty()) return;
+        if (keys.isEmpty()) return;
         redisTemplate.delete(keys);
     }
 
@@ -71,6 +84,26 @@ public class CourseRankingRedisRepository {
             out.add(new ScoreRow(t.getValue(), Math.round(t.getScore())));
         }
         return out;
+    }
+
+    public void updateAtomically(
+        Category category,
+        String majorBucketKeyOrNull,
+        String normName,
+        String displayName,
+        long delta
+    ) {
+        String catKey = PREFIX + ":cat:" + category.name();
+        String majorKey = (majorBucketKeyOrNull == null || majorBucketKeyOrNull.isBlank())
+                ? ""
+                : PREFIX + ":major:" + majorBucketKeyOrNull;
+
+        // KEYS[1]: catKey, KEYS[2]: majorKey, KEYS[3]: DISPLAY_KEY, ARGV[1]: String.valueOf(delta), ARGV[2]: normName, ARGV[3]: displayName
+        redisTemplate.execute(
+                UPDATE_RANKING_SCRIPT,
+                List.of(catKey, majorKey, DISPLAY_KEY),
+                String.valueOf(delta), normName, displayName == null ? "" : displayName
+        );
     }
 
     public record ScoreRow(String normName, long score) {}

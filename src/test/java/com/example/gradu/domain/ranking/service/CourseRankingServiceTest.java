@@ -3,6 +3,7 @@ package com.example.gradu.domain.ranking.service;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.domain.ranking.catalog.MajorRoadmapIndex;
 import com.example.gradu.domain.ranking.dto.CourseRankingDto;
+import com.example.gradu.domain.ranking.repository.CourseRankingRedisRepository;
 import com.example.gradu.domain.ranking.repository.CourseRankingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,12 +22,18 @@ class CourseRankingServiceTest {
     private CourseRankingRepository repository;
     private MajorRoadmapIndex roadmapIndex;
     private CourseRankingService service;
+    private CourseRankingRedisRepository redisRepository;
+
 
     @BeforeEach
     void setUp() {
         repository = mock(CourseRankingRepository.class);
         roadmapIndex = mock(MajorRoadmapIndex.class);
-        service = new CourseRankingService(repository, roadmapIndex);
+        redisRepository = mock(CourseRankingRedisRepository.class);
+
+        when(redisRepository.isReady()).thenReturn(false);
+
+        service = new CourseRankingService(repository, roadmapIndex, redisRepository);
     }
 
     @Test

@@ -99,6 +99,7 @@ public class CourseRankingService {
         var rows = redisRepository.topByCategory(category, LIBERAL_FILTER_FETCH_SIZE);
         return toRankingItems(rows, true);
     }
+
     private List<RankingItemDto> topFreeElective() {
         var basic = redisRepository.topByCategory(Category.FREE_ELECTIVE_BASIC, LIBERAL_FILTER_FETCH_SIZE);
         var mjr = redisRepository.topByCategory(Category.FREE_ELECTIVE_MJR, LIBERAL_FILTER_FETCH_SIZE);
