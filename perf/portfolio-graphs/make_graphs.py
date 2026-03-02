@@ -1,73 +1,70 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-plt.style.use('seaborn-v0_8-whitegrid')
+plt.style.use("seaborn-v0_8-whitegrid")
 
-metrics = pd.read_csv('user_metrics.csv')
-query = pd.read_csv('db_query.csv')
+metrics = pd.read_csv("user_metrics_by_count.csv")
+query = pd.read_csv("db_query.csv")
 
-# 1) p95 comparison
-plt.figure(figsize=(6.4, 4.2))
-colors = ['#2E86DE', '#E67E22']
-plt.bar(metrics['scenario'], metrics['p95_ms'], color=colors)
-plt.title('p95 Latency Comparison (Lower is Better)')
-plt.ylabel('Latency (ms)')
-for x, y in enumerate(metrics['p95_ms']):
-    plt.text(x, y, f'{y:.0f} ms', ha='center', va='bottom', fontsize=10)
+# 정렬
+metrics = metrics.sort_values(["scenario", "user_count"])
+
+# 시나리오 분리
+mysql = metrics[metrics["scenario"].str.lower() == "mysql"]
+redis = metrics[metrics["scenario"].str.lower() == "redis"]
+
+# 1) User Count vs p95
+plt.figure(figsize=(7.2, 4.4))
+plt.plot(mysql["user_count"], mysql["p95_ms"], marker="o", label="MySQL")
+plt.plot(redis["user_count"], redis["p95_ms"], marker="o", label="Redis")
+plt.title("User Count vs p95 Latency")
+plt.xlabel("User Count")
+plt.ylabel("p95 (ms)")
+plt.legend()
 plt.tight_layout()
-plt.savefig('chart_p95_comparison.png', dpi=220)
+plt.savefig("chart_usercount_p95.png", dpi=220)
 plt.close()
 
-# 2) Throughput comparison
-plt.figure(figsize=(6.4, 4.2))
-plt.bar(metrics['scenario'], metrics['throughput_rps'], color=colors)
-plt.title('Throughput Comparison (Higher is Better)')
-plt.ylabel('Requests/sec')
-for x, y in enumerate(metrics['throughput_rps']):
-    plt.text(x, y, f'{y:.1f}/s', ha='center', va='bottom', fontsize=10)
+# 2) User Count vs Throughput
+plt.figure(figsize=(7.2, 4.4))
+plt.plot(mysql["user_count"], mysql["throughput_rps"], marker="o", label="MySQL")
+plt.plot(redis["user_count"], redis["throughput_rps"], marker="o", label="Redis")
+plt.title("User Count vs Throughput")
+plt.xlabel("User Count")
+plt.ylabel("Requests/sec")
+plt.legend()
 plt.tight_layout()
-plt.savefig('chart_throughput_comparison.png', dpi=220)
+plt.savefig("chart_usercount_throughput.png", dpi=220)
 plt.close()
 
-# 3) DB query count reduction
-before = float(query.loc[0, 'before'])
-after = float(query.loc[0, 'after'])
+# 3) User Count vs Avg Latency
+plt.figure(figsize=(7.2, 4.4))
+plt.plot(mysql["user_count"], mysql["avg_ms"], marker="o", label="MySQL")
+plt.plot(redis["user_count"], redis["avg_ms"], marker="o", label="Redis")
+plt.title("User Count vs Average Latency")
+plt.xlabel("User Count")
+plt.ylabel("Average Latency (ms)")
+plt.legend()
+plt.tight_layout()
+plt.savefig("chart_usercount_avg.png", dpi=220)
+plt.close()
+
+# 4) DB 쿼리 카운트(막대)
+before = float(query.loc[0, "before"])
+after = float(query.loc[0, "after"])
 
 plt.figure(figsize=(6.4, 4.2))
-plt.bar(['Before (DB Aggregation)', 'After (Redis)'], [before, after], color=['#C0392B', '#27AE60'])
-plt.title('DB Aggregation Query Count')
-plt.ylabel('Count')
+plt.bar(["Before (DB)", "After (Redis)"], [before, after], color=["#C0392B", "#27AE60"])
+plt.title("DB Aggregation Query Count")
+plt.ylabel("Count")
 for x, y in enumerate([before, after]):
-    plt.text(x, y, f'{y:.0f}', ha='center', va='bottom', fontsize=10)
+    plt.text(x, y, f"{y:.0f}", ha="center", va="bottom", fontsize=10)
 plt.tight_layout()
-plt.savefig('chart_db_query_reduction.png', dpi=220)
+plt.savefig("chart_db_query_reduction.png", dpi=220)
 plt.close()
 
-# 4) one-page summary chart (optional)
-fig, axes = plt.subplots(1, 3, figsize=(15, 4.2))
-
-axes[0].bar(metrics['scenario'], metrics['p95_ms'], color=colors)
-axes[0].set_title('p95 Latency (ms)')
-for x, y in enumerate(metrics['p95_ms']):
-    axes[0].text(x, y, f'{y:.0f}', ha='center', va='bottom', fontsize=9)
-
-axes[1].bar(metrics['scenario'], metrics['throughput_rps'], color=colors)
-axes[1].set_title('Throughput (req/s)')
-for x, y in enumerate(metrics['throughput_rps']):
-    axes[1].text(x, y, f'{y:.1f}', ha='center', va='bottom', fontsize=9)
-
-axes[2].bar(['Before', 'After'], [before, after], color=['#C0392B', '#27AE60'])
-axes[2].set_title('DB Query Count')
-for x, y in enumerate([before, after]):
-    axes[2].text(x, y, f'{y:.0f}', ha='center', va='bottom', fontsize=9)
-
-fig.suptitle('GRADU Ranking Optimization: MySQL vs Redis', fontsize=14)
-fig.tight_layout()
-fig.savefig('chart_summary_dashboard.png', dpi=220)
-plt.close(fig)
-
-print('Generated:')
-print('- chart_p95_comparison.png')
-print('- chart_throughput_comparison.png')
-print('- chart_db_query_reduction.png')
-print('- chart_summary_dashboard.png')
+print("Generated:")
+print("- chart_usercount_p95.png")
+print("- chart_usercount_throughput.png")
+print("- chart_usercount_avg.png")
+print("- chart_db_query_reduction.png")

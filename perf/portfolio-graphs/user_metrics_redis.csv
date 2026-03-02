@@ -1,0 +1,6 @@
+scenario,user_count,avg_ms,p95_ms,throughput_rps
+redis,5,20.41,23.0,218.86
+redis,10,32.0,45.0,275.79
+redis,20,63.93,86.0,275.01
+redis,30,86.99,119.0,302.81
+redis,50,146.54,214.0,299.42

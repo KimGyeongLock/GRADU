@@ -1,0 +1,6 @@
+scenario,user_count,avg_ms,p95_ms,throughput_rps
+mysql,5,422.05,480.7,10.66
+mysql,10,644.05,852.7,13.8
+mysql,20,1194.78,1545.6,14.81
+mysql,30,1826.71,2224.0,14.52
+mysql,50,2927.17,3692.7,15.13
