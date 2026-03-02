@@ -1,0 +1,3 @@
+scenario,p95_ms,throughput_rps,avg_ms
+Redis,77,303.2,56
+MySQL,1803,12.0,1458
