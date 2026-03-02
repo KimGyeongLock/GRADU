@@ -9,6 +9,7 @@ import com.example.gradu.domain.course.repository.CourseRepository;
 import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.domain.curriculum.entity.Curriculum;
 import com.example.gradu.domain.curriculum.repository.CurriculumRepository;
+import com.example.gradu.domain.ranking.service.CourseRankingUpdateService;
 import com.example.gradu.domain.student.entity.Student;
 import com.example.gradu.domain.student.repository.StudentRepository;
 import com.example.gradu.domain.summary.service.SummaryCommandService;
@@ -34,13 +35,12 @@ public class CourseService {
     private final CurriculumRepository curriculumRepository;
     private final CourseCommandService courseCommandService;
     private final SummaryCommandService summaryCommandService;
-
+    private final CourseRankingUpdateService rankingUpdateService;
 
     public static int toUnits(BigDecimal credit) {
         if (credit == null) return 0;
         return credit.multiply(BigDecimal.valueOf(2)).intValue();
     }
-
 
     @Transactional
     public void addCourse(Long studentId, CourseRequestDto request, boolean overwrite) {
@@ -83,6 +83,7 @@ public class CourseService {
                 .term(Term.fromCode(request.term()))
                 .build();
         courseRepository.save(course);
+        rankingUpdateService.onCreated(course.getName(), course.getCategory());
 
         Curriculum cur = curriculumRepository.findByStudentIdAndCategory(studentId, request.category())
                 .orElseThrow(() -> new CurriculumException(ErrorCode.CURRICULUM_NOT_FOUND));
@@ -156,6 +157,7 @@ public class CourseService {
                         .build()
                 ).toList();
         courseRepository.saveAll(entities);
+        entities.forEach(c -> rankingUpdateService.onCreated(c.getName(), c.getCategory()));
 
         courses.stream()
                 .collect(Collectors.groupingBy(CourseBulkRequest::getCategory,
@@ -183,6 +185,8 @@ public class CourseService {
 
 
     public void removeForStudent(Long studentId) {
+        List<Course> existing = courseRepository.findByStudentId(studentId);
+        existing.forEach(c -> rankingUpdateService.onDeleted(c.getName(), c.getCategory()));
         courseRepository.deleteByStudentId(studentId);
     }
 }

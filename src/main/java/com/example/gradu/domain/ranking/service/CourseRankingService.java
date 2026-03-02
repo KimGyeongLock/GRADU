@@ -4,18 +4,22 @@ import com.example.gradu.domain.curriculum.entity.Category;
 import com.example.gradu.domain.ranking.catalog.MajorRoadmapIndex;
 import com.example.gradu.domain.ranking.dto.CourseRankingDto.*;
 import com.example.gradu.domain.ranking.repository.CourseRankingRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.gradu.domain.ranking.repository.CourseRankingRedisRepository;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
 @Service
+@Slf4j
 public class CourseRankingService {
 
     private final CourseRankingRepository repository;
     private final MajorRoadmapIndex majorRoadmapIndex;
+    private final CourseRankingRedisRepository redisRepository;
 
     private static final EnumSet<Category> MAJOR_CATEGORIES =
             EnumSet.of(Category.MAJOR);
@@ -37,10 +41,12 @@ public class CourseRankingService {
 
     public CourseRankingService(
             CourseRankingRepository repository,
-            MajorRoadmapIndex majorRoadmapIndex
+            MajorRoadmapIndex majorRoadmapIndex,
+            CourseRankingRedisRepository redisRepository
     ) {
         this.repository = repository;
         this.majorRoadmapIndex = majorRoadmapIndex;
+        this.redisRepository = redisRepository;
     }
 
     private static final int MAJOR_FETCH_SIZE = 300;
@@ -49,6 +55,105 @@ public class CourseRankingService {
 
     @Transactional(readOnly = true)
     public RankingResponseDto getCourseRanking() {
+        try {
+            if (isRedisReady()) {
+                return loadFromRedis();
+            }
+        } catch (RuntimeException ex) {
+            log.warn("ranking redis read failed. fallback to db" , ex);
+        }
+        return loadFromDb();
+    }
+
+    private boolean isRedisReady() {
+        return redisRepository.isReady();
+    }
+
+    private RankingResponseDto loadFromRedis() {
+        var major = new MajorRankingDto(
+                topMajor("y1s2"),
+                topMajor("y2s1"),
+                topMajor("y2s2"),
+                topMajor("y3s1"),
+                topMajor("y3s2"),
+                topMajor("y4s1"),
+                topMajor("y4s2")
+        );
+
+        var liberal = new LiberalRankingDto(
+                topLiberal(Category.FAITH_WORLDVIEW),
+                topLiberal(Category.GENERAL_EDU),
+                topLiberal(Category.BSM),
+                topFreeElective()
+        );
+
+        return new RankingResponseDto(major, liberal);
+    }
+
+    private List<RankingItemDto> topMajor(String bucket) {
+        var rows = redisRepository.topByMajorBucket(bucket, RANKING_LIMIT);
+        return toRankingItems(rows, false);
+    }
+
+    private List<RankingItemDto> topLiberal(Category category) {
+        var rows = redisRepository.topByCategory(category, LIBERAL_FILTER_FETCH_SIZE);
+        return toRankingItems(rows, true);
+    }
+
+    private List<RankingItemDto> topFreeElective() {
+        var basic = redisRepository.topByCategory(Category.FREE_ELECTIVE_BASIC, LIBERAL_FILTER_FETCH_SIZE);
+        var mjr = redisRepository.topByCategory(Category.FREE_ELECTIVE_MJR, LIBERAL_FILTER_FETCH_SIZE);
+
+        Map<String, Long> merged = new HashMap<>();
+        for (var r : basic) merged.merge(r.normName(), r.score(), Long::sum);
+        for (var r : mjr) merged.merge(r.normName(), r.score(), Long::sum);
+
+        var rows = merged.entrySet().stream()
+                .map(e -> new CourseRankingRedisRepository.ScoreRow(e.getKey(), e.getValue()))
+                .toList();
+        return toRankingItems(rows, true);
+    }
+
+    private List<RankingItemDto> toRankingItems(
+            List<CourseRankingRedisRepository.ScoreRow> rows,
+            boolean applyFilter
+    ) {
+        if (rows == null || rows.isEmpty()) return List.of();
+
+        var sorted = rows.stream()
+                .filter(r -> r.normName() != null && !r.normName().isBlank())
+                .map(r -> new Agg(r.score(), displayOf(r.normName())))
+                .sorted((a, b) -> {
+                    int c = Long.compare(b.takenCount, a.takenCount);
+                   if (c != 0) return c;
+                   return a.displayName.compareTo(b.displayName);
+                })
+                .toList();
+
+        var filtered = applyFilter
+                ? sorted.stream()
+                .filter(r -> !containsAny(r.displayName, LIBERAL_EXCLUDE_KEYWORDS))
+                .toList()
+                : sorted;
+
+        var top = filtered.stream().limit(RANKING_LIMIT).toList();
+
+        return IntStream.range(0, top.size())
+                .mapToObj(i -> new RankingItemDto(
+                        i + 1,
+                        top.get(i).displayName,
+                        top.get(i).takenCount,
+                        0
+                ))
+                .toList();
+    }
+
+    private String displayOf(String normName) {
+        String display = redisRepository.displayOf(normName);
+        return (display == null || display.isBlank()) ? normName : display;
+    }
+
+    private RankingResponseDto loadFromDb() {
         var major = loadMajorByTerms();
 
         var liberal = new LiberalRankingDto(
@@ -131,7 +236,7 @@ public class CourseRankingService {
                 .sorted((a, b) -> {
                     int c = Long.compare(b.takenCount, a.takenCount);
                     if (c != 0) return c;
-                    return a.displayName.compareTo(a.displayName);
+                    return a.displayName.compareTo(b.displayName);
                 })
                 .limit(RANKING_LIMIT)
                 .toList();
